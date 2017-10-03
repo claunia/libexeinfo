@@ -33,10 +33,10 @@ namespace exeinfo
 			mzHdr = (MZ.Header)Marshal.PtrToStructure(hdrPtr, typeof(MZ.Header));
 			Marshal.FreeHGlobal(hdrPtr);
 
-            if(mzHdr.signature == MZ.Signature)
+            if(mzHdr.signature == MZ.Consts.Signature)
             {
                 recognized = true;
-                MZ.PrintInfo(mzHdr);
+                MZ.Info.PrintInfo(mzHdr);
 
                 if (mzHdr.new_offset < exeFs.Length)
                 {
