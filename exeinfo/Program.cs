@@ -75,9 +75,28 @@ namespace exeinfo
 
                                     foreach (KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
                                     {
-                                        CultureInfo cult = new CultureInfo(Convert.ToInt32(strByLang.Key.Substring(0, 4), 16));
-                                        Encoding encoding = Encoding.GetEncoding(Convert.ToInt32(strByLang.Key.Substring(4), 16));
-                                        Console.WriteLine("\t\tStrings for {0} in codepage {1}:", cult.DisplayName, encoding.EncodingName);
+                                        string cultureName;
+                                        string encodingName;
+
+                                        try
+                                        {
+                                            cultureName = new CultureInfo(Convert.ToInt32(strByLang.Key.Substring(0, 4), 16)).DisplayName;
+                                        }
+                                        catch
+                                        {
+                                            cultureName = string.Format("unsupported culture 0x{0:X4}", Convert.ToInt32(strByLang.Key.Substring(0, 4), 16));
+                                        }
+
+										try
+										{
+                                            encodingName = Encoding.GetEncoding(Convert.ToInt32(strByLang.Key.Substring(4), 16)).EncodingName;
+										}
+										catch
+										{
+											encodingName = string.Format("unsupported encoding 0x{0:X4}", Convert.ToInt32(strByLang.Key.Substring(4), 16));
+										}
+
+                                        Console.WriteLine("\t\tStrings for {0} in codepage {1}:", cultureName, encodingName);
                                         foreach(KeyValuePair<string, string> strings in strByLang.Value)
                                             Console.WriteLine("\t\t\t{0}: {1}", strings.Key, strings.Value);
                                     }
