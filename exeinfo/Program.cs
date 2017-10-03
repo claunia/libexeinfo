@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
 
 namespace exeinfo
 {
@@ -46,10 +49,41 @@ namespace exeinfo
 					neHdr = (NE.Header)Marshal.PtrToStructure(hdrPtr, typeof(NE.Header));
 					Marshal.FreeHGlobal(hdrPtr);
 
-                    if (neHdr.signature == NE.Signature)
+                    if (neHdr.signature == NE.Consts.Signature)
                     {
-                        NE.PrintInfo(neHdr);
-                        NE.GetResources(exeFs, mzHdr.new_offset, neHdr.resource_table_offset);
+                        NE.Info.PrintInfo(neHdr);
+                        NE.ResourceTable resources = NE.Info.GetResources(exeFs, mzHdr.new_offset, neHdr.resource_table_offset);
+                        foreach(NE.ResourceType type in resources.types)
+                        {
+                            if((type.id & 0x7FFF) == (int)NE.ResourceTypes.RT_VERSION)
+                            {
+                                foreach(NE.Resource resource in type.resources)
+                                {
+                                    NE.Version vers = new NE.Version(resource.data);
+                                    Console.WriteLine("\tVersion resource {0}:", resource.name);
+                                    Console.WriteLine("\t\tFile version: {0}", vers.FileVersion);
+                                    Console.WriteLine("\t\tProduct version: {0}", vers.ProductVersion);
+                                    Console.WriteLine("\t\tFile type: {0}", NE.Version.TypeToString(vers.FileType));
+                                    if(vers.FileType == NE.VersionFileType.VFT_DRV)
+                                        Console.WriteLine("\t\tFile subtype: {0} driver", NE.Version.DriverToString(vers.FileSubtype));
+									else if (vers.FileType == NE.VersionFileType.VFT_DRV)
+                                        Console.WriteLine("\t\tFile subtype: {0} font", NE.Version.FontToString(vers.FileSubtype));
+									else if(vers.FileSubtype > 0)
+										Console.WriteLine("\t\tFile subtype: {0}", (uint)vers.FileSubtype);
+									Console.WriteLine("\t\tFile flags: {0}", vers.FileFlags);
+                                    Console.WriteLine("\t\tFile OS: {0}", NE.Version.OsToString(vers.FileOS));
+
+                                    foreach (KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
+                                    {
+                                        CultureInfo cult = new CultureInfo(Convert.ToInt32(strByLang.Key.Substring(0, 4), 16));
+                                        Encoding encoding = Encoding.GetEncoding(Convert.ToInt32(strByLang.Key.Substring(4), 16));
+                                        Console.WriteLine("\t\tStrings for {0} in codepage {1}:", cult.DisplayName, encoding.EncodingName);
+                                        foreach(KeyValuePair<string, string> strings in strByLang.Value)
+                                            Console.WriteLine("\t\t\t{0}: {1}", strings.Key, strings.Value);
+                                    }
+                                }
+                            }
+                        }
                     }
 				}
             }

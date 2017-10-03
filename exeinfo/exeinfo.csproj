@@ -35,7 +35,14 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MZ.cs" />
-    <Compile Include="NE.cs" />
+    <Compile Include="NE\Version.cs" />
+    <Compile Include="NE\Structs.cs" />
+    <Compile Include="NE\Enums.cs" />
+    <Compile Include="NE\Consts.cs" />
+    <Compile Include="NE\Info.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="NE\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
