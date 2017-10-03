@@ -47,7 +47,10 @@ namespace exeinfo
 					Marshal.FreeHGlobal(hdrPtr);
 
                     if (neHdr.signature == NE.Signature)
+                    {
                         NE.PrintInfo(neHdr);
+                        NE.GetResources(exeFs, mzHdr.new_offset, neHdr.resource_table_offset);
+                    }
 				}
             }
 

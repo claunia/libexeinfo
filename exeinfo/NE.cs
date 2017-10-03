@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.IO;
+using System.Collections.Generic;
+using System.Text;
 
 namespace exeinfo
 {
@@ -85,6 +88,44 @@ namespace exeinfo
             ProtectedMode2 = 1 << 1,
             ProportionalFonts = 1 << 2,
             GangloadArea = 1 << 3,
+        }
+
+        public struct ResourceTable
+        {
+            public ushort alignment_shift;
+            public ResourceType[] types;
+        }
+
+        public struct ResourceType
+        {
+            public ushort id;
+            public ushort count;
+            public uint reserved;
+            public Resource[] resources;
+
+            // Not sequentially stored
+            public string name;
+        }
+
+        public struct Resource
+        {
+            public ushort dataOffset;
+            public ushort length;
+            public ResourceFlags flags;
+            public ushort id;
+            public uint reserved;
+
+            // Not sequentially stored
+            public string name;
+            public byte[] data;
+        }
+
+        [Flags]
+        public enum ResourceFlags : ushort
+        {
+            Moveable = 0x10,
+            Pure = 0x20,
+            Preload = 0x40
         }
 
         public static void PrintInfo(Header header)
@@ -195,7 +236,7 @@ namespace exeinfo
 				Console.WriteLine("\tExecutable is a dynamic library or a driver");
 
             Console.WriteLine("\tMinimum code swap area: {0} bytes", header.minimum_swap_area);
-            Console.WriteLine("\tFile alignment shift: {0}", 2 << header.alignment_shift);
+            Console.WriteLine("\tFile alignment shift: {0}", 512 << header.alignment_shift);
 			Console.WriteLine("\tInitial local heap should be {0} bytes", header.initial_heap);
             Console.WriteLine("\tInitial stack size should be {0} bytes", header.initial_stack);
             Console.WriteLine("\tCS:IP entry point: {0:X4}:{1:X4}", (header.entry_point & 0xFFFF0000) >> 16, header.entry_point & 0xFFFF);
@@ -209,5 +250,154 @@ namespace exeinfo
             Console.WriteLine("\tResident names table starts at {0}", header.resident_names_offset);
             Console.WriteLine("\tImported names table starts at {0}", header.imported_names_offset);
 		}
+
+        public static ResourceTable GetResources(FileStream exeFs, uint neStart, ushort tableOff)
+        {
+            long oldPosition = exeFs.Position;
+            byte[] DW = new byte[2];
+            byte[] DD = new byte[4];
+
+            exeFs.Position = neStart + tableOff;
+            ResourceTable table = new ResourceTable();
+            exeFs.Read(DW, 0, 2);
+            table.alignment_shift = BitConverter.ToUInt16(DW, 0);
+
+            List<ResourceType> types = new List<ResourceType>();
+
+            while(true)
+            {
+                ResourceType type = new ResourceType();
+                exeFs.Read(DW, 0, 2);
+                type.id = BitConverter.ToUInt16(DW, 0);
+                if (type.id == 0)
+                    break;
+
+				exeFs.Read(DW, 0, 2);
+                type.count = BitConverter.ToUInt16(DW, 0);
+				exeFs.Read(DD, 0, 4);
+                type.reserved = BitConverter.ToUInt32(DD, 0);
+
+                type.resources = new Resource[type.count];
+                for (int i = 0; i < type.count; i++)
+                {
+                    type.resources[i] = new Resource();
+					exeFs.Read(DW, 0, 2);
+                    type.resources[i].dataOffset = BitConverter.ToUInt16(DW, 0);
+					exeFs.Read(DW, 0, 2);
+                    type.resources[i].length = BitConverter.ToUInt16(DW, 0);
+					exeFs.Read(DW, 0, 2);
+                    type.resources[i].flags = (ResourceFlags)BitConverter.ToUInt16(DW, 0);
+					exeFs.Read(DW, 0, 2);
+                    type.resources[i].id = BitConverter.ToUInt16(DW, 0);
+					exeFs.Read(DD, 0, 4);
+                    type.resources[i].reserved = BitConverter.ToUInt32(DD, 0);
+				}
+
+                types.Add(type);
+			}
+
+			table.types = types.ToArray();
+
+			for (int t = 0; t < table.types.Length; t++)
+            {
+                if ((table.types[t].id & 0x8000) == 0)
+                {
+                    byte len;
+                    byte[] str;
+                    exeFs.Position = neStart + tableOff + table.types[t].id;
+                    len = (byte)exeFs.ReadByte();
+                    str = new byte[len];
+                    exeFs.Read(str, 0, len);
+                    table.types[t].name = Encoding.ASCII.GetString(str);
+                }
+                else
+                    table.types[t].name = IdToName(table.types[t].id);
+
+                for (int r = 0; r < table.types[t].resources.Length; r++)
+                {
+                    if ((table.types[t].resources[r].id & 0x8000) == 0)
+                    {
+                        byte len;
+                        byte[] str;
+                        exeFs.Position = neStart + tableOff + table.types[t].resources[r].id;
+                        len = (byte)exeFs.ReadByte();
+                        str = new byte[len];
+                        exeFs.Read(str, 0, len);
+                        table.types[t].resources[r].name = Encoding.ASCII.GetString(str);
+                    }
+                    else
+                        table.types[t].resources[r].name = string.Format("{0}", table.types[t].resources[r].id & 0x7FFF);
+
+					table.types[t].resources[r].data = new byte[table.types[t].resources[r].length * (1 << table.alignment_shift)];
+                    exeFs.Position = table.types[t].resources[r].dataOffset * (1 <<table.alignment_shift);
+                    exeFs.Read(table.types[t].resources[r].data, 0, table.types[t].resources[r].data.Length);
+				}
+            }
+
+            exeFs.Position = oldPosition;
+
+            return table;
+        }
+
+        public static string IdToName(ushort id)
+        {
+            switch(id & 0x7FFF)
+            {
+                case 9:
+                    return "RT_ACCELERATOR";
+                case 21:
+                    return "RT_ANICURSOR";
+                case 22:
+                    return "RT_ANIICON";
+                case 2:
+                    return "RT_BITMAP";
+                case 1:
+                    return "RT_CURSOR";
+                case 5:
+                    return "RT_DIALOG";
+                case 18:
+                    return "RT_DIALOGEX";
+                case 17:
+                    return "RT_DLGINCLUDE";
+                case 240:
+                    return "RT_DLGINIT";
+                case 8:
+                    return "RT_FONT";
+                case 7:
+                    return "RT_FONTDIR";
+                case 12:
+                    return "RT_GROUP_CURSOR";
+                case 14:
+                    return "RT_GROUP_ICON";
+                case 23:
+                    return "RT_HTML";
+                case 3:
+                    return "RT_ICON";
+                case 24:
+                    return "RT_MANIFEST";
+                case 4:
+                    return "RT_MENU";
+                case 15:
+                    return "RT_MENUEX";
+                case 11:
+                    return "RT_MESSAGETABLE";
+                case 8194:
+                    return "RT_NEWBITMAP";
+                case 19:
+                    return "RT_PLUGPLAY";
+                case 10:
+                    return "RT_RCDATA";
+                case 6:
+                    return "RT_STRING";
+                case 241:
+                    return "RT_TOOLBAR";
+                case 16:
+                    return "RT_VERSION";
+                case 20:
+                    return "RT_VXD";
+                default:
+                    return string.Format("{0}", id & 0x7FFF);
+            }
+        }
     }
 }
