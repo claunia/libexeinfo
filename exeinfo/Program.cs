@@ -7,6 +7,7 @@ namespace exeinfo
     class MainClass
     {
         static MZ.Header mzHdr;
+        static NE.Header neHdr;
 
         public static void Main(string[] args)
         {
@@ -33,6 +34,21 @@ namespace exeinfo
             {
                 recognized = true;
                 MZ.PrintInfo(mzHdr);
+
+                if (mzHdr.new_offset < exeFs.Length)
+                {
+                    exeFs.Seek(mzHdr.new_offset, SeekOrigin.Begin);
+
+                    buffer = new byte[Marshal.SizeOf(typeof(NE.Header))];
+					exeFs.Read(buffer, 0, buffer.Length);
+					hdrPtr = Marshal.AllocHGlobal(buffer.Length);
+					Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
+					neHdr = (NE.Header)Marshal.PtrToStructure(hdrPtr, typeof(NE.Header));
+					Marshal.FreeHGlobal(hdrPtr);
+
+                    if (neHdr.signature == NE.Signature)
+                        NE.PrintInfo(neHdr);
+				}
             }
 
             if (!recognized)
