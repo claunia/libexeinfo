@@ -52,6 +52,7 @@ namespace exeinfo
             MZ mzExe = new MZ(exeFs);
             NE neExe = new NE(exeFs);
             AtariST stExe = new AtariST(exeFs);
+            LX lxExe = new LX(exeFs);
 
             if (mzExe.IsMZ)
             {
@@ -115,6 +116,12 @@ namespace exeinfo
 			{
 				recognized = true;
                 Console.Write(stExe.GetInfo());
+			}
+
+			if (lxExe.IsLX)
+			{
+				recognized = true;
+				Console.Write(lxExe.GetInfo());
 			}
 
 			if (!recognized)

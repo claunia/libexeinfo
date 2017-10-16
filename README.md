@@ -11,3 +11,5 @@ Supported executable formats
 * Atari ST executable
 * MZ (aka DOS relocatable executable)
 * NE (Microsoft New Executable)
+* LE (Microsoft Linear Executable)
+* LX (IBM Linear eXecutable)

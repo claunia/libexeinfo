@@ -48,7 +48,6 @@
     <Compile Include="MZ\Info.cs" />
     <Compile Include="MZ\Structs.cs" />
     <Compile Include="NE\Consts.cs" />
-    <Compile Include="NE\Enums.cs" />
     <Compile Include="NE\Info.cs" />
     <Compile Include="NE\Structs.cs" />
     <Compile Include="NE\Version.cs" />
@@ -59,6 +58,12 @@
     <Compile Include="AtariST\Consts.cs" />
     <Compile Include="AtariST\AtariST.cs" />
     <Compile Include="AtariST\Info.cs" />
+    <Compile Include="LX\Structs.cs" />
+    <Compile Include="NE\Enums.cs" />
+    <Compile Include="LX\Enums.cs" />
+    <Compile Include="LX\Consts.cs" />
+    <Compile Include="LX\Info.cs" />
+    <Compile Include="LX\LX.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -73,6 +78,7 @@
     <Folder Include="MZ\" />
     <Folder Include="NE\" />
     <Folder Include="AtariST\" />
+    <Folder Include="LX\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\NuGet.Build.Packaging.0.1.276\build\NuGet.Build.Packaging.targets" Condition="Exists('..\packages\NuGet.Build.Packaging.0.1.276\build\NuGet.Build.Packaging.targets')" />
