@@ -11,13 +11,14 @@
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <PackOnBuild>true</PackOnBuild>
     <PackageId>libexeinfo</PackageId>
-    <PackageVersion>0.1</PackageVersion>
+    <PackageVersion>0.2</PackageVersion>
     <Authors>Natalia Portillo</Authors>
     <Owners>Natalia Portillo</Owners>
     <Summary>Library to get information about executable files.</Summary>
     <Title>libexeinfo</Title>
     <Description>Library to get information about executable files.</Description>
     <PackageProjectUrl>https://github.com/claunia/libexeinfo</PackageProjectUrl>
+    <ReleaseVersion>0.2</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
