@@ -32,7 +32,7 @@ namespace libexeinfo
     public partial class NE
     {
         [StructLayout(LayoutKind.Sequential/*, Pack = 2*/)]
-        public struct Header
+        public struct NEHeader
         {
             public ushort signature;
             public byte linker_major;

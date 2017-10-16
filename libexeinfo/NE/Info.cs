@@ -33,7 +33,7 @@ namespace libexeinfo
 {
 	public partial class NE
 	{
-		public static string GetInfo(Header header)
+		public static string GetInfo(NEHeader header)
 		{
             StringBuilder sb = new StringBuilder();
 			sb.AppendLine("New Executable (NE):");
@@ -158,15 +158,20 @@ namespace libexeinfo
             return sb.ToString();
 		}
 
-		public static ResourceTable GetResources(FileStream exeFs, uint neStart, ushort tableOff)
+        public string GetInfo()
+        {
+            return GetInfo(Header);
+        }
+
+        public static ResourceTable GetResources(FileStream stream, uint neStart, ushort tableOff)
 		{
-			long oldPosition = exeFs.Position;
+			long oldPosition = stream.Position;
 			byte[] DW = new byte[2];
 			byte[] DD = new byte[4];
 
-			exeFs.Position = neStart + tableOff;
+			stream.Position = neStart + tableOff;
 			ResourceTable table = new ResourceTable();
-			exeFs.Read(DW, 0, 2);
+			stream.Read(DW, 0, 2);
 			table.alignment_shift = BitConverter.ToUInt16(DW, 0);
 
 			List<ResourceType> types = new List<ResourceType>();
@@ -174,29 +179,29 @@ namespace libexeinfo
 			while (true)
 			{
 				ResourceType type = new ResourceType();
-				exeFs.Read(DW, 0, 2);
+				stream.Read(DW, 0, 2);
 				type.id = BitConverter.ToUInt16(DW, 0);
 				if (type.id == 0)
 					break;
 
-				exeFs.Read(DW, 0, 2);
+				stream.Read(DW, 0, 2);
 				type.count = BitConverter.ToUInt16(DW, 0);
-				exeFs.Read(DD, 0, 4);
+				stream.Read(DD, 0, 4);
 				type.reserved = BitConverter.ToUInt32(DD, 0);
 
 				type.resources = new Resource[type.count];
 				for (int i = 0; i < type.count; i++)
 				{
 					type.resources[i] = new Resource();
-					exeFs.Read(DW, 0, 2);
+					stream.Read(DW, 0, 2);
 					type.resources[i].dataOffset = BitConverter.ToUInt16(DW, 0);
-					exeFs.Read(DW, 0, 2);
+					stream.Read(DW, 0, 2);
 					type.resources[i].length = BitConverter.ToUInt16(DW, 0);
-					exeFs.Read(DW, 0, 2);
+					stream.Read(DW, 0, 2);
 					type.resources[i].flags = (ResourceFlags)BitConverter.ToUInt16(DW, 0);
-					exeFs.Read(DW, 0, 2);
+					stream.Read(DW, 0, 2);
 					type.resources[i].id = BitConverter.ToUInt16(DW, 0);
-					exeFs.Read(DD, 0, 4);
+					stream.Read(DD, 0, 4);
 					type.resources[i].reserved = BitConverter.ToUInt32(DD, 0);
 				}
 
@@ -211,10 +216,10 @@ namespace libexeinfo
 				{
 					byte len;
 					byte[] str;
-					exeFs.Position = neStart + tableOff + table.types[t].id;
-					len = (byte)exeFs.ReadByte();
+					stream.Position = neStart + tableOff + table.types[t].id;
+					len = (byte)stream.ReadByte();
 					str = new byte[len];
-					exeFs.Read(str, 0, len);
+					stream.Read(str, 0, len);
 					table.types[t].name = Encoding.ASCII.GetString(str);
 				}
 				else
@@ -226,22 +231,22 @@ namespace libexeinfo
 					{
 						byte len;
 						byte[] str;
-						exeFs.Position = neStart + tableOff + table.types[t].resources[r].id;
-						len = (byte)exeFs.ReadByte();
+						stream.Position = neStart + tableOff + table.types[t].resources[r].id;
+						len = (byte)stream.ReadByte();
 						str = new byte[len];
-						exeFs.Read(str, 0, len);
+						stream.Read(str, 0, len);
 						table.types[t].resources[r].name = Encoding.ASCII.GetString(str);
 					}
 					else
 						table.types[t].resources[r].name = string.Format("{0}", table.types[t].resources[r].id & 0x7FFF);
 
 					table.types[t].resources[r].data = new byte[table.types[t].resources[r].length * (1 << table.alignment_shift)];
-					exeFs.Position = table.types[t].resources[r].dataOffset * (1 << table.alignment_shift);
-					exeFs.Read(table.types[t].resources[r].data, 0, table.types[t].resources[r].data.Length);
+					stream.Position = table.types[t].resources[r].dataOffset * (1 << table.alignment_shift);
+					stream.Read(table.types[t].resources[r].data, 0, table.types[t].resources[r].data.Length);
 				}
 			}
 
-			exeFs.Position = oldPosition;
+			stream.Position = oldPosition;
 
 			return table;
 		}

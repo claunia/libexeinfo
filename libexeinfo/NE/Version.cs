@@ -34,6 +34,25 @@ namespace libexeinfo
 {
     public partial class NE
     {
+        public List<Version> GetVersions()
+        {
+            List<Version> versions = new List<Version>();
+
+            foreach (ResourceType type in Resources.types)
+            {
+                if ((type.id & 0x7FFF) == (int)ResourceTypes.RT_VERSION)
+                {
+                    foreach (Resource resource in type.resources)
+                    {
+                        Version vers = new Version(resource.data, resource.name);
+                        versions.Add(vers);
+                    }
+                }
+            }
+
+            return versions;
+        }
+
         public class Version
         {
             public Dictionary<string, Dictionary<string, string>> StringsByLanguage { get; }
@@ -45,6 +64,7 @@ namespace libexeinfo
             VersionFileType fileType;
             VersionFileSubtype fileSubtype;
             DateTime fileDate;
+            string name;
 
             public string FileVersion
             {
@@ -102,10 +122,17 @@ namespace libexeinfo
                 }
             }
 
-            public Version(byte[] data)
+            public string Name
+            {
+                get { return name; }
+            }
+
+            public Version(byte[] data, string resourceName = null)
             {
                 if (data == null || data.Length < 5)
                     return;
+
+                name = resourceName;
 
                 StringsByLanguage = new Dictionary<string, Dictionary<string, string>>();
 

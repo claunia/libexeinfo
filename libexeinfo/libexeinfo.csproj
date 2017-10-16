@@ -50,6 +50,7 @@
     <Compile Include="NE\Structs.cs" />
     <Compile Include="NE\Version.cs" />
     <Compile Include="MZ\MZ.cs" />
+    <Compile Include="NE\NE.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
