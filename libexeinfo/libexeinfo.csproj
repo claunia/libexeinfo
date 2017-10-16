@@ -19,6 +19,7 @@
     <Description>Library to get information about executable files.</Description>
     <PackageProjectUrl>https://github.com/claunia/libexeinfo</PackageProjectUrl>
     <ReleaseVersion>0.2</ReleaseVersion>
+    <PackageTags>executable MZ NE exe</PackageTags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

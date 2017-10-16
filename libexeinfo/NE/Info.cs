@@ -206,6 +206,7 @@ namespace libexeinfo
 				}
 
 				types.Add(type);
+                System.Console.WriteLine("{0}", stream.Position);
 			}
 
 			table.types = types.ToArray();

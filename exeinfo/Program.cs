@@ -62,47 +62,50 @@ namespace exeinfo
             {
                 recognized = true;
                 Console.Write(neExe.GetInfo());
-                foreach (NE.Version vers in neExe.Versions)
+                if (neExe.Versions != null)
                 {
-                    Console.WriteLine("\tVersion resource {0}:", vers.Name);
-                    Console.WriteLine("\t\tFile version: {0}", vers.FileVersion);
-                    Console.WriteLine("\t\tProduct version: {0}", vers.ProductVersion);
-                    Console.WriteLine("\t\tFile type: {0}", NE.Version.TypeToString(vers.FileType));
-                    if (vers.FileType == NE.VersionFileType.VFT_DRV)
-                        Console.WriteLine("\t\tFile subtype: {0} driver", NE.Version.DriverToString(vers.FileSubtype));
-                    else if (vers.FileType == NE.VersionFileType.VFT_DRV)
-                        Console.WriteLine("\t\tFile subtype: {0} font", NE.Version.FontToString(vers.FileSubtype));
-                    else if (vers.FileSubtype > 0)
-                        Console.WriteLine("\t\tFile subtype: {0}", (uint)vers.FileSubtype);
-                    Console.WriteLine("\t\tFile flags: {0}", vers.FileFlags);
-                    Console.WriteLine("\t\tFile OS: {0}", NE.Version.OsToString(vers.FileOS));
-
-                    foreach (KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
+                    foreach (NE.Version vers in neExe.Versions)
                     {
-                        string cultureName;
-                        string encodingName;
+                        Console.WriteLine("\tVersion resource {0}:", vers.Name);
+                        Console.WriteLine("\t\tFile version: {0}", vers.FileVersion);
+                        Console.WriteLine("\t\tProduct version: {0}", vers.ProductVersion);
+                        Console.WriteLine("\t\tFile type: {0}", NE.Version.TypeToString(vers.FileType));
+                        if (vers.FileType == NE.VersionFileType.VFT_DRV)
+                            Console.WriteLine("\t\tFile subtype: {0} driver", NE.Version.DriverToString(vers.FileSubtype));
+                        else if (vers.FileType == NE.VersionFileType.VFT_DRV)
+                            Console.WriteLine("\t\tFile subtype: {0} font", NE.Version.FontToString(vers.FileSubtype));
+                        else if (vers.FileSubtype > 0)
+                            Console.WriteLine("\t\tFile subtype: {0}", (uint)vers.FileSubtype);
+                        Console.WriteLine("\t\tFile flags: {0}", vers.FileFlags);
+                        Console.WriteLine("\t\tFile OS: {0}", NE.Version.OsToString(vers.FileOS));
 
-                        try
+                        foreach (KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
                         {
-                            cultureName = new CultureInfo(Convert.ToInt32(strByLang.Key.Substring(0, 4), 16)).DisplayName;
-                        }
-                        catch
-                        {
-                            cultureName = string.Format("unsupported culture 0x{0:X4}", Convert.ToInt32(strByLang.Key.Substring(0, 4), 16));
-                        }
+                            string cultureName;
+                            string encodingName;
 
-                        try
-                        {
-                            encodingName = Encoding.GetEncoding(Convert.ToInt32(strByLang.Key.Substring(4), 16)).EncodingName;
-                        }
-                        catch
-                        {
-                            encodingName = string.Format("unsupported encoding 0x{0:X4}", Convert.ToInt32(strByLang.Key.Substring(4), 16));
-                        }
+                            try
+                            {
+                                cultureName = new CultureInfo(Convert.ToInt32(strByLang.Key.Substring(0, 4), 16)).DisplayName;
+                            }
+                            catch
+                            {
+                                cultureName = string.Format("unsupported culture 0x{0:X4}", Convert.ToInt32(strByLang.Key.Substring(0, 4), 16));
+                            }
 
-                        Console.WriteLine("\t\tStrings for {0} in codepage {1}:", cultureName, encodingName);
-                        foreach (KeyValuePair<string, string> strings in strByLang.Value)
-                            Console.WriteLine("\t\t\t{0}: {1}", strings.Key, strings.Value);
+                            try
+                            {
+                                encodingName = Encoding.GetEncoding(Convert.ToInt32(strByLang.Key.Substring(4), 16)).EncodingName;
+                            }
+                            catch
+                            {
+                                encodingName = string.Format("unsupported encoding 0x{0:X4}", Convert.ToInt32(strByLang.Key.Substring(4), 16));
+                            }
+
+                            Console.WriteLine("\t\tStrings for {0} in codepage {1}:", cultureName, encodingName);
+                            foreach (KeyValuePair<string, string> strings in strByLang.Value)
+                                Console.WriteLine("\t\t\t{0}: {1}", strings.Key, strings.Value);
+                        }
                     }
                 }
             }

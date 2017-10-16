@@ -70,9 +70,15 @@ namespace libexeinfo
 					Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
                     Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
 					Marshal.FreeHGlobal(hdrPtr);
-                    IsNE = Header.signature == Signature;
-                    Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset);
-                    Versions = GetVersions().ToArray();
+                    if(Header.signature == Signature)
+                    {
+                        IsNE = true;
+						if (Header.resource_entries > 0)
+						{
+							Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset);
+							Versions = GetVersions().ToArray();
+						}
+					}
 				}
 			}
 		}
@@ -97,9 +103,15 @@ namespace libexeinfo
 					Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
 					Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
 					Marshal.FreeHGlobal(hdrPtr);
-					IsNE = Header.signature == Signature;
-					Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset);
-					Versions = GetVersions().ToArray();
+					if (Header.signature == Signature)
+					{
+						IsNE = true;
+                        if (Header.resource_entries > 0)
+                        {
+                            Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset);
+                            Versions = GetVersions().ToArray();
+                        }
+					}
 				}
 			}
 		}
