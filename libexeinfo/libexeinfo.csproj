@@ -17,6 +17,7 @@
     <Summary>Library to get information about executable files.</Summary>
     <Title>libexeinfo</Title>
     <Description>Library to get information about executable files.</Description>
+    <PackageProjectUrl>https://github.com/claunia/libexeinfo</PackageProjectUrl>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
