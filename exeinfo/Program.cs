@@ -30,12 +30,12 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using libexeinfo;
 
 namespace exeinfo
 {
     class MainClass
     {
-        static libexeinfo.MZ.Header mzHdr;
         static libexeinfo.NE.Header neHdr;
 
         public static void Main(string[] args)
@@ -51,26 +51,20 @@ namespace exeinfo
 
             bool recognized = false;
 
-            byte[] buffer = new byte[Marshal.SizeOf(typeof(libexeinfo.MZ.Header))];
+            MZ mzExe = new MZ(exeFs);
 
-            exeFs.Read(buffer, 0, buffer.Length);
-			IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-			Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-			mzHdr = (libexeinfo.MZ.Header)Marshal.PtrToStructure(hdrPtr, typeof(libexeinfo.MZ.Header));
-			Marshal.FreeHGlobal(hdrPtr);
-
-            if(mzHdr.signature == libexeinfo.MZ.Signature)
+            if(mzExe.IsMZ)
             {
                 recognized = true;
-                Console.Write(libexeinfo.MZ.GetInfo(mzHdr));
+                Console.Write(mzExe.GetInfo());
 
-                if (mzHdr.new_offset < exeFs.Length)
+                if (mzExe.Header.new_offset < exeFs.Length)
                 {
-                    exeFs.Seek(mzHdr.new_offset, SeekOrigin.Begin);
+                    exeFs.Seek(mzExe.Header.new_offset, SeekOrigin.Begin);
 
-                    buffer = new byte[Marshal.SizeOf(typeof(libexeinfo.NE.Header))];
+                    byte[] buffer = new byte[Marshal.SizeOf(typeof(libexeinfo.NE.Header))];
 					exeFs.Read(buffer, 0, buffer.Length);
-					hdrPtr = Marshal.AllocHGlobal(buffer.Length);
+					IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
 					Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
 					neHdr = (libexeinfo.NE.Header)Marshal.PtrToStructure(hdrPtr, typeof(libexeinfo.NE.Header));
 					Marshal.FreeHGlobal(hdrPtr);
@@ -78,7 +72,7 @@ namespace exeinfo
                     if (neHdr.signature == libexeinfo.NE.Signature)
                     {
                         Console.Write(libexeinfo.NE.GetInfo(neHdr));
-                        libexeinfo.NE.ResourceTable resources = libexeinfo.NE.GetResources(exeFs, mzHdr.new_offset, neHdr.resource_table_offset);
+                        libexeinfo.NE.ResourceTable resources = libexeinfo.NE.GetResources(exeFs, mzExe.Header.new_offset, neHdr.resource_table_offset);
                         foreach(libexeinfo.NE.ResourceType type in resources.types)
                         {
                             if((type.id & 0x7FFF) == (int)libexeinfo.NE.ResourceTypes.RT_VERSION)

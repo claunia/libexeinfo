@@ -30,7 +30,7 @@ namespace libexeinfo
 {
 	public partial class MZ
 	{
-		public static string GetInfo(Header header)
+		public static string GetInfo(MZHeader header)
 		{
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("DOS MZ executable:");
@@ -52,5 +52,10 @@ namespace libexeinfo
 			sb.AppendFormat("\tOffset to new header: {0}", header.new_offset).AppendLine();
             return sb.ToString();
 		}
+
+        public string GetInfo()
+        {
+            return GetInfo(Header);
+        }
 	}
 }

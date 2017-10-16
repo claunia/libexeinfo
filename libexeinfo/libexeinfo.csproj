@@ -49,6 +49,7 @@
     <Compile Include="NE\Info.cs" />
     <Compile Include="NE\Structs.cs" />
     <Compile Include="NE\Version.cs" />
+    <Compile Include="MZ\MZ.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -31,7 +31,7 @@ namespace libexeinfo
     public partial class MZ
     {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct Header
+        public struct MZHeader
         {
             public ushort signature;
             public ushort bytes_in_last_block;
