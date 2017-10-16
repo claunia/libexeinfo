@@ -223,7 +223,7 @@ namespace libexeinfo
 					table.types[t].name = Encoding.ASCII.GetString(str);
 				}
 				else
-					table.types[t].name = IdToName(table.types[t].id);
+					table.types[t].name = ResourceIdToName(table.types[t].id);
 
 				for (int r = 0; r < table.types[t].resources.Length; r++)
 				{

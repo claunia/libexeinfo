@@ -34,6 +34,10 @@ namespace libexeinfo
 {
     public partial class NE
     {
+        /// <summary>
+        /// Gets all the version resources from this instance
+        /// </summary>
+        /// <returns>The decoded version resources.</returns>
         public List<Version> GetVersions()
         {
             List<Version> versions = new List<Version>();
@@ -53,9 +57,16 @@ namespace libexeinfo
             return versions;
         }
 
+        /// <summary>
+        /// Represents a version ("RT_VERSION") resource
+        /// </summary>
         public class Version
         {
-            public Dictionary<string, Dictionary<string, string>> StringsByLanguage { get; }
+			/// <summary>
+			/// This contains a list of all name=value strings pairs sorted by language
+			/// </summary>
+			/// <value>List of all name=value strings pairs sorted by language.</value>
+			public Dictionary<string, Dictionary<string, string>> StringsByLanguage { get; }
 
             string fileVersion;
             string productVersion;
@@ -66,6 +77,10 @@ namespace libexeinfo
             DateTime fileDate;
             string name;
 
+            /// <summary>
+            /// File version.
+            /// </summary>
+            /// <value>The file version.</value>
             public string FileVersion
             {
                 get
@@ -74,6 +89,10 @@ namespace libexeinfo
                 }
             }
 
+            /// <summary>
+            /// Product version.
+            /// </summary>
+            /// <value>The product version.</value>
             public string ProductVersion
             {
                 get
@@ -82,6 +101,10 @@ namespace libexeinfo
                 }
             }
 
+            /// <summary>
+            /// File flags.
+            /// </summary>
+            /// <value>The file flags.</value>
             public VersionFileFlags FileFlags
             {
                 get
@@ -90,6 +113,10 @@ namespace libexeinfo
                 }
             }
 
+            /// <summary>
+            /// File operating system.
+            /// </summary>
+            /// <value>The file operating system.</value>
             public VersionFileOS FileOS
             {
                 get
@@ -98,6 +125,10 @@ namespace libexeinfo
                 }
             }
 
+            /// <summary>
+            /// File type.
+            /// </summary>
+            /// <value>The type of the file.</value>
             public VersionFileType FileType
             {
                 get
@@ -106,6 +137,10 @@ namespace libexeinfo
                 }
             }
 
+            /// <summary>
+            /// File subtype.
+            /// </summary>
+            /// <value>The file subtype.</value>
             public VersionFileSubtype FileSubtype
             {
                 get
@@ -114,6 +149,10 @@ namespace libexeinfo
                 }
             }
 
+            /// <summary>
+            /// File date.
+            /// </summary>
+            /// <value>The file date.</value>
             public DateTime FileDate
             {
                 get
@@ -122,11 +161,20 @@ namespace libexeinfo
                 }
             }
 
+            /// <summary>
+            /// Resource name
+            /// </summary>
+            /// <value>The resource name.</value>
             public string Name
             {
                 get { return name; }
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="T:libexeinfo.NE.Version"/> class.
+            /// </summary>
+            /// <param name="data">Resource data.</param>
+            /// <param name="resourceName">Resource name.</param>
             public Version(byte[] data, string resourceName = null)
             {
                 if (data == null || data.Length < 5)
@@ -235,7 +283,12 @@ namespace libexeinfo
                 }
             }
 
-            public static string TypeToString(VersionFileType type)
+			/// <summary>
+			/// Converts a <see cref="VersionFileType"/> to string
+			/// </summary>
+			/// <returns>The string.</returns>
+			/// <param name="type"><see cref="VersionFileType"/></param>
+			public static string TypeToString(VersionFileType type)
             {
                 switch (type)
                 {
@@ -258,7 +311,12 @@ namespace libexeinfo
                 }
             }
 
-            public static string DriverToString(VersionFileSubtype subtype)
+			/// <summary>
+			/// Converts a <see cref="VersionFileSubtype"/> to string, considering file type to be a driver
+			/// </summary>
+			/// <returns>The string.</returns>
+			/// <param name="subtype"><see cref="VersionFileSubtype"/></param>
+			public static string DriverToString(VersionFileSubtype subtype)
             {
                 switch (subtype)
                 {
@@ -291,7 +349,12 @@ namespace libexeinfo
                 }
             }
 
-            public static string FontToString(VersionFileSubtype subtype)
+			/// <summary>
+			/// Converts a <see cref="VersionFileSubtype"/> to string, considering file type to be a font
+			/// </summary>
+			/// <returns>The string.</returns>
+			/// <param name="subtype"><see cref="VersionFileSubtype"/></param>
+			public static string FontToString(VersionFileSubtype subtype)
             {
                 switch (subtype)
                 {
@@ -307,7 +370,13 @@ namespace libexeinfo
                         return string.Format("Unknown type code {0}", (uint)subtype);
                 }
             }
-            public static string OsToString(VersionFileOS os)
+
+			/// <summary>
+			/// Converts a <see cref="VersionFileOS"/> to string
+			/// </summary>
+			/// <returns>The string.</returns>
+			/// <param name="os"><see cref="VersionFileOS"/></param>
+			public static string OsToString(VersionFileOS os)
             {
                 switch (os)
                 {

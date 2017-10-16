@@ -29,6 +29,9 @@ namespace libexeinfo
 {
     public partial class NE
     {
+        /// <summary>
+        /// Program flags.
+        /// </summary>
         [Flags]
         public enum ProgramFlags : byte
         {
@@ -43,6 +46,9 @@ namespace libexeinfo
             i87 = 1 << 7
         }
 
+        /// <summary>
+        /// Target operating system.
+        /// </summary>
         public enum TargetOS : byte
         {
             Unknown = 0,
@@ -53,6 +59,9 @@ namespace libexeinfo
             Borland = 5
         }
 
+        /// <summary>
+        /// Application flags.
+        /// </summary>
         [Flags]
         public enum ApplicationFlags : byte
         {
@@ -63,6 +72,9 @@ namespace libexeinfo
             DLL = 1 << 7
         }
 
+        /// <summary>
+        /// OS/2 flags.
+        /// </summary>
         [Flags]
         public enum OS2Flags : byte
         {
@@ -72,6 +84,9 @@ namespace libexeinfo
             GangloadArea = 1 << 3,
         }
 
+        /// <summary>
+        /// Resource flags.
+        /// </summary>
         [Flags]
         public enum ResourceFlags : ushort
         {
@@ -80,6 +95,9 @@ namespace libexeinfo
             Preload = 0x40
         }
 
+        /// <summary>
+        /// Resource types.
+        /// </summary>
         public enum ResourceTypes : ushort
         {
             RT_ACCELERATOR = 9,
@@ -111,6 +129,9 @@ namespace libexeinfo
             RT_NEW = 0x2000,
         }
 
+        /// <summary>
+        /// Version file flags.
+        /// </summary>
         [Flags]
         public enum VersionFileFlags : uint
         {
@@ -122,6 +143,9 @@ namespace libexeinfo
             VS_FF_SPECIALBUILD = 0x00000020,
         }
 
+        /// <summary>
+        /// Version file operating system.
+        /// </summary>
         public enum VersionFileOS : uint
         {
             VOS_DOS = 0x00010000,
@@ -154,6 +178,9 @@ namespace libexeinfo
             VOS_OS232_PM32 = 0x00030003,
         }
 
+        /// <summary>
+        /// Version file type.
+        /// </summary>
         public enum VersionFileType : uint
         {
             VFT_APP = 0x00000001,
@@ -165,6 +192,9 @@ namespace libexeinfo
             VFT_VXD = 0x00000005,
         }
 
+        /// <summary>
+        /// Version file subtype.
+        /// </summary>
         public enum VersionFileSubtype : uint
         {
             VFT2_UNKNOWN = 0x00000000,

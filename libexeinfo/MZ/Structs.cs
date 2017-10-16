@@ -30,6 +30,9 @@ namespace libexeinfo
 {
     public partial class MZ
     {
+        /// <summary>
+        /// Header of a DOS relocatable executable
+        /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct MZHeader
         {
@@ -56,6 +59,9 @@ namespace libexeinfo
             public uint new_offset;
         }
 
+        /// <summary>
+        /// Entry in the relocation table
+        /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct RelocationTableEntry
         {

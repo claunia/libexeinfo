@@ -31,6 +31,9 @@ namespace libexeinfo
 {
     public partial class NE
     {
+        /// <summary>
+        /// Header for a Microsoft New Executable
+        /// </summary>
         [StructLayout(LayoutKind.Sequential/*, Pack = 2*/)]
         public struct NEHeader
         {
@@ -68,12 +71,18 @@ namespace libexeinfo
             public byte os_major;
         }
 
+        /// <summary>
+        /// Resource table
+        /// </summary>
         public struct ResourceTable
         {
             public ushort alignment_shift;
             public ResourceType[] types;
         }
 
+        /// <summary>
+        /// Resource type
+        /// </summary>
         public struct ResourceType
         {
             public ushort id;
@@ -85,6 +94,9 @@ namespace libexeinfo
             public string name;
         }
 
+        /// <summary>
+        /// Resource
+        /// </summary>
         public struct Resource
         {
             public ushort dataOffset;
@@ -98,6 +110,9 @@ namespace libexeinfo
             public byte[] data;
         }
 
+        /// <summary>
+        /// Node in a version resource
+        /// </summary>
         class VersionNode
         {
             public ushort cbNode;
@@ -107,6 +122,9 @@ namespace libexeinfo
             public VersionNode[] children;
         }
 
+        /// <summary>
+        /// Fixed file version info
+        /// </summary>
         [StructLayout(LayoutKind.Sequential)]
         public class FixedFileInfo
         {

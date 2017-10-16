@@ -29,6 +29,9 @@ namespace libexeinfo
 {
     public partial class MZ
     {
+        /// <summary>
+        /// MZ executable signature, "MZ"
+        /// </summary>
 		public const ushort Signature = 0x5A4D;
 	}
 }

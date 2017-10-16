@@ -29,15 +29,31 @@ using System.Runtime.InteropServices;
 
 namespace libexeinfo
 {
-    public partial class NE
+	/// <summary>
+	/// Represents a Microsoft New Executable
+	/// </summary>
+	public partial class NE
     {
+		/// <summary>
+		/// The <see cref="FileStream"/> that contains the executable represented by this instance
+		/// </summary>
 		public readonly FileStream BaseStream;
+		/// <summary>
+		/// Header for this executable
+		/// </summary>
 		public readonly NEHeader Header;
+		/// <summary>
+		/// If true this instance correctly represents a Microsoft New Executable
+		/// </summary>
 		public readonly bool IsNE;
 		public readonly MZ BaseExecutable;
         public readonly ResourceTable Resources;
         public readonly Version[] Versions;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:libexeinfo.NE"/> class.
+		/// </summary>
+		/// <param name="path">Executable path.</param>
 		public NE(string path)
 		{
             IsNE = false;
@@ -61,6 +77,10 @@ namespace libexeinfo
 			}
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:libexeinfo.NE"/> class.
+		/// </summary>
+		/// <param name="stream">Stream containing the executable.</param>
 		public NE(FileStream stream)
 		{
 			IsNE = false;
@@ -84,12 +104,12 @@ namespace libexeinfo
 			}
 		}
 
-		public bool Identify()
-		{
-			return IsNE;
-		}
-
-        public static bool Identify(string path)
+		/// <summary>
+		/// Identifies if the specified executable is a Microsoft New Executable
+		/// </summary>
+		/// <returns><c>true</c> if the specified executable is a Microsoft New Executable, <c>false</c> otherwise.</returns>
+		/// <param name="path">Executable path.</param>
+		public static bool Identify(string path)
 		{
 			FileStream BaseStream = File.Open(path, FileMode.Open, FileAccess.Read);
 			MZ BaseExecutable = new MZ(BaseStream);
@@ -110,8 +130,13 @@ namespace libexeinfo
 
             return false;
 		}
-		
-        public static bool Identify(FileStream stream)
+
+		/// <summary>
+		/// Identifies if the specified executable is a Microsoft New Executable
+		/// </summary>
+		/// <returns><c>true</c> if the specified executable is a Microsoft New Executable, <c>false</c> otherwise.</returns>
+		/// <param name="stream">Stream containing the executable.</param>
+		public static bool Identify(FileStream stream)
 		{
             FileStream BaseStream = stream;
 			MZ BaseExecutable = new MZ(BaseStream);

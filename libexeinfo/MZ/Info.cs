@@ -24,12 +24,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
 using System.Text;
+
 namespace libexeinfo
 {
-	public partial class MZ
+    public partial class MZ
 	{
+        /// <summary>
+        /// Gets a string with human readable information for a given MZ header
+        /// </summary>
+        /// <returns>Human readable information for given MZ header.</returns>
+        /// <param name="header">MZ executable header.</param>
 		public static string GetInfo(MZHeader header)
 		{
             StringBuilder sb = new StringBuilder();
@@ -53,7 +58,11 @@ namespace libexeinfo
             return sb.ToString();
 		}
 
-        public string GetInfo()
+		/// <summary>
+		/// Gets a string with human readable information for the MZ executable represented by this instance
+		/// </summary>
+		/// <returns>Human readable information for this instance.</returns>
+		public string GetInfo()
         {
             return GetInfo(Header);
         }

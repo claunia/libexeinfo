@@ -29,12 +29,28 @@ using System.Runtime.InteropServices;
 
 namespace libexeinfo
 {
+    /// <summary>
+    /// Represents a DOS relocatable executable
+    /// </summary>
     public partial class MZ
     {
+        /// <summary>
+        /// The <see cref="FileStream"/> that contains the executable represented by this instance
+        /// </summary>
         public readonly FileStream BaseStream;
+        /// <summary>
+        /// Header for this executable
+        /// </summary>
         public readonly MZHeader Header;
+        /// <summary>
+        /// If true this instance correctly represents a DOS relocatable executable
+        /// </summary>
         public readonly bool IsMZ;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:libexeinfo.MZ"/> class.
+        /// </summary>
+        /// <param name="path">Executable path.</param>
         public MZ(string path)
         {
 			byte[] buffer = new byte[Marshal.SizeOf(typeof(MZHeader))];
@@ -49,6 +65,10 @@ namespace libexeinfo
             IsMZ = Header.signature == Signature;
 		}
 		
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:libexeinfo.MZ"/> class.
+        /// </summary>
+        /// <param name="stream">Stream containing the executable.</param>
         public MZ(FileStream stream)
 		{
 			byte[] buffer = new byte[Marshal.SizeOf(typeof(MZHeader))];
@@ -63,18 +83,23 @@ namespace libexeinfo
 			IsMZ = Header.signature == Signature;
 		}
 
-        public bool Identify()
-        {
-            return IsMZ;
-        }
-
+        /// <summary>
+        /// Identifies if the specified executable is a DOS relocatable executable
+        /// </summary>
+        /// <returns><c>true</c> if the specified executable is a DOS relocatable executable, <c>false</c> otherwise.</returns>
+        /// <param name="path">Executable path.</param>
         public static bool Identify(string path)
         {
 			FileStream exeFs = File.Open(path, FileMode.Open, FileAccess.Read);
             return Identify(exeFs);
 		}
 
-        public static bool Identify(FileStream stream)
+		/// <summary>
+		/// Identifies if the specified executable is a DOS relocatable executable
+		/// </summary>
+		/// <returns><c>true</c> if the specified executable is a DOS relocatable executable, <c>false</c> otherwise.</returns>
+		/// <param name="stream">Stream containing the executable.</param>
+		public static bool Identify(FileStream stream)
 		{
 			byte[] buffer = new byte[Marshal.SizeOf(typeof(MZHeader))];
 
