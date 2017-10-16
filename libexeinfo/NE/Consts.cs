@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-namespace exeinfo.NE
+namespace libexeinfo.NE
 {
     public static class Consts
     {

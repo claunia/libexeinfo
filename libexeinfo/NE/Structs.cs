@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace exeinfo.NE
+namespace libexeinfo.NE
 {
 	[StructLayout(LayoutKind.Sequential/*, Pack = 2*/)]
 	public struct Header

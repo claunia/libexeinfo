@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace exeinfo.MZ
+namespace libexeinfo.MZ
 {
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct Header

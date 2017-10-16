@@ -34,18 +34,12 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="NE\Version.cs" />
-    <Compile Include="NE\Structs.cs" />
-    <Compile Include="NE\Enums.cs" />
-    <Compile Include="NE\Consts.cs" />
-    <Compile Include="NE\Info.cs" />
-    <Compile Include="MZ\Consts.cs" />
-    <Compile Include="MZ\Info.cs" />
-    <Compile Include="MZ\Structs.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="NE\" />
-    <Folder Include="MZ\" />
+    <ProjectReference Include="..\libexeinfo\libexeinfo.csproj">
+      <Project>{5DD22357-AEA1-4B1D-9CAB-F51873A3A5D0}</Project>
+      <Name>libexeinfo</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

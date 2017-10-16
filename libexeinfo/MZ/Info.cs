@@ -1,5 +1,5 @@
 ﻿using System;
-namespace exeinfo.MZ
+namespace libexeinfo.MZ
 {
     public class Info
     {

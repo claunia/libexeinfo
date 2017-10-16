@@ -9,8 +9,8 @@ namespace exeinfo
 {
     class MainClass
     {
-        static MZ.Header mzHdr;
-        static NE.Header neHdr;
+        static libexeinfo.MZ.Header mzHdr;
+        static libexeinfo.NE.Header neHdr;
 
         public static void Main(string[] args)
         {
@@ -25,53 +25,53 @@ namespace exeinfo
 
             bool recognized = false;
 
-            byte[] buffer = new byte[Marshal.SizeOf(typeof(MZ.Header))];
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(libexeinfo.MZ.Header))];
 
             exeFs.Read(buffer, 0, buffer.Length);
 			IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
 			Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-			mzHdr = (MZ.Header)Marshal.PtrToStructure(hdrPtr, typeof(MZ.Header));
+			mzHdr = (libexeinfo.MZ.Header)Marshal.PtrToStructure(hdrPtr, typeof(libexeinfo.MZ.Header));
 			Marshal.FreeHGlobal(hdrPtr);
 
-            if(mzHdr.signature == MZ.Consts.Signature)
+            if(mzHdr.signature == libexeinfo.MZ.Consts.Signature)
             {
                 recognized = true;
-                MZ.Info.PrintInfo(mzHdr);
+                libexeinfo.MZ.Info.PrintInfo(mzHdr);
 
                 if (mzHdr.new_offset < exeFs.Length)
                 {
                     exeFs.Seek(mzHdr.new_offset, SeekOrigin.Begin);
 
-                    buffer = new byte[Marshal.SizeOf(typeof(NE.Header))];
+                    buffer = new byte[Marshal.SizeOf(typeof(libexeinfo.NE.Header))];
 					exeFs.Read(buffer, 0, buffer.Length);
 					hdrPtr = Marshal.AllocHGlobal(buffer.Length);
 					Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-					neHdr = (NE.Header)Marshal.PtrToStructure(hdrPtr, typeof(NE.Header));
+					neHdr = (libexeinfo.NE.Header)Marshal.PtrToStructure(hdrPtr, typeof(libexeinfo.NE.Header));
 					Marshal.FreeHGlobal(hdrPtr);
 
-                    if (neHdr.signature == NE.Consts.Signature)
+                    if (neHdr.signature == libexeinfo.NE.Consts.Signature)
                     {
-                        NE.Info.PrintInfo(neHdr);
-                        NE.ResourceTable resources = NE.Info.GetResources(exeFs, mzHdr.new_offset, neHdr.resource_table_offset);
-                        foreach(NE.ResourceType type in resources.types)
+                        libexeinfo.NE.Info.PrintInfo(neHdr);
+                        libexeinfo.NE.ResourceTable resources = libexeinfo.NE.Info.GetResources(exeFs, mzHdr.new_offset, neHdr.resource_table_offset);
+                        foreach(libexeinfo.NE.ResourceType type in resources.types)
                         {
-                            if((type.id & 0x7FFF) == (int)NE.ResourceTypes.RT_VERSION)
+                            if((type.id & 0x7FFF) == (int)libexeinfo.NE.ResourceTypes.RT_VERSION)
                             {
-                                foreach(NE.Resource resource in type.resources)
+                                foreach(libexeinfo.NE.Resource resource in type.resources)
                                 {
-                                    NE.Version vers = new NE.Version(resource.data);
+                                    libexeinfo.NE.Version vers = new libexeinfo.NE.Version(resource.data);
                                     Console.WriteLine("\tVersion resource {0}:", resource.name);
                                     Console.WriteLine("\t\tFile version: {0}", vers.FileVersion);
                                     Console.WriteLine("\t\tProduct version: {0}", vers.ProductVersion);
-                                    Console.WriteLine("\t\tFile type: {0}", NE.Version.TypeToString(vers.FileType));
-                                    if(vers.FileType == NE.VersionFileType.VFT_DRV)
-                                        Console.WriteLine("\t\tFile subtype: {0} driver", NE.Version.DriverToString(vers.FileSubtype));
-									else if (vers.FileType == NE.VersionFileType.VFT_DRV)
-                                        Console.WriteLine("\t\tFile subtype: {0} font", NE.Version.FontToString(vers.FileSubtype));
+                                    Console.WriteLine("\t\tFile type: {0}", libexeinfo.NE.Version.TypeToString(vers.FileType));
+                                    if(vers.FileType == libexeinfo.NE.VersionFileType.VFT_DRV)
+                                        Console.WriteLine("\t\tFile subtype: {0} driver", libexeinfo.NE.Version.DriverToString(vers.FileSubtype));
+									else if (vers.FileType == libexeinfo.NE.VersionFileType.VFT_DRV)
+                                        Console.WriteLine("\t\tFile subtype: {0} font", libexeinfo.NE.Version.FontToString(vers.FileSubtype));
 									else if(vers.FileSubtype > 0)
 										Console.WriteLine("\t\tFile subtype: {0}", (uint)vers.FileSubtype);
 									Console.WriteLine("\t\tFile flags: {0}", vers.FileFlags);
-                                    Console.WriteLine("\t\tFile OS: {0}", NE.Version.OsToString(vers.FileOS));
+                                    Console.WriteLine("\t\tFile OS: {0}", libexeinfo.NE.Version.OsToString(vers.FileOS));
 
                                     foreach (KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
                                     {

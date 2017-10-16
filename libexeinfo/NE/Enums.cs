@@ -1,5 +1,5 @@
 ﻿using System;
-namespace exeinfo.NE
+namespace libexeinfo.NE
 {
     [Flags]
     public enum ProgramFlags : byte
