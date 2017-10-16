@@ -33,127 +33,129 @@ namespace libexeinfo
 {
 	public partial class NE
 	{
-		public static void PrintInfo(Header header)
+		public static string GetInfo(Header header)
 		{
-			Console.WriteLine("New Executable (NE):");
-			Console.WriteLine("\tFile's CRC: 0x{0:X8}", header.crc);
-			Console.WriteLine("\tLinker version: {0}.{1}", header.linker_major, header.linker_minor);
+            StringBuilder sb = new StringBuilder();
+			sb.AppendLine("New Executable (NE):");
+			sb.AppendFormat("\tFile's CRC: 0x{0:X8}", header.crc).AppendLine();
+			sb.AppendFormat("\tLinker version: {0}.{1}", header.linker_major, header.linker_minor).AppendLine();
 			if (header.program_flags.HasFlag(ProgramFlags.SingleDGroup) && !header.program_flags.HasFlag(ProgramFlags.MultipleDGroup))
-				Console.WriteLine("\tApplication uses a single shared DGroup");
+				sb.AppendLine("\tApplication uses a single shared DGroup");
 			else if (!header.program_flags.HasFlag(ProgramFlags.SingleDGroup) && header.program_flags.HasFlag(ProgramFlags.MultipleDGroup))
-				Console.WriteLine("\tApplication uses a multiple DGroup");
+				sb.AppendLine("\tApplication uses a multiple DGroup");
 			else if (header.program_flags.HasFlag(ProgramFlags.SingleDGroup) && header.program_flags.HasFlag(ProgramFlags.MultipleDGroup))
-				Console.WriteLine("\tApplication indicates an incorrect DGroup value");
+				sb.AppendLine("\tApplication indicates an incorrect DGroup value");
 			else if (!header.program_flags.HasFlag(ProgramFlags.SingleDGroup) && !header.program_flags.HasFlag(ProgramFlags.MultipleDGroup))
-				Console.WriteLine("\tApplication does not use DGroup");
+				sb.AppendLine("\tApplication does not use DGroup");
 			if (header.program_flags.HasFlag(ProgramFlags.GlobalInit))
-				Console.WriteLine("\tApplication uses global initialization");
+				sb.AppendLine("\tApplication uses global initialization");
 			if (header.program_flags.HasFlag(ProgramFlags.ProtectedMode))
-				Console.WriteLine("\tApplication uses protected mode");
+				sb.AppendLine("\tApplication uses protected mode");
 			if (header.program_flags.HasFlag(ProgramFlags.i86))
-				Console.WriteLine("\tApplication uses 8086 instructions");
+				sb.AppendLine("\tApplication uses 8086 instructions");
 			if (header.program_flags.HasFlag(ProgramFlags.i286))
-				Console.WriteLine("\tApplication uses 80286 instructions");
+				sb.AppendLine("\tApplication uses 80286 instructions");
 			if (header.program_flags.HasFlag(ProgramFlags.i386))
-				Console.WriteLine("\tApplication uses 80386 instructions");
+				sb.AppendLine("\tApplication uses 80386 instructions");
 			if (header.program_flags.HasFlag(ProgramFlags.i87))
-				Console.WriteLine("\tApplication uses floating point instructions");
+				sb.AppendLine("\tApplication uses floating point instructions");
 
 			if (header.target_os == TargetOS.OS2)
 			{
-				Console.WriteLine("\tOS/2 application");
-				Console.WriteLine("\tApplication requires OS/2 {0}.{1} to run", header.os_major, header.os_minor);
+				sb.AppendLine("\tOS/2 application");
+				sb.AppendFormat("\tApplication requires OS/2 {0}.{1} to run", header.os_major, header.os_minor).AppendLine();
 				if (header.application_flags.HasFlag(ApplicationFlags.FullScreen) && !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication is full screen, unaware of Presentation Manager");
+					sb.AppendLine("\tApplication is full screen, unaware of Presentation Manager");
 				else if (!header.application_flags.HasFlag(ApplicationFlags.FullScreen) && header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication is aware of Presentation Manager, but doesn't use it");
+					sb.AppendLine("\tApplication is aware of Presentation Manager, but doesn't use it");
 				else if (header.application_flags.HasFlag(ApplicationFlags.FullScreen) && header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication uses Presentation Manager");
+					sb.AppendLine("\tApplication uses Presentation Manager");
 				if (header.os2_flags.HasFlag(OS2Flags.LongFilename))
-					Console.WriteLine("\tApplication supports long filenames");
+					sb.AppendLine("\tApplication supports long filenames");
 				if (header.os2_flags.HasFlag(OS2Flags.ProtectedMode2))
-					Console.WriteLine("\tApplication uses OS/2 2.x protected mode");
+					sb.AppendLine("\tApplication uses OS/2 2.x protected mode");
 				if (header.os2_flags.HasFlag(OS2Flags.ProportionalFonts))
-					Console.WriteLine("\tApplication uses OS/2 2.x proportional fonts");
+					sb.AppendLine("\tApplication uses OS/2 2.x proportional fonts");
 				if (header.os2_flags.HasFlag(OS2Flags.GangloadArea))
-					Console.WriteLine("\tGangload area starts at {0} an runs for {1} bytes", header.return_thunks_offset, header.segment_reference_thunks);
+					sb.AppendFormat("\tGangload area starts at {0} an runs for {1} bytes", header.return_thunks_offset, header.segment_reference_thunks).AppendLine();
 				else
 				{
-					Console.WriteLine("\tReturn thunks are at: {0}", header.return_thunks_offset);
-					Console.WriteLine("\tSegment reference thunks are at: {0}", header.segment_reference_thunks);
+					sb.AppendFormat("\tReturn thunks are at: {0}", header.return_thunks_offset).AppendLine();
+					sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks).AppendLine();
 				}
 			}
 			else if (header.target_os == TargetOS.Windows || header.target_os == TargetOS.Win32)
 			{
 				if (header.target_os == TargetOS.Windows)
-					Console.WriteLine("\t16-bit Windows application");
+					sb.AppendLine("\t16-bit Windows application");
 				else if (header.target_os == TargetOS.Win32)
-					Console.WriteLine("\t32-bit Windows application");
-				Console.WriteLine("\tApplication requires Windows {0}.{1} to run", header.os_major, header.os_minor);
+					sb.AppendLine("\t32-bit Windows application");
+				sb.AppendFormat("\tApplication requires Windows {0}.{1} to run", header.os_major, header.os_minor).AppendLine();
 				if (header.application_flags.HasFlag(ApplicationFlags.FullScreen) && !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication is full screen, unaware of Windows");
+					sb.AppendLine("\tApplication is full screen, unaware of Windows");
 				else if (!header.application_flags.HasFlag(ApplicationFlags.FullScreen) && header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication is aware of Windows, but doesn't use it");
+					sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
 				else if (header.application_flags.HasFlag(ApplicationFlags.FullScreen) && header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication uses Windows");
-				Console.WriteLine("\tReturn thunks are at: {0}", header.return_thunks_offset);
-				Console.WriteLine("\tSegment reference thunks are at: {0}", header.segment_reference_thunks);
+					sb.AppendLine("\tApplication uses Windows");
+				sb.AppendFormat("\tReturn thunks are at: {0}", header.return_thunks_offset).AppendLine();
+				sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks).AppendLine();
 			}
 			else if (header.target_os == TargetOS.DOS)
 			{
-				Console.WriteLine("\tDOS application");
-				Console.WriteLine("\tApplication requires DOS {0}.{1} to run", header.os_major, header.os_minor);
+				sb.AppendLine("\tDOS application");
+				sb.AppendFormat("\tApplication requires DOS {0}.{1} to run", header.os_major, header.os_minor).AppendLine();
 				if (header.application_flags.HasFlag(ApplicationFlags.FullScreen) && !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication is full screen, unaware of Windows");
+					sb.AppendLine("\tApplication is full screen, unaware of Windows");
 				else if (!header.application_flags.HasFlag(ApplicationFlags.FullScreen) && header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication is aware of Windows, but doesn't use it");
+					sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
 				else if (header.application_flags.HasFlag(ApplicationFlags.FullScreen) && header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication uses Windows");
-				Console.WriteLine("\tReturn thunks are at: {0}", header.return_thunks_offset);
-				Console.WriteLine("\tSegment reference thunks are at: {0}", header.segment_reference_thunks);
+					sb.AppendLine("\tApplication uses Windows");
+				sb.AppendFormat("\tReturn thunks are at: {0}", header.return_thunks_offset).AppendLine();
+				sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks).AppendLine();
 			}
 			else if (header.target_os == TargetOS.Borland)
 			{
-				Console.WriteLine("\tBorland Operating System Services application");
-				Console.WriteLine("\tApplication requires DOS {0}.{1} to run", header.os_major, header.os_minor);
+				sb.AppendLine("\tBorland Operating System Services application");
+				sb.AppendFormat("\tApplication requires DOS {0}.{1} to run", header.os_major, header.os_minor).AppendLine();
 				if (header.application_flags.HasFlag(ApplicationFlags.FullScreen) && !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication is full screen, unaware of Windows");
+					sb.AppendLine("\tApplication is full screen, unaware of Windows");
 				else if (!header.application_flags.HasFlag(ApplicationFlags.FullScreen) && header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication is aware of Windows, but doesn't use it");
+					sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
 				else if (header.application_flags.HasFlag(ApplicationFlags.FullScreen) && header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-					Console.WriteLine("\tApplication uses Windows");
-				Console.WriteLine("\tReturn thunks are at: {0}", header.return_thunks_offset);
-				Console.WriteLine("\tSegment reference thunks are at: {0}", header.segment_reference_thunks);
+					sb.AppendLine("\tApplication uses Windows");
+				sb.AppendFormat("\tReturn thunks are at: {0}", header.return_thunks_offset).AppendLine();
+				sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks).AppendLine();
 			}
 			else
 			{
-				Console.WriteLine("\tApplication for unknown OS {0}", (byte)header.target_os);
-				Console.WriteLine("\tApplication requires OS {0}.{1} to run", header.os_major, header.os_minor);
-				Console.WriteLine("\tReturn thunks are at: {0}", header.return_thunks_offset);
-				Console.WriteLine("\tSegment reference thunks are at: {0}", header.segment_reference_thunks);
+				sb.AppendFormat("\tApplication for unknown OS {0}", (byte)header.target_os).AppendLine();
+				sb.AppendFormat("\tApplication requires OS {0}.{1} to run", header.os_major, header.os_minor).AppendLine();
+				sb.AppendFormat("\tReturn thunks are at: {0}", header.return_thunks_offset).AppendLine();
+				sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks).AppendLine();
 			}
 
 			if (header.application_flags.HasFlag(ApplicationFlags.Errors))
-				Console.WriteLine("\tExecutable has errors");
+				sb.AppendLine("\tExecutable has errors");
 			if (header.application_flags.HasFlag(ApplicationFlags.NonConforming))
-				Console.WriteLine("\tExecutable is non conforming");
+				sb.AppendLine("\tExecutable is non conforming");
 			if (header.application_flags.HasFlag(ApplicationFlags.DLL))
-				Console.WriteLine("\tExecutable is a dynamic library or a driver");
+				sb.AppendLine("\tExecutable is a dynamic library or a driver");
 
-			Console.WriteLine("\tMinimum code swap area: {0} bytes", header.minimum_swap_area);
-			Console.WriteLine("\tFile alignment shift: {0}", 512 << header.alignment_shift);
-			Console.WriteLine("\tInitial local heap should be {0} bytes", header.initial_heap);
-			Console.WriteLine("\tInitial stack size should be {0} bytes", header.initial_stack);
-			Console.WriteLine("\tCS:IP entry point: {0:X4}:{1:X4}", (header.entry_point & 0xFFFF0000) >> 16, header.entry_point & 0xFFFF);
+			sb.AppendFormat("\tMinimum code swap area: {0} bytes", header.minimum_swap_area).AppendLine();
+			sb.AppendFormat("\tFile alignment shift: {0}", 512 << header.alignment_shift).AppendLine();
+			sb.AppendFormat("\tInitial local heap should be {0} bytes", header.initial_heap).AppendLine();
+			sb.AppendFormat("\tInitial stack size should be {0} bytes", header.initial_stack).AppendLine();
+			sb.AppendFormat("\tCS:IP entry point: {0:X4}:{1:X4}", (header.entry_point & 0xFFFF0000) >> 16, header.entry_point & 0xFFFF).AppendLine();
 			if (!header.application_flags.HasFlag(ApplicationFlags.DLL))
-				Console.WriteLine("\tSS:SP initial stack pointer: {0:X4}:{1:X4}", (header.stack_pointer & 0xFFFF0000) >> 16, header.stack_pointer & 0xFFFF);
-			Console.WriteLine("\tEntry table starts at {0} and runs for {1} bytes", header.entry_table_offset, header.entry_table_length);
-			Console.WriteLine("\tSegment table starts at {0} and contain {1} segments", header.segment_table_offset, header.segment_count);
-			Console.WriteLine("\tModule reference table starts at {0} and contain {1} references", header.module_reference_offset, header.reference_count);
-			Console.WriteLine("\tNon-resident names table starts at {0} and runs for {1} bytes", header.nonresident_names_offset, header.nonresident_table_size);
-			Console.WriteLine("\tResources table starts at {0} and contains {1} entries", header.resource_table_offset, header.resource_entries);
-			Console.WriteLine("\tResident names table starts at {0}", header.resident_names_offset);
-			Console.WriteLine("\tImported names table starts at {0}", header.imported_names_offset);
+				sb.AppendFormat("\tSS:SP initial stack pointer: {0:X4}:{1:X4}", (header.stack_pointer & 0xFFFF0000) >> 16, header.stack_pointer & 0xFFFF).AppendLine();
+			sb.AppendFormat("\tEntry table starts at {0} and runs for {1} bytes", header.entry_table_offset, header.entry_table_length).AppendLine();
+			sb.AppendFormat("\tSegment table starts at {0} and contain {1} segments", header.segment_table_offset, header.segment_count).AppendLine();
+			sb.AppendFormat("\tModule reference table starts at {0} and contain {1} references", header.module_reference_offset, header.reference_count).AppendLine();
+			sb.AppendFormat("\tNon-resident names table starts at {0} and runs for {1} bytes", header.nonresident_names_offset, header.nonresident_table_size).AppendLine();
+			sb.AppendFormat("\tResources table starts at {0} and contains {1} entries", header.resource_table_offset, header.resource_entries).AppendLine();
+			sb.AppendFormat("\tResident names table starts at {0}", header.resident_names_offset).AppendLine();
+			sb.AppendFormat("\tImported names table starts at {0}", header.imported_names_offset).AppendLine();
+            return sb.ToString();
 		}
 
 		public static ResourceTable GetResources(FileStream exeFs, uint neStart, ushort tableOff)

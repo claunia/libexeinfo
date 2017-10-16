@@ -62,7 +62,7 @@ namespace exeinfo
             if(mzHdr.signature == libexeinfo.MZ.Signature)
             {
                 recognized = true;
-                libexeinfo.MZ.PrintInfo(mzHdr);
+                Console.Write(libexeinfo.MZ.GetInfo(mzHdr));
 
                 if (mzHdr.new_offset < exeFs.Length)
                 {
@@ -77,7 +77,7 @@ namespace exeinfo
 
                     if (neHdr.signature == libexeinfo.NE.Signature)
                     {
-                        libexeinfo.NE.PrintInfo(neHdr);
+                        Console.Write(libexeinfo.NE.GetInfo(neHdr));
                         libexeinfo.NE.ResourceTable resources = libexeinfo.NE.GetResources(exeFs, mzHdr.new_offset, neHdr.resource_table_offset);
                         foreach(libexeinfo.NE.ResourceType type in resources.types)
                         {

@@ -25,29 +25,32 @@
 // THE SOFTWARE.
 
 using System;
+using System.Text;
 namespace libexeinfo
 {
 	public partial class MZ
 	{
-		public static void PrintInfo(Header header)
+		public static string GetInfo(Header header)
 		{
-			Console.WriteLine("DOS MZ executable:");
-			Console.WriteLine("\tBlocks in file: {0}", header.blocks_in_file);
-			Console.WriteLine("\t{0} bytes used in last block", header.bytes_in_last_block == 0 ? 512 : header.bytes_in_last_block);
-			Console.WriteLine("\t{0} relocations present after the header", header.num_relocs);
-			Console.WriteLine("\t{0} paragraphs in header", header.header_paragraphs);
-			Console.WriteLine("\t{0} paragraphs of additional memory required", header.min_extra_paragraphs);
-			Console.WriteLine("\t{0} paragraphs of additional memory requested", header.max_extra_paragraphs);
-			Console.WriteLine("\tSegment address for SS: {0:X4}h", header.ss);
-			Console.WriteLine("\tInitial value of SP: {0:X4}h", header.sp);
-			Console.WriteLine("\tInitial value of IP: {0:X4}h", header.ip);
-			Console.WriteLine("\tInitial value of CS: {0:X4}h", header.cs);
-			Console.WriteLine("\tOffset to relocation table: {0}", header.reloc_table_offset);
-			Console.WriteLine("\tFile contains {0} overlays", header.overlay_number);
-			Console.WriteLine("\tFile checksum: 0x{0:X4}", header.checksum);
-			Console.WriteLine("\tOEM ID: {0}", header.oem_id);
-			Console.WriteLine("\tOEM information: 0x{0:X4}", header.oem_info);
-			Console.WriteLine("\tOffset to new header: {0}", header.new_offset);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("DOS MZ executable:");
+            sb.AppendFormat("\tBlocks in file: {0}", header.blocks_in_file).AppendLine();
+			sb.AppendFormat("\t{0} bytes used in last block", header.bytes_in_last_block == 0 ? 512 : header.bytes_in_last_block).AppendLine();
+			sb.AppendFormat("\t{0} relocations present after the header", header.num_relocs).AppendLine();
+			sb.AppendFormat("\t{0} paragraphs in header", header.header_paragraphs).AppendLine();
+			sb.AppendFormat("\t{0} paragraphs of additional memory required", header.min_extra_paragraphs).AppendLine();
+			sb.AppendFormat("\t{0} paragraphs of additional memory requested", header.max_extra_paragraphs).AppendLine();
+			sb.AppendFormat("\tSegment address for SS: {0:X4}h", header.ss).AppendLine();
+			sb.AppendFormat("\tInitial value of SP: {0:X4}h", header.sp).AppendLine();
+			sb.AppendFormat("\tInitial value of IP: {0:X4}h", header.ip).AppendLine();
+			sb.AppendFormat("\tInitial value of CS: {0:X4}h", header.cs).AppendLine();
+			sb.AppendFormat("\tOffset to relocation table: {0}", header.reloc_table_offset).AppendLine();
+			sb.AppendFormat("\tFile contains {0} overlays", header.overlay_number).AppendLine();
+			sb.AppendFormat("\tFile checksum: 0x{0:X4}", header.checksum).AppendLine();
+			sb.AppendFormat("\tOEM ID: {0}", header.oem_id).AppendLine();
+			sb.AppendFormat("\tOEM information: 0x{0:X4}", header.oem_info).AppendLine();
+			sb.AppendFormat("\tOffset to new header: {0}", header.new_offset).AppendLine();
+            return sb.ToString();
 		}
 	}
 }
