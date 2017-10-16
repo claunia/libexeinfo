@@ -1,7 +1,7 @@
 ﻿using System;
-namespace libexeinfo.MZ
+namespace libexeinfo
 {
-    public class Consts
+    public partial class MZ
     {
 		public const ushort Signature = 0x5A4D;
 	}

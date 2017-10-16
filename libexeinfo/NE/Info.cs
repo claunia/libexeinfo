@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace libexeinfo.NE
+namespace libexeinfo
 {
-    public class Info
-    {
+	public partial class NE
+	{
 		public static void PrintInfo(Header header)
 		{
 			Console.WriteLine("New Executable (NE):");
@@ -190,7 +190,7 @@ namespace libexeinfo.NE
 					table.types[t].name = Encoding.ASCII.GetString(str);
 				}
 				else
-					table.types[t].name = Consts.IdToName(table.types[t].id);
+					table.types[t].name = IdToName(table.types[t].id);
 
 				for (int r = 0; r < table.types[t].resources.Length; r++)
 				{

@@ -1,8 +1,8 @@
 ﻿using System;
-namespace libexeinfo.MZ
+namespace libexeinfo
 {
-    public class Info
-    {
+	public partial class MZ
+	{
 		public static void PrintInfo(Header header)
 		{
 			Console.WriteLine("DOS MZ executable:");

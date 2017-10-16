@@ -33,10 +33,10 @@ namespace exeinfo
 			mzHdr = (libexeinfo.MZ.Header)Marshal.PtrToStructure(hdrPtr, typeof(libexeinfo.MZ.Header));
 			Marshal.FreeHGlobal(hdrPtr);
 
-            if(mzHdr.signature == libexeinfo.MZ.Consts.Signature)
+            if(mzHdr.signature == libexeinfo.MZ.Signature)
             {
                 recognized = true;
-                libexeinfo.MZ.Info.PrintInfo(mzHdr);
+                libexeinfo.MZ.PrintInfo(mzHdr);
 
                 if (mzHdr.new_offset < exeFs.Length)
                 {
@@ -49,10 +49,10 @@ namespace exeinfo
 					neHdr = (libexeinfo.NE.Header)Marshal.PtrToStructure(hdrPtr, typeof(libexeinfo.NE.Header));
 					Marshal.FreeHGlobal(hdrPtr);
 
-                    if (neHdr.signature == libexeinfo.NE.Consts.Signature)
+                    if (neHdr.signature == libexeinfo.NE.Signature)
                     {
-                        libexeinfo.NE.Info.PrintInfo(neHdr);
-                        libexeinfo.NE.ResourceTable resources = libexeinfo.NE.Info.GetResources(exeFs, mzHdr.new_offset, neHdr.resource_table_offset);
+                        libexeinfo.NE.PrintInfo(neHdr);
+                        libexeinfo.NE.ResourceTable resources = libexeinfo.NE.GetResources(exeFs, mzHdr.new_offset, neHdr.resource_table_offset);
                         foreach(libexeinfo.NE.ResourceType type in resources.types)
                         {
                             if((type.id & 0x7FFF) == (int)libexeinfo.NE.ResourceTypes.RT_VERSION)

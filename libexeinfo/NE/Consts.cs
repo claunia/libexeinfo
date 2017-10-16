@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
-namespace libexeinfo.NE
+namespace libexeinfo
 {
-    public static class Consts
+    public partial class NE
     {
 		public const ushort Signature = 0x454E;
-        public static readonly string FixedFileInfo = "VS_VERSION_INFO";
+        public static readonly string FixedFileInfoSig = "VS_VERSION_INFO";
         public static readonly string StringFileInfo = "StringFileInfo";
 
 		public static string IdToName(ushort id)
