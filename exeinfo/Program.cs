@@ -51,6 +51,7 @@ namespace exeinfo
 
             MZ mzExe = new MZ(exeFs);
             NE neExe = new NE(exeFs);
+            AtariST stExe = new AtariST(exeFs);
 
             if (mzExe.IsMZ)
             {
@@ -110,7 +111,13 @@ namespace exeinfo
                 }
             }
 
-            if (!recognized)
+            if (stExe.IsAtariST)
+			{
+				recognized = true;
+                Console.Write(stExe.GetInfo());
+			}
+
+			if (!recognized)
                 Console.WriteLine("Executable format not recognized");
         }
     }

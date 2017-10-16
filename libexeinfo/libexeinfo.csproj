@@ -54,6 +54,11 @@
     <Compile Include="NE\Version.cs" />
     <Compile Include="MZ\MZ.cs" />
     <Compile Include="NE\NE.cs" />
+    <Compile Include="BigEndianMarshal.cs" />
+    <Compile Include="AtariST\Structs.cs" />
+    <Compile Include="AtariST\Consts.cs" />
+    <Compile Include="AtariST\AtariST.cs" />
+    <Compile Include="AtariST\Info.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -67,6 +72,7 @@
   <ItemGroup>
     <Folder Include="MZ\" />
     <Folder Include="NE\" />
+    <Folder Include="AtariST\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\NuGet.Build.Packaging.0.1.276\build\NuGet.Build.Packaging.targets" Condition="Exists('..\packages\NuGet.Build.Packaging.0.1.276\build\NuGet.Build.Packaging.targets')" />
