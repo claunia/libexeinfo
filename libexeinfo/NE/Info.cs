@@ -63,7 +63,10 @@ namespace libexeinfo
 			if (header.target_os == TargetOS.OS2)
 			{
 				sb.AppendLine("\tOS/2 application");
-				sb.AppendFormat("\tApplication requires OS/2 {0}.{1} to run", header.os_major, header.os_minor).AppendLine();
+                if(header.os_major > 0)
+				    sb.AppendFormat("\tApplication requires OS/2 {0}.{1} to run", header.os_major, header.os_minor).AppendLine();
+                else
+                    sb.AppendLine("\tApplication requires OS/2 1.0 to run");
 				if (header.application_flags.HasFlag(ApplicationFlags.FullScreen) && !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
 					sb.AppendLine("\tApplication is full screen, unaware of Presentation Manager");
 				else if (!header.application_flags.HasFlag(ApplicationFlags.FullScreen) && header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
@@ -84,13 +87,18 @@ namespace libexeinfo
 					sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks).AppendLine();
 				}
 			}
-			else if (header.target_os == TargetOS.Windows || header.target_os == TargetOS.Win32)
+			else if (header.target_os == TargetOS.Windows || header.target_os == TargetOS.Win32 || header.target_os == TargetOS.Unknown)
 			{
-				if (header.target_os == TargetOS.Windows)
+				if (header.target_os == TargetOS.Windows || header.target_os == TargetOS.Unknown)
 					sb.AppendLine("\t16-bit Windows application");
 				else if (header.target_os == TargetOS.Win32)
 					sb.AppendLine("\t32-bit Windows application");
-				sb.AppendFormat("\tApplication requires Windows {0}.{1} to run", header.os_major, header.os_minor).AppendLine();
+                if(header.os_major > 0)
+				    sb.AppendFormat("\tApplication requires Windows {0}.{1} to run", header.os_major, header.os_minor).AppendLine();
+                else if(header.target_os == TargetOS.Windows)
+                    sb.AppendLine("\tApplication requires Windows 2.0 to run");
+				else if (header.target_os == TargetOS.Unknown)
+					sb.AppendLine("\tApplication requires Windows 1.0 to run");
 				if (header.application_flags.HasFlag(ApplicationFlags.FullScreen) && !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
 					sb.AppendLine("\tApplication is full screen, unaware of Windows");
 				else if (!header.application_flags.HasFlag(ApplicationFlags.FullScreen) && header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
