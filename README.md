@@ -1,4 +1,4 @@
-﻿libexeinfo v0.1
+﻿libexeinfo v0.2
 ===============
 
 Copyright © 2017 Natalia Portillo <claunia@claunia.com>
