@@ -64,6 +64,19 @@
     <Compile Include="LX\Consts.cs" />
     <Compile Include="LX\Info.cs" />
     <Compile Include="LX\LX.cs" />
+    <Compile Include="PE\Info.cs" />
+    <Compile Include="PE\Consts.cs" />
+    <Compile Include="PE\Enums.cs" />
+    <Compile Include="PE\PE.cs" />
+    <Compile Include="PE\Structs.cs" />
+    <Compile Include="COFF\Consts.cs" />
+    <Compile Include="COFF\Enums.cs" />
+    <Compile Include="COFF\Structs.cs" />
+    <Compile Include="COFF\Info.cs" />
+    <Compile Include="COFF\COFF.cs" />
+    <Compile Include="COFF\MachineTypes.cs" />
+    <Compile Include="Swapping.cs" />
+    <Compile Include="PE\Subsystems.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -79,6 +92,8 @@
     <Folder Include="NE\" />
     <Folder Include="AtariST\" />
     <Folder Include="LX\" />
+    <Folder Include="PE\" />
+    <Folder Include="COFF\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\NuGet.Build.Packaging.0.1.276\build\NuGet.Build.Packaging.targets" Condition="Exists('..\packages\NuGet.Build.Packaging.0.1.276\build\NuGet.Build.Packaging.targets')" />

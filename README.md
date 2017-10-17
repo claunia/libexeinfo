@@ -9,7 +9,9 @@ It is also accompanied by a command line application as an example of usage.
 Supported executable formats
 ============================
 * Atari ST executable
-* MZ (aka DOS relocatable executable)
-* NE (Microsoft New Executable)
+* Common Object File Format (COFF)
 * LE (Microsoft Linear Executable)
 * LX (IBM Linear eXecutable)
+* MZ (aka DOS relocatable executable)
+* NE (Microsoft New Executable)
+* PE (Microsoft Portable Executable)

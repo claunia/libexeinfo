@@ -53,8 +53,10 @@ namespace exeinfo
             NE neExe = new NE(exeFs);
             AtariST stExe = new AtariST(exeFs);
             LX lxExe = new LX(exeFs);
+			COFF coffExe = new COFF(exeFs);
+			PE peExe = new PE(exeFs);
 
-            if (mzExe.IsMZ)
+			if (mzExe.IsMZ)
             {
                 recognized = true;
                 Console.Write(mzExe.GetInfo());
@@ -122,6 +124,18 @@ namespace exeinfo
 			{
 				recognized = true;
 				Console.Write(lxExe.GetInfo());
+			}
+
+            if (coffExe.IsCOFF)
+			{
+				recognized = true;
+				Console.Write(coffExe.GetInfo());
+			}
+
+            if (peExe.IsPE)
+			{
+				recognized = true;
+				Console.Write(peExe.GetInfo());
 			}
 
 			if (!recognized)
