@@ -31,7 +31,9 @@ namespace libexeinfo
 {
     public partial class COFF
     {
-        public static string GetInfo(COFFHeader header)
+        public string Information => GetInfo(Header);
+
+        internal static string GetInfo(COFFHeader header)
         {
             DateTime      epoch = new DateTime(1970, 1, 1);
             StringBuilder sb    = new StringBuilder();
@@ -63,9 +65,9 @@ namespace libexeinfo
 
             if(header.characteristics.HasFlag(Characteristics.IMAGE_FILE_RELOCS_STRIPPED))
                 sb.AppendLine("\tExecutable contains no relocations.");
-            if(header.characteristics.HasFlag(Characteristics.IMAGE_FILE_EXECUTABLE_IMAGE))
-                sb.AppendLine("\tExecutable is valid.");
-            else sb.AppendLine("\tExecutable is invalid, contains errors or has not been linked correctly.");
+            sb.AppendLine(header.characteristics.HasFlag(Characteristics.IMAGE_FILE_EXECUTABLE_IMAGE)
+                              ? "\tExecutable is valid."
+                              : "\tExecutable is invalid, contains errors or has not been linked correctly.");
             if(!header.characteristics.HasFlag(Characteristics.IMAGE_FILE_LINE_NUMS_STRIPPED))
                 sb.AppendLine("\tExecutable contains line numbers.");
             if(!header.characteristics.HasFlag(Characteristics.IMAGE_FILE_LOCAL_SYMS_STRIPPED))
@@ -113,11 +115,6 @@ namespace libexeinfo
             if(header.optionalHeader.magic != PE.PE32Plus)
                 sb.AppendFormat("\tData starts at {0}", header.optionalHeader.baseOfData).AppendLine();
             return sb.ToString();
-        }
-
-        public string GetInfo()
-        {
-            return GetInfo(Header);
         }
     }
 }

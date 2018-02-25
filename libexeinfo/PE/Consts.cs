@@ -28,10 +28,10 @@ namespace libexeinfo
 {
     public partial class PE
     {
-	    /// <summary>
-	    ///     Portable Executable signature, "PE\0\0"
-	    /// </summary>
-	    public const ushort Signature = 0x00004550;
+        /// <summary>
+        ///     Portable Executable signature, "PE\0\0"
+        /// </summary>
+        public const ushort Signature = 0x00004550;
         public const ushort PE32      = COFF.ZMAGIC;
         public const ushort PE32Plus  = 0x20b;
     }

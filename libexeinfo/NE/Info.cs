@@ -33,6 +33,8 @@ namespace libexeinfo
 {
     public partial class NE
     {
+        public string Information => GetInfo(Header);
+
         public static string GetInfo(NEHeader header)
         {
             StringBuilder sb = new StringBuilder();
@@ -192,12 +194,7 @@ namespace libexeinfo
             return sb.ToString();
         }
 
-        public string GetInfo()
-        {
-            return GetInfo(Header);
-        }
-
-        public static ResourceTable GetResources(FileStream stream, uint neStart, ushort tableOff)
+        public static ResourceTable GetResources(Stream stream, uint neStart, ushort tableOff)
         {
             long   oldPosition = stream.Position;
             byte[] DW          = new byte[2];

@@ -30,164 +30,148 @@ using System.Runtime.InteropServices;
 
 namespace libexeinfo
 {
-	/// <summary>
-	///     Represents a Microsoft Portable Executable
-	/// </summary>
-	public partial class PE
+    /// <summary>
+    ///     Represents a Microsoft Portable Executable
+    /// </summary>
+    public partial class PE : IExecutable
     {
-        public readonly MZ BaseExecutable;
-	    /// <summary>
-	    ///     The <see cref="FileStream" /> that contains the executable represented by this instance
-	    /// </summary>
-	    public readonly FileStream BaseStream;
-	    /// <summary>
-	    ///     Header for this executable
-	    /// </summary>
-	    public readonly PEHeader Header;
-	    /// <summary>
-	    ///     If true this instance correctly represents a Microsoft Portable Executable
-	    /// </summary>
-	    public readonly bool            IsPE;
-        public readonly WindowsHeader64 WinHeader;
+        MZ BaseExecutable;
+        /// <summary>
+        ///     Header for this executable
+        /// </summary>
+        PEHeader        Header;
+        WindowsHeader64 WinHeader;
 
-	    /// <summary>
-	    ///     Initializes a new instance of the <see cref="T:libexeinfo.PE" /> class.
-	    /// </summary>
-	    /// <param name="path">Executable path.</param>
-	    public PE(string path)
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="T:libexeinfo.PE" /> class.
+        /// </summary>
+        /// <param name="path">Executable path.</param>
+        public PE(string path)
         {
-            IsPE           = false;
-            BaseStream     = File.Open(path, FileMode.Open, FileAccess.Read);
-            BaseExecutable = new MZ(BaseStream);
-            if(BaseExecutable.IsMZ)
-                if(BaseExecutable.Header.new_offset < BaseStream.Length)
-                {
-                    BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
-                    byte[] buffer = new byte[Marshal.SizeOf(typeof(PEHeader))];
-                    BaseStream.Read(buffer, 0, buffer.Length);
-                    IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-                    Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-                    Header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
-                    Marshal.FreeHGlobal(hdrPtr);
-                    IsPE = Header.signature == Signature;
-
-                    if(IsPE)
-                        if(Header.coff.optionalHeader.magic == PE32Plus)
-                        {
-                            BaseStream.Position -= 4;
-                            buffer              =  new byte[Marshal.SizeOf(typeof(WindowsHeader64))];
-                            BaseStream.Read(buffer, 0, buffer.Length);
-                            hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-                            Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-                            WinHeader = (WindowsHeader64)Marshal.PtrToStructure(hdrPtr, typeof(WindowsHeader64));
-                            Marshal.FreeHGlobal(hdrPtr);
-                        }
-                        else
-                        {
-                            buffer = new byte[Marshal.SizeOf(typeof(WindowsHeader))];
-                            BaseStream.Read(buffer, 0, buffer.Length);
-                            hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-                            Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-                            WindowsHeader hdr32 = (WindowsHeader)Marshal.PtrToStructure(hdrPtr, typeof(WindowsHeader));
-                            Marshal.FreeHGlobal(hdrPtr);
-                            WinHeader = ToPlus(hdr32);
-                        }
-                }
+            BaseStream = File.Open(path, FileMode.Open, FileAccess.Read);
+            Initialize();
         }
 
-	    /// <summary>
-	    ///     Initializes a new instance of the <see cref="T:libexeinfo.PE" /> class.
-	    /// </summary>
-	    /// <param name="stream">Stream containing the executable.</param>
-	    public PE(FileStream stream)
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="T:libexeinfo.PE" /> class.
+        /// </summary>
+        /// <param name="stream">Stream containing the executable.</param>
+        public PE(Stream stream)
         {
-            IsPE           = false;
-            BaseStream     = stream;
-            BaseExecutable = new MZ(BaseStream);
-            if(BaseExecutable.IsMZ)
-                if(BaseExecutable.Header.new_offset < BaseStream.Length)
-                {
-                    BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
-                    byte[] buffer = new byte[Marshal.SizeOf(typeof(PEHeader))];
-                    BaseStream.Read(buffer, 0, buffer.Length);
-                    IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-                    Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-                    Header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
-                    Marshal.FreeHGlobal(hdrPtr);
-                    IsPE = Header.signature == Signature;
-
-                    if(IsPE)
-                        if(Header.coff.optionalHeader.magic == PE32Plus)
-                        {
-                            BaseStream.Position -= 4;
-                            buffer              =  new byte[Marshal.SizeOf(typeof(WindowsHeader64))];
-                            BaseStream.Read(buffer, 0, buffer.Length);
-                            hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-                            Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-                            WinHeader = (WindowsHeader64)Marshal.PtrToStructure(hdrPtr, typeof(WindowsHeader64));
-                            Marshal.FreeHGlobal(hdrPtr);
-                        }
-                        else
-                        {
-                            buffer = new byte[Marshal.SizeOf(typeof(WindowsHeader))];
-                            BaseStream.Read(buffer, 0, buffer.Length);
-                            hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-                            Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-                            WindowsHeader hdr32 = (WindowsHeader)Marshal.PtrToStructure(hdrPtr, typeof(WindowsHeader));
-                            Marshal.FreeHGlobal(hdrPtr);
-                            WinHeader = ToPlus(hdr32);
-                        }
-                }
+            BaseStream = stream;
+            Initialize();
         }
 
-	    /// <summary>
-	    ///     Identifies if the specified executable is a Microsoft Portable Executable
-	    /// </summary>
-	    /// <returns><c>true</c> if the specified executable is a Microsoft Portable Executable, <c>false</c> otherwise.</returns>
-	    /// <param name="path">Executable path.</param>
-	    public static bool Identify(string path)
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="T:libexeinfo.PE" /> class.
+        /// </summary>
+        /// <param name="data">Byte array containing the executable.</param>
+        public PE(byte[] data)
+        {
+            BaseStream = new MemoryStream(data);
+            Initialize();
+        }
+
+        /// <summary>
+        ///     The <see cref="FileStream" /> that contains the executable represented by this instance
+        /// </summary>
+        public Stream BaseStream  { get; }
+        public bool   IsBigEndian => false;
+        /// <summary>
+        ///     If true this instance correctly represents a Microsoft Portable Executable
+        /// </summary>
+        public bool   Recognized { get; private set; }
+        public string Type       { get; private set; }
+
+        void Initialize()
+        {
+            Recognized = false;
+            if(BaseStream == null) return;
+
+            BaseExecutable = new MZ(BaseStream);
+            if(!BaseExecutable.Recognized) return;
+
+            if(BaseExecutable.Header.new_offset >= BaseStream.Length) return;
+
+            BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(PEHeader))];
+            BaseStream.Read(buffer, 0, buffer.Length);
+            IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
+            Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
+            Header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
+            Marshal.FreeHGlobal(hdrPtr);
+            Recognized = Header.signature == Signature;
+
+            if(!Recognized) return;
+
+            Type = "Portable Executable (PE)";
+
+            if(Header.coff.optionalHeader.magic == PE32Plus)
+            {
+                BaseStream.Position -= 4;
+                buffer              =  new byte[Marshal.SizeOf(typeof(WindowsHeader64))];
+                BaseStream.Read(buffer, 0, buffer.Length);
+                hdrPtr = Marshal.AllocHGlobal(buffer.Length);
+                Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
+                WinHeader = (WindowsHeader64)Marshal.PtrToStructure(hdrPtr, typeof(WindowsHeader64));
+                Marshal.FreeHGlobal(hdrPtr);
+            }
+            else
+            {
+                buffer = new byte[Marshal.SizeOf(typeof(WindowsHeader))];
+                BaseStream.Read(buffer, 0, buffer.Length);
+                hdrPtr = Marshal.AllocHGlobal(buffer.Length);
+                Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
+                WindowsHeader hdr32 = (WindowsHeader)Marshal.PtrToStructure(hdrPtr, typeof(WindowsHeader));
+                Marshal.FreeHGlobal(hdrPtr);
+                WinHeader = ToPlus(hdr32);
+            }
+        }
+
+        /// <summary>
+        ///     Identifies if the specified executable is a Microsoft Portable Executable
+        /// </summary>
+        /// <returns><c>true</c> if the specified executable is a Microsoft Portable Executable, <c>false</c> otherwise.</returns>
+        /// <param name="path">Executable path.</param>
+        public static bool Identify(string path)
         {
             FileStream BaseStream     = File.Open(path, FileMode.Open, FileAccess.Read);
             MZ         BaseExecutable = new MZ(BaseStream);
-            if(BaseExecutable.IsMZ)
-                if(BaseExecutable.Header.new_offset < BaseStream.Length)
-                {
-                    BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
-                    byte[] buffer = new byte[Marshal.SizeOf(typeof(PEHeader))];
-                    BaseStream.Read(buffer, 0, buffer.Length);
-                    IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-                    Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-                    PEHeader Header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
-                    Marshal.FreeHGlobal(hdrPtr);
-                    return Header.signature == Signature;
-                }
+            if(!BaseExecutable.Recognized) return false;
 
-            return false;
+            if(BaseExecutable.Header.new_offset >= BaseStream.Length) return false;
+
+            BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(PEHeader))];
+            BaseStream.Read(buffer, 0, buffer.Length);
+            IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
+            Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
+            PEHeader Header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
+            Marshal.FreeHGlobal(hdrPtr);
+            return Header.signature == Signature;
         }
 
-	    /// <summary>
-	    ///     Identifies if the specified executable is a Microsoft Portable Executable
-	    /// </summary>
-	    /// <returns><c>true</c> if the specified executable is a Microsoft Portable Executable, <c>false</c> otherwise.</returns>
-	    /// <param name="stream">Stream containing the executable.</param>
-	    public static bool Identify(FileStream stream)
+        /// <summary>
+        ///     Identifies if the specified executable is a Microsoft Portable Executable
+        /// </summary>
+        /// <returns><c>true</c> if the specified executable is a Microsoft Portable Executable, <c>false</c> otherwise.</returns>
+        /// <param name="stream">Stream containing the executable.</param>
+        public static bool Identify(FileStream stream)
         {
             FileStream BaseStream     = stream;
             MZ         BaseExecutable = new MZ(BaseStream);
-            if(BaseExecutable.IsMZ)
-                if(BaseExecutable.Header.new_offset < BaseStream.Length)
-                {
-                    BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
-                    byte[] buffer = new byte[Marshal.SizeOf(typeof(PEHeader))];
-                    BaseStream.Read(buffer, 0, buffer.Length);
-                    IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-                    Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-                    PEHeader Header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
-                    Marshal.FreeHGlobal(hdrPtr);
-                    return Header.signature == Signature;
-                }
+            if(!BaseExecutable.Recognized) return false;
 
-            return false;
+            if(BaseExecutable.Header.new_offset >= BaseStream.Length) return false;
+
+            BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(PEHeader))];
+            BaseStream.Read(buffer, 0, buffer.Length);
+            IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
+            Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
+            PEHeader Header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
+            Marshal.FreeHGlobal(hdrPtr);
+            return Header.signature == Signature;
         }
 
         static WindowsHeader64 ToPlus(WindowsHeader header)

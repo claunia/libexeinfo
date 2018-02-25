@@ -30,12 +30,18 @@ namespace libexeinfo
 {
     public partial class MZ
     {
-	    /// <summary>
-	    ///     Gets a string with human readable information for a given MZ header
-	    /// </summary>
-	    /// <returns>Human readable information for given MZ header.</returns>
-	    /// <param name="header">MZ executable header.</param>
-	    public static string GetInfo(MZHeader header)
+        /// <summary>
+        ///     Gets a string with human readable information for the MZ executable represented by this instance
+        /// </summary>
+        /// <value>Human readable information for this instance.</value>
+        public string Information => GetInfo(Header);
+
+        /// <summary>
+        ///     Gets a string with human readable information for a given MZ header
+        /// </summary>
+        /// <returns>Human readable information for given MZ header.</returns>
+        /// <param name="header">MZ executable header.</param>
+        public static string GetInfo(MZHeader header)
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("DOS MZ executable:");
@@ -59,15 +65,6 @@ namespace libexeinfo
             sb.AppendFormat("\tOEM information: 0x{0:X4}",       header.oem_info).AppendLine();
             sb.AppendFormat("\tOffset to new header: {0}",       header.new_offset).AppendLine();
             return sb.ToString();
-        }
-
-	    /// <summary>
-	    ///     Gets a string with human readable information for the MZ executable represented by this instance
-	    /// </summary>
-	    /// <returns>Human readable information for this instance.</returns>
-	    public string GetInfo()
-        {
-            return GetInfo(Header);
         }
     }
 }

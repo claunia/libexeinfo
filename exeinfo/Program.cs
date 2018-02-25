@@ -33,7 +33,7 @@ using libexeinfo;
 
 namespace exeinfo
 {
-    class MainClass
+    static class MainClass
     {
         public static void Main(string[] args)
         {
@@ -48,25 +48,25 @@ namespace exeinfo
 
             bool recognized = false;
 
-            MZ      mzExe   = new MZ(exeFs);
-            NE      neExe   = new NE(exeFs);
-            AtariST stExe   = new AtariST(exeFs);
-            LX      lxExe   = new LX(exeFs);
-            COFF    coffExe = new COFF(exeFs);
-            PE      peExe   = new PE(exeFs);
+            IExecutable mzExe   = new MZ(exeFs);
+            IExecutable neExe   = new NE(exeFs);
+            IExecutable stExe   = new AtariST(exeFs);
+            IExecutable lxExe   = new LX(exeFs);
+            IExecutable coffExe = new COFF(exeFs);
+            IExecutable peExe   = new PE(exeFs);
 
-            if(mzExe.IsMZ)
+            if(mzExe.Recognized)
             {
                 recognized = true;
-                Console.Write(mzExe.GetInfo());
+                Console.Write(mzExe.Information);
             }
 
-            if(neExe.IsNE)
+            if(neExe.Recognized)
             {
                 recognized = true;
-                Console.Write(neExe.GetInfo());
-                if(neExe.Versions != null)
-                    foreach(NE.Version vers in neExe.Versions)
+                Console.Write(neExe.Information);
+                if(((NE)neExe).Versions != null)
+                    foreach(NE.Version vers in ((NE)neExe).Versions)
                     {
                         Console.WriteLine("\tVersion resource {0}:",  vers.Name);
                         Console.WriteLine("\t\tFile version: {0}",    vers.FileVersion);
@@ -117,28 +117,28 @@ namespace exeinfo
                     }
             }
 
-            if(stExe.IsAtariST)
+            if(stExe.Recognized)
             {
                 recognized = true;
-                Console.Write(stExe.GetInfo());
+                Console.Write(stExe.Information);
             }
 
-            if(lxExe.IsLX)
+            if(lxExe.Recognized)
             {
                 recognized = true;
-                Console.Write(lxExe.GetInfo());
+                Console.Write(lxExe.Information);
             }
 
-            if(coffExe.IsCOFF)
+            if(coffExe.Recognized)
             {
                 recognized = true;
-                Console.Write(coffExe.GetInfo());
+                Console.Write(coffExe.Information);
             }
 
-            if(peExe.IsPE)
+            if(peExe.Recognized)
             {
                 recognized = true;
-                Console.Write(peExe.GetInfo());
+                Console.Write(peExe.Information);
             }
 
             if(!recognized) Console.WriteLine("Executable format not recognized");

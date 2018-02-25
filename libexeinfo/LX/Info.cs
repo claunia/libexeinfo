@@ -30,6 +30,8 @@ namespace libexeinfo
 {
     public partial class LX
     {
+        public string Information => GetInfo(Header);
+
         public static string GetInfo(LXHeader header)
         {
             StringBuilder sb = new StringBuilder();
@@ -186,11 +188,6 @@ namespace libexeinfo
             sb.AppendFormat("\tInstance pages in demand section: {0}",      header.instance_demand_no).AppendLine();
             sb.AppendFormat("\tHeap size added to the auto ds object: {0}", header.heap_size).AppendLine();
             return sb.ToString();
-        }
-
-        public string GetInfo()
-        {
-            return GetInfo(Header);
         }
     }
 }

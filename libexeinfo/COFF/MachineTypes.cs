@@ -28,7 +28,7 @@ namespace libexeinfo
 {
     public partial class COFF
     {
-        public static string MachineTypeToString(MachineTypes machine)
+        static string MachineTypeToString(MachineTypes machine)
         {
             switch(machine)
             {
@@ -69,7 +69,7 @@ namespace libexeinfo
                 case MachineTypes.IMAGE_FILE_MACHINE_CLIPPER:    return "Clipper";
                 case MachineTypes.IMAGE_FILE_MACHINE_WE32000:    return "WE32000 series";
                 default:
-                    return string.Format("Unknown machine type with code {0}", (ushort)machine);
+                    return $"Unknown machine type with code {(ushort)machine}";
             }
         }
     }

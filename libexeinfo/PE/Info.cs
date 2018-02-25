@@ -30,6 +30,8 @@ namespace libexeinfo
 {
     public partial class PE
     {
+        public string Information => GetInfo(Header, WinHeader);
+
         public static string GetInfo(PEHeader header, WindowsHeader64 winheader)
         {
             StringBuilder sb = new StringBuilder();
@@ -96,11 +98,6 @@ namespace libexeinfo
               .AppendLine();
 
             return sb.ToString();
-        }
-
-        public string GetInfo()
-        {
-            return GetInfo(Header, WinHeader);
         }
     }
 }

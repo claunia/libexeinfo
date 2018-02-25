@@ -57,48 +57,48 @@ namespace exeinfogui
 
             FileStream exeFs = File.Open(dlgOpen.FileName, FileMode.Open, FileAccess.Read);
 
-            MZ      mzExe   = new MZ(exeFs);
-            NE      neExe   = new NE(exeFs);
-            AtariST stExe   = new AtariST(exeFs);
-            LX      lxExe   = new LX(exeFs);
-            COFF    coffExe = new COFF(exeFs);
-            PE      peExe   = new PE(exeFs);
+            IExecutable mzExe   = new MZ(exeFs);
+            IExecutable neExe   = new NE(exeFs);
+            IExecutable stExe   = new AtariST(exeFs);
+            IExecutable lxExe   = new LX(exeFs);
+            IExecutable coffExe = new COFF(exeFs);
+            IExecutable peExe   = new PE(exeFs);
 
-            if(mzExe.IsMZ)
+            if(mzExe.Recognized)
             {
-                if(neExe.IsNE)
+                if(neExe.Recognized)
                 {
-                    txtType.Text        = "New Executable (NE)";
-                    txtInformation.Text = neExe.GetInfo();
+                    txtType.Text        = neExe.Type;
+                    txtInformation.Text = neExe.Information;
                 }
-                else if(lxExe.IsLX)
+                else if(lxExe.Recognized)
                 {
-                    txtType.Text        = "Linear eXecutable (LX)";
-                    txtInformation.Text = lxExe.GetInfo();
+                    txtType.Text        = lxExe.Type;
+                    txtInformation.Text = lxExe.Information;
                 }
-                else if(peExe.IsPE)
+                else if(peExe.Recognized)
                 {
-                    txtType.Text        = "Portable Executable (PE)";
-                    txtInformation.Text = peExe.GetInfo();
+                    txtType.Text        = peExe.Type;
+                    txtInformation.Text = peExe.Information;
                 }
                 else
-                    txtType.Text = "DOS Executable (MZ)";
+                    txtType.Text = mzExe.Type;
 
-                txtInformation.Text += mzExe.GetInfo();
+                txtInformation.Text += mzExe.Information;
             }
-            else if(stExe.IsAtariST)
+            else if(stExe.Recognized)
             {
-                txtType.Text        = "Atari ST executable";
-                txtInformation.Text = stExe.GetInfo();
+                txtType.Text        = stExe.Type;
+                txtInformation.Text = stExe.Information;
             }
-            else if(coffExe.IsCOFF)
+            else if(coffExe.Recognized)
             {
-                txtType.Text        = "Common Object File Format (COFF)";
-                txtInformation.Text = coffExe.GetInfo();
+                txtType.Text        = coffExe.Type;
+                txtInformation.Text = coffExe.Information;
             }
             else
                 txtType.Text = "Format not recognized";
-            
+
             exeFs.Close();
         }
 

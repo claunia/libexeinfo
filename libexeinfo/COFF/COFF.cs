@@ -30,102 +30,105 @@ using System.Runtime.InteropServices;
 
 namespace libexeinfo
 {
-	/// <summary>
-	///     Represents a Common Object File Format
-	/// </summary>
-	public partial class COFF
+    /// <summary>
+    ///     Represents a Common Object File Format
+    /// </summary>
+    public partial class COFF : IExecutable
     {
-	    /// <summary>
-	    ///     The <see cref="FileStream" /> that contains the executable represented by this instance
-	    /// </summary>
-	    public readonly FileStream BaseStream;
-	    /// <summary>
-	    ///     Header for this executable
-	    /// </summary>
-	    public readonly COFFHeader Header;
-        public readonly bool       IsBigEndian;
-	    /// <summary>
-	    ///     If true this instance correctly represents a Common Object File Format
-	    /// </summary>
-	    public readonly bool IsCOFF;
-
-	    /// <summary>
-	    ///     Initializes a new instance of the <see cref="T:libexeinfo.COFF" /> class.
-	    /// </summary>
-	    /// <param name="path">Executable path.</param>
-	    public COFF(string path)
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="T:libexeinfo.COFF" /> class.
+        /// </summary>
+        /// <param name="path">Executable path.</param>
+        public COFF(string path)
         {
+            BaseStream = File.Open(path, FileMode.Open, FileAccess.Read);
+            Initialize();
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="T:libexeinfo.COFF" /> class.
+        /// </summary>
+        /// <param name="stream">Stream containing the executable.</param>
+        public COFF(Stream stream)
+        {
+            BaseStream = stream;
+            Initialize();
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="T:libexeinfo.COFF" /> class.
+        /// </summary>
+        /// <param name="data">Byte array containing the executable.</param>
+        public COFF(byte[] data)
+        {
+            BaseStream = new MemoryStream(data);
+            Initialize();
+        }
+
+        /// <summary>
+        ///     Header for this executable
+        /// </summary>
+        public COFFHeader Header { get; private set; }
+        /// <summary>
+        ///     The <see cref="FileStream" /> that contains the executable represented by this instance
+        /// </summary>
+        public Stream BaseStream  { get; }
+        public bool   IsBigEndian { get; private set; }
+        /// <summary>
+        ///     If true this instance correctly represents a Common Object File Format
+        /// </summary>
+        public bool   Recognized { get; private set; }
+        public string Type       { get; private set; }
+
+        void Initialize()
+        {
+            Recognized = false;
+            if(BaseStream == null) return;
+
             byte[] buffer = new byte[Marshal.SizeOf(typeof(COFFHeader))];
 
-            BaseStream          = File.Open(path, FileMode.Open, FileAccess.Read);
             BaseStream.Position = 0;
             BaseStream.Read(buffer, 0, buffer.Length);
             IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
             Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
             Header = (COFFHeader)Marshal.PtrToStructure(hdrPtr, typeof(COFFHeader));
             Marshal.FreeHGlobal(hdrPtr);
-            IsCOFF = Header.optionalHeader.magic == STMAGIC || Header.optionalHeader.magic == OMAGIC ||
-                     Header.optionalHeader.magic == JMAGIC  || Header.optionalHeader.magic == DMAGIC ||
-                     Header.optionalHeader.magic == ZMAGIC  || Header.optionalHeader.magic == SHMAGIC;
-            IsBigEndian = false;
-
-            if(!IsCOFF)
-            {
-                Header = SwapHeader(Header);
-                IsCOFF = Header.optionalHeader.magic == STMAGIC || Header.optionalHeader.magic == OMAGIC ||
+            Recognized = Header.optionalHeader.magic == STMAGIC || Header.optionalHeader.magic == OMAGIC ||
                          Header.optionalHeader.magic == JMAGIC  || Header.optionalHeader.magic == DMAGIC ||
                          Header.optionalHeader.magic == ZMAGIC  || Header.optionalHeader.magic == SHMAGIC;
-                IsBigEndian = !IsCOFF;
-            }
-        }
-
-	    /// <summary>
-	    ///     Initializes a new instance of the <see cref="T:libexeinfo.COFF" /> class.
-	    /// </summary>
-	    /// <param name="stream">Stream containing the executable.</param>
-	    public COFF(FileStream stream)
-        {
-            byte[] buffer = new byte[Marshal.SizeOf(typeof(COFFHeader))];
-
-            BaseStream          = stream;
-            BaseStream.Position = 0;
-            BaseStream.Read(buffer, 0, buffer.Length);
-            IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-            Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-            Header = (COFFHeader)Marshal.PtrToStructure(hdrPtr, typeof(COFFHeader));
-            Marshal.FreeHGlobal(hdrPtr);
-            IsCOFF = Header.optionalHeader.magic == STMAGIC || Header.optionalHeader.magic == OMAGIC ||
-                     Header.optionalHeader.magic == JMAGIC  || Header.optionalHeader.magic == DMAGIC ||
-                     Header.optionalHeader.magic == ZMAGIC  || Header.optionalHeader.magic == SHMAGIC;
             IsBigEndian = false;
 
-            if(!IsCOFF)
+            if(!Recognized)
             {
-                Header = SwapHeader(Header);
-                IsCOFF = Header.optionalHeader.magic == STMAGIC || Header.optionalHeader.magic == OMAGIC ||
-                         Header.optionalHeader.magic == JMAGIC  || Header.optionalHeader.magic == DMAGIC ||
-                         Header.optionalHeader.magic == ZMAGIC  || Header.optionalHeader.magic == SHMAGIC;
-                IsBigEndian = !IsCOFF;
+                Header     = SwapHeader(Header);
+                Recognized = Header.optionalHeader.magic == STMAGIC || Header.optionalHeader.magic == OMAGIC ||
+                             Header.optionalHeader.magic == JMAGIC  || Header.optionalHeader.magic == DMAGIC ||
+                             Header.optionalHeader.magic == ZMAGIC  || Header.optionalHeader.magic == SHMAGIC;
+                IsBigEndian = !Recognized;
             }
+
+            if(!Recognized) return;
+
+            Type = "Common Object File Format (COFF)";
         }
 
-	    /// <summary>
-	    ///     Identifies if the specified executable is a Common Object File Format
-	    /// </summary>
-	    /// <returns><c>true</c> if the specified executable is a Common Object File Format, <c>false</c> otherwise.</returns>
-	    /// <param name="path">Executable path.</param>
-	    public static bool Identify(string path)
+        /// <summary>
+        ///     Identifies if the specified executable is a Common Object File Format
+        /// </summary>
+        /// <returns><c>true</c> if the specified executable is a Common Object File Format, <c>false</c> otherwise.</returns>
+        /// <param name="path">Executable path.</param>
+        public static bool Identify(string path)
         {
             FileStream exeFs = File.Open(path, FileMode.Open, FileAccess.Read);
             return Identify(exeFs);
         }
 
-	    /// <summary>
-	    ///     Identifies if the specified executable is a Common Object File Format
-	    /// </summary>
-	    /// <returns><c>true</c> if the specified executable is a Common Object File Format, <c>false</c> otherwise.</returns>
-	    /// <param name="stream">Stream containing the executable.</param>
-	    public static bool Identify(FileStream stream)
+        /// <summary>
+        ///     Identifies if the specified executable is a Common Object File Format
+        /// </summary>
+        /// <returns><c>true</c> if the specified executable is a Common Object File Format, <c>false</c> otherwise.</returns>
+        /// <param name="stream">Stream containing the executable.</param>
+        public static bool Identify(FileStream stream)
         {
             byte[] buffer = new byte[Marshal.SizeOf(typeof(COFFHeader))];
 
@@ -133,17 +136,17 @@ namespace libexeinfo
             stream.Read(buffer, 0, buffer.Length);
             IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
             Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-            COFFHeader COFFHdr = (COFFHeader)Marshal.PtrToStructure(hdrPtr, typeof(COFFHeader));
+            COFFHeader coffHdr = (COFFHeader)Marshal.PtrToStructure(hdrPtr, typeof(COFFHeader));
             Marshal.FreeHGlobal(hdrPtr);
 
-            if(COFFHdr.optionalHeader.magic == STMAGIC || COFFHdr.optionalHeader.magic == OMAGIC ||
-               COFFHdr.optionalHeader.magic == JMAGIC  || COFFHdr.optionalHeader.magic == DMAGIC ||
-               COFFHdr.optionalHeader.magic == ZMAGIC  || COFFHdr.optionalHeader.magic == SHMAGIC) return true;
+            if(coffHdr.optionalHeader.magic == STMAGIC || coffHdr.optionalHeader.magic == OMAGIC ||
+               coffHdr.optionalHeader.magic == JMAGIC  || coffHdr.optionalHeader.magic == DMAGIC ||
+               coffHdr.optionalHeader.magic == ZMAGIC  || coffHdr.optionalHeader.magic == SHMAGIC) return true;
 
-            COFFHdr = SwapHeader(COFFHdr);
-            return COFFHdr.optionalHeader.magic == STMAGIC || COFFHdr.optionalHeader.magic == OMAGIC ||
-                   COFFHdr.optionalHeader.magic == JMAGIC  || COFFHdr.optionalHeader.magic == DMAGIC ||
-                   COFFHdr.optionalHeader.magic == ZMAGIC  || COFFHdr.optionalHeader.magic == SHMAGIC;
+            coffHdr = SwapHeader(coffHdr);
+            return coffHdr.optionalHeader.magic == STMAGIC || coffHdr.optionalHeader.magic == OMAGIC ||
+                   coffHdr.optionalHeader.magic == JMAGIC  || coffHdr.optionalHeader.magic == DMAGIC ||
+                   coffHdr.optionalHeader.magic == ZMAGIC  || coffHdr.optionalHeader.magic == SHMAGIC;
         }
 
         static COFFHeader SwapHeader(COFFHeader header)

@@ -28,13 +28,13 @@ namespace libexeinfo
 {
     public partial class LX
     {
-	    /// <summary>
-	    ///     Linear Executable signature, "LE"
-	    /// </summary>
-	    public const ushort Signature16 = 0x454C;
-	    /// <summary>
-	    ///     Linear eXecutable signature, "LX"
-	    /// </summary>
-	    public const ushort Signature = 0x584C;
+        /// <summary>
+        ///     Linear Executable signature, "LE"
+        /// </summary>
+        public const ushort Signature16 = 0x454C;
+        /// <summary>
+        ///     Linear eXecutable signature, "LX"
+        /// </summary>
+        public const ushort Signature = 0x584C;
     }
 }

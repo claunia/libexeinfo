@@ -30,60 +30,60 @@ namespace libexeinfo
 {
     public partial class LX
     {
-	    /// <summary>
-	    ///     Executable module flags.
-	    /// </summary>
-	    [Flags]
+        /// <summary>
+        ///     Executable module flags.
+        /// </summary>
+        [Flags]
         public enum ModuleFlags : uint
         {
-	        /// <summary>
-	        ///     Per-Process Library Initialization
-	        /// </summary>
-	        PerProcessLibrary = 0x04,
-	        /// <summary>
-	        ///     Internal fixups for the module have been applied
-	        /// </summary>
-	        InternalFixups = 0x10,
-	        /// <summary>
-	        ///     External fixups for the module have been applied
-	        /// </summary>
-	        ExternalFixups = 0x20,
-	        /// <summary>
-	        ///     Incompatible with Presentation Manager
-	        /// </summary>
-	        PMIncompatible = 0x100,
-	        /// <summary>
-	        ///     Compatible with Presentation Manager
-	        /// </summary>
-	        PMCompatible = 0x200,
-	        /// <summary>
-	        ///     Uses Presentation Manager
-	        /// </summary>
-	        UsesPM = 0x300,
-	        /// <summary>
-	        ///     Module is not loadable. Contains errors or is being linked
-	        /// </summary>
-	        NotLoadable = 0x2000,
-	        /// <summary>
-	        ///     Library module
-	        /// </summary>
-	        Library = 0x8000,
-	        /// <summary>
-	        ///     Protected Memory Library module
-	        /// </summary>
-	        ProtectedMemoryLibrary = 0x18000,
-	        /// <summary>
-	        ///     Physical Device Driver module
-	        /// </summary>
-	        PhysicalDeviceDriver = 0x20000,
-	        /// <summary>
-	        ///     Virtual Device Driver module
-	        /// </summary>
-	        VirtualDeviceDriver = 0x28000,
-	        /// <summary>
-	        ///     Per-process Library Termination
-	        /// </summary>
-	        PerProcessTermination = 0x40000000
+            /// <summary>
+            ///     Per-Process Library Initialization
+            /// </summary>
+            PerProcessLibrary = 0x04,
+            /// <summary>
+            ///     Internal fixups for the module have been applied
+            /// </summary>
+            InternalFixups = 0x10,
+            /// <summary>
+            ///     External fixups for the module have been applied
+            /// </summary>
+            ExternalFixups = 0x20,
+            /// <summary>
+            ///     Incompatible with Presentation Manager
+            /// </summary>
+            PMIncompatible = 0x100,
+            /// <summary>
+            ///     Compatible with Presentation Manager
+            /// </summary>
+            PMCompatible = 0x200,
+            /// <summary>
+            ///     Uses Presentation Manager
+            /// </summary>
+            UsesPM = 0x300,
+            /// <summary>
+            ///     Module is not loadable. Contains errors or is being linked
+            /// </summary>
+            NotLoadable = 0x2000,
+            /// <summary>
+            ///     Library module
+            /// </summary>
+            Library = 0x8000,
+            /// <summary>
+            ///     Protected Memory Library module
+            /// </summary>
+            ProtectedMemoryLibrary = 0x18000,
+            /// <summary>
+            ///     Physical Device Driver module
+            /// </summary>
+            PhysicalDeviceDriver = 0x20000,
+            /// <summary>
+            ///     Virtual Device Driver module
+            /// </summary>
+            VirtualDeviceDriver = 0x28000,
+            /// <summary>
+            ///     Per-process Library Termination
+            /// </summary>
+            PerProcessTermination = 0x40000000
         }
 
         public enum TargetCpu : ushort
@@ -100,10 +100,10 @@ namespace libexeinfo
             MIPS3   = 0x42
         }
 
-	    /// <summary>
-	    ///     Target operating system.
-	    /// </summary>
-	    public enum TargetOS : ushort
+        /// <summary>
+        ///     Target operating system.
+        /// </summary>
+        public enum TargetOS : ushort
         {
             Unknown = 0,
             OS2     = 1,

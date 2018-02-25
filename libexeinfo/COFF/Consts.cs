@@ -28,86 +28,86 @@ namespace libexeinfo
 {
     public partial class COFF
     {
-        public const ushort STMAGIC = 0x101;
-        public const ushort OMAGIC  = 0x104;
-	    /// <summary>
-	    ///     dirty text and data image, can't share
-	    /// </summary>
-	    public const ushort JMAGIC = 0x107;
-	    /// <summary>
-	    ///     dirty text segment, data aligned
-	    /// </summary>
-	    public const ushort DMAGIC = 0x108;
-	    /// <summary>
-	    ///     The proper magic number for executables
-	    /// </summary>
-	    public const ushort ZMAGIC = 0x10b;
-	    /// <summary>
-	    ///     shared library header
-	    /// </summary>
-	    public const ushort SHMAGIC = 0x123;
+        const ushort STMAGIC = 0x101;
+        const ushort OMAGIC  = 0x104;
+        /// <summary>
+        ///     dirty text and data image, can't share
+        /// </summary>
+        const ushort JMAGIC = 0x107;
+        /// <summary>
+        ///     dirty text segment, data aligned
+        /// </summary>
+        const ushort DMAGIC = 0x108;
+        /// <summary>
+        ///     The proper magic number for executables
+        /// </summary>
+        internal const ushort ZMAGIC = 0x10b;
+        /// <summary>
+        ///     shared library header
+        /// </summary>
+        const ushort SHMAGIC = 0x123;
 
-	    /// <summary>
-	    ///     Alpha architecture information
-	    /// </summary>
-	    public readonly string SectionAlpha = ".arch";
-	    /// <summary>
-	    ///     Uninitialized data
-	    /// </summary>
-	    public readonly string SectionBss = ".bss";
-	    /// <summary>
-	    ///     Initialized data
-	    /// </summary>
-	    public readonly string SectionData = ".data";
-	    /// <summary>
-	    ///     Debug information
-	    /// </summary>
-	    public readonly string SectionDebug = ".debug";
-	    /// <summary>
-	    ///     A .drectve section consists of a string of ASCII text. This string is
-	    ///     a series of linker options (each option containing hyphen, option
-	    ///     name, and any appropriate attribute) separated by spaces.The
-	    ///     .drectve section must not have relocations or line numbers.
-	    /// </summary>
-	    public readonly string SectionDirectives = ".drectve";
-	    /// <summary>
-	    ///     Exception information
-	    /// </summary>
-	    public readonly string SectioneXception = ".xdata";
-	    /// <summary>
-	    ///     Exception information
-	    /// </summary>
-	    public readonly string SectionException = ".pdata";
-	    /// <summary>
-	    ///     Executable code
-	    /// </summary>
-	    public readonly string SectionExecutable = ".text";
-	    /// <summary>
-	    ///     The export data section, named .edata, contains information about
-	    ///     symbols that other images can access through dynamic linking.
-	    ///     Exports are generally found in DLLs, but DLLs can import symbols as
-	    ///     well.
-	    /// </summary>
-	    public readonly string SectionExport = ".edata";
-	    /// <summary>
-	    ///     Import tables
-	    /// </summary>
-	    public readonly string SectionImport = ".idata";
-	    /// <summary>
-	    ///     Read-only initialized data
-	    /// </summary>
-	    public readonly string SectionReadOnly = ".rdata";
-	    /// <summary>
-	    ///     Image relocations
-	    /// </summary>
-	    public readonly string SectionRelocations = ".reloc";
-	    /// <summary>
-	    ///     Resource directory
-	    /// </summary>
-	    public readonly string SectionResource = ".rsrc";
-	    /// <summary>
-	    ///     Thread-local storage
-	    /// </summary>
-	    public readonly string SectionTls = ".tls";
+        /// <summary>
+        ///     Alpha architecture information
+        /// </summary>
+        public readonly string SectionAlpha = ".arch";
+        /// <summary>
+        ///     Uninitialized data
+        /// </summary>
+        public readonly string SectionBss = ".bss";
+        /// <summary>
+        ///     Initialized data
+        /// </summary>
+        public readonly string SectionData = ".data";
+        /// <summary>
+        ///     Debug information
+        /// </summary>
+        public readonly string SectionDebug = ".debug";
+        /// <summary>
+        ///     A .drectve section consists of a string of ASCII text. This string is
+        ///     a series of linker options (each option containing hyphen, option
+        ///     name, and any appropriate attribute) separated by spaces.The
+        ///     .drectve section must not have relocations or line numbers.
+        /// </summary>
+        public readonly string SectionDirectives = ".drectve";
+        /// <summary>
+        ///     Exception information
+        /// </summary>
+        public readonly string SectioneXception = ".xdata";
+        /// <summary>
+        ///     Exception information
+        /// </summary>
+        public readonly string SectionException = ".pdata";
+        /// <summary>
+        ///     Executable code
+        /// </summary>
+        public readonly string SectionExecutable = ".text";
+        /// <summary>
+        ///     The export data section, named .edata, contains information about
+        ///     symbols that other images can access through dynamic linking.
+        ///     Exports are generally found in DLLs, but DLLs can import symbols as
+        ///     well.
+        /// </summary>
+        public readonly string SectionExport = ".edata";
+        /// <summary>
+        ///     Import tables
+        /// </summary>
+        public readonly string SectionImport = ".idata";
+        /// <summary>
+        ///     Read-only initialized data
+        /// </summary>
+        public readonly string SectionReadOnly = ".rdata";
+        /// <summary>
+        ///     Image relocations
+        /// </summary>
+        public readonly string SectionRelocations = ".reloc";
+        /// <summary>
+        ///     Resource directory
+        /// </summary>
+        public readonly string SectionResource = ".rsrc";
+        /// <summary>
+        ///     Thread-local storage
+        /// </summary>
+        public readonly string SectionTls = ".tls";
     }
 }

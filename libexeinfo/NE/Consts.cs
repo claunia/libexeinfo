@@ -28,25 +28,25 @@ namespace libexeinfo
 {
     public partial class NE
     {
-	    /// <summary>
-	    ///     New Executable signature, "NE"
-	    /// </summary>
-	    public const ushort Signature = 0x454E;
-	    /// <summary>
-	    ///     Signature for a <see cref="FixedFileInfo" />
-	    /// </summary>
-	    public static readonly string FixedFileInfoSig = "VS_VERSION_INFO";
-	    /// <summary>
-	    ///     Signature for list of name=value strings inside a version resource
-	    /// </summary>
-	    public static readonly string StringFileInfo = "StringFileInfo";
+        /// <summary>
+        ///     New Executable signature, "NE"
+        /// </summary>
+        public const ushort Signature = 0x454E;
+        /// <summary>
+        ///     Signature for a <see cref="FixedFileInfo" />
+        /// </summary>
+        public static readonly string FixedFileInfoSig = "VS_VERSION_INFO";
+        /// <summary>
+        ///     Signature for list of name=value strings inside a version resource
+        /// </summary>
+        public static readonly string StringFileInfo = "StringFileInfo";
 
-	    /// <summary>
-	    ///     Gets the name of a resource type according to its identifier
-	    /// </summary>
-	    /// <returns>The resource type name.</returns>
-	    /// <param name="id">Resource type identifier.</param>
-	    public static string ResourceIdToName(ushort id)
+        /// <summary>
+        ///     Gets the name of a resource type according to its identifier
+        /// </summary>
+        /// <returns>The resource type name.</returns>
+        /// <param name="id">Resource type identifier.</param>
+        public static string ResourceIdToName(ushort id)
         {
             switch(id & 0x7FFF)
             {
