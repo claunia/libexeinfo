@@ -32,7 +32,7 @@ namespace libexeinfo
     {
         public string Information => GetInfo(Header, WinHeader);
 
-        public static string GetInfo(PEHeader header, WindowsHeader64 winheader)
+        static string GetInfo(PEHeader header, WindowsHeader64 winheader)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(COFF.GetInfo(header.coff));

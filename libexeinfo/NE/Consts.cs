@@ -31,15 +31,15 @@ namespace libexeinfo
         /// <summary>
         ///     New Executable signature, "NE"
         /// </summary>
-        public const ushort Signature = 0x454E;
+        const ushort SIGNATURE = 0x454E;
         /// <summary>
         ///     Signature for a <see cref="FixedFileInfo" />
         /// </summary>
-        public static readonly string FixedFileInfoSig = "VS_VERSION_INFO";
+        const string FIXED_FILE_INFO_SIG = "VS_VERSION_INFO";
         /// <summary>
         ///     Signature for list of name=value strings inside a version resource
         /// </summary>
-        public static readonly string StringFileInfo = "StringFileInfo";
+        const string STRING_FILE_INFO = "StringFileInfo";
 
         /// <summary>
         ///     Gets the name of a resource type according to its identifier
@@ -76,7 +76,7 @@ namespace libexeinfo
                 case (int)ResourceTypes.RT_TOOLBAR:      return "RT_TOOLBAR";
                 case (int)ResourceTypes.RT_VERSION:      return "RT_VERSION";
                 case (int)ResourceTypes.RT_VXD:          return "RT_VXD";
-                default:                                 return string.Format("{0}", id & 0x7FFF);
+                default:                                 return $"{id & 0x7FFF}";
             }
         }
     }

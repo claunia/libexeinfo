@@ -30,59 +30,67 @@ namespace libexeinfo
 {
     public partial class LX
     {
-        public string Information => GetInfo(Header);
+        public string Information => GetInfo(header);
 
-        public static string GetInfo(LXHeader header)
+        static string GetInfo(LXHeader header)
         {
             StringBuilder sb = new StringBuilder();
-            if(header.signature == Signature16) sb.AppendLine("Linear Executable (LE):");
-            else sb.AppendLine("Linear eXecutable (LX):");
+            sb.AppendLine(header.signature == SIGNATURE16 ? "Linear Executable (LE):" : "Linear eXecutable (LX):");
 
-            if(header.os_type == TargetOS.OS2)
+            switch(header.os_type)
             {
-                sb.AppendLine("\tOS/2 application");
-                if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
-                   !header.module_flags.HasFlag(ModuleFlags.PMCompatible))
-                    sb.AppendLine("\tApplication is full screen, unaware of Presentation Manager");
-                else if(!header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
-                        header.module_flags.HasFlag(ModuleFlags.PMCompatible))
-                    sb.AppendLine("\tApplication is aware of Presentation Manager, but doesn't use it");
-                else if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
-                        header.module_flags.HasFlag(ModuleFlags.PMCompatible))
-                    sb.AppendLine("\tApplication uses Presentation Manager");
+                case TargetOS.OS2:
+                    sb.AppendLine("\tOS/2 application");
+                    if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                       !header.module_flags.HasFlag(ModuleFlags.PMCompatible))
+                        sb.AppendLine("\tApplication is full screen, unaware of Presentation Manager");
+                    else if(!header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                            header.module_flags.HasFlag(ModuleFlags.PMCompatible))
+                        sb.AppendLine("\tApplication is aware of Presentation Manager, but doesn't use it");
+                    else if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                            header.module_flags.HasFlag(ModuleFlags.PMCompatible))
+                        sb.AppendLine("\tApplication uses Presentation Manager");
+                    break;
+                case TargetOS.Windows:
+                case TargetOS.Win32:
+                case TargetOS.Unknown:
+                    switch(header.os_type)
+                    {
+                        case TargetOS.Windows:
+                        case TargetOS.Unknown:
+                            sb.AppendLine("\t16-bit Windows application");
+                            break;
+                        case TargetOS.Win32:
+                            sb.AppendLine("\t32-bit Windows application");
+                            break;
+                    }
+
+                    if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                       !header.module_flags.HasFlag(ModuleFlags.PMCompatible))
+                        sb.AppendLine("\tApplication is full screen, unaware of Windows");
+                    else if(!header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                            header.module_flags.HasFlag(ModuleFlags.PMCompatible))
+                        sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
+                    else if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                            header.module_flags.HasFlag(ModuleFlags.PMCompatible))
+                        sb.AppendLine("\tApplication uses Windows");
+                    break;
+                case TargetOS.DOS:
+                    sb.AppendLine("\tDOS application");
+                    if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                       !header.module_flags.HasFlag(ModuleFlags.PMCompatible))
+                        sb.AppendLine("\tApplication is full screen, unaware of Windows");
+                    else if(!header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                            header.module_flags.HasFlag(ModuleFlags.PMCompatible))
+                        sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
+                    else if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                            header.module_flags.HasFlag(ModuleFlags.PMCompatible))
+                        sb.AppendLine("\tApplication uses Windows");
+                    break;
+                default:
+                    sb.AppendFormat("\tApplication for unknown OS {0}", (ushort)header.os_type).AppendLine();
+                    break;
             }
-            else if(header.os_type == TargetOS.Windows || header.os_type == TargetOS.Win32 ||
-                    header.os_type == TargetOS.Unknown)
-            {
-                if(header.os_type == TargetOS.Windows || header.os_type == TargetOS.Unknown)
-                    sb.AppendLine("\t16-bit Windows application");
-                else if(header.os_type == TargetOS.Win32)
-                    sb.AppendLine("\t32-bit Windows application");
-                if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
-                   !header.module_flags.HasFlag(ModuleFlags.PMCompatible))
-                    sb.AppendLine("\tApplication is full screen, unaware of Windows");
-                else if(!header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
-                        header.module_flags.HasFlag(ModuleFlags.PMCompatible))
-                    sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
-                else if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
-                        header.module_flags.HasFlag(ModuleFlags.PMCompatible))
-                    sb.AppendLine("\tApplication uses Windows");
-            }
-            else if(header.os_type == TargetOS.DOS)
-            {
-                sb.AppendLine("\tDOS application");
-                if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
-                   !header.module_flags.HasFlag(ModuleFlags.PMCompatible))
-                    sb.AppendLine("\tApplication is full screen, unaware of Windows");
-                else if(!header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
-                        header.module_flags.HasFlag(ModuleFlags.PMCompatible))
-                    sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
-                else if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
-                        header.module_flags.HasFlag(ModuleFlags.PMCompatible))
-                    sb.AppendLine("\tApplication uses Windows");
-            }
-            else
-                sb.AppendFormat("\tApplication for unknown OS {0}", (ushort)header.os_type).AppendLine();
 
             sb.AppendFormat("\tByte ordering: {0}", header.byte_order == 1 ? "Big-endian" : "Little-Endian")
               .AppendLine();

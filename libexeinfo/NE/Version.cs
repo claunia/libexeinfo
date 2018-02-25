@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -40,17 +41,10 @@ namespace libexeinfo
         /// <returns>The decoded version resources.</returns>
         public List<Version> GetVersions()
         {
-            List<Version> versions = new List<Version>();
-
-            foreach(ResourceType type in Resources.types)
-                if((type.id & 0x7FFF) == (int)ResourceTypes.RT_VERSION)
-                    foreach(Resource resource in type.resources)
-                    {
-                        Version vers = new Version(resource.data, resource.name);
-                        versions.Add(vers);
-                    }
-
-            return versions;
+            return (from type in Resources.types
+                    where (type.id & 0x7FFF) == (int)ResourceTypes.RT_VERSION
+                    from resource in type.resources
+                    select new Version(resource.data, resource.name)).ToList();
         }
 
         /// <summary>
@@ -129,7 +123,7 @@ namespace libexeinfo
             /// <value>The resource name.</value>
             public string Name { get; }
 
-            VersionNode GetNode(byte[] data, int startPosition, out int nodeLength)
+            static VersionNode GetNode(byte[] data, int startPosition, out int nodeLength)
             {
                 nodeLength = 0;
 
@@ -172,21 +166,17 @@ namespace libexeinfo
 
             void DecodeNode(VersionNode node, string parent, string grandparent)
             {
-                if(node.szName == FixedFileInfoSig)
+                if(node.szName == FIXED_FILE_INFO_SIG)
                 {
                     IntPtr infoPtr = Marshal.AllocHGlobal(node.cbData);
                     Marshal.Copy(node.rgbData, 0, infoPtr, node.cbData);
                     FixedFileInfo info = (FixedFileInfo)Marshal.PtrToStructure(infoPtr, typeof(FixedFileInfo));
                     Marshal.FreeHGlobal(infoPtr);
 
-                    FileVersion = string.Format("{0}.{1:D2}.{2}.{3}", (info.dwFileVersionMS       & 0xFFFF0000) >> 16,
-                                                info.dwFileVersionMS                              & 0xFFFF,
-                                                (info.dwFileVersionLS                             & 0xFFFF0000) >> 16,
-                                                info.dwFileVersionLS                              & 0xFFFF);
-                    ProductVersion = string.Format("{0}.{1:D2}.{2}.{3}", (info.dwProductVersionMS & 0xFFFF0000) >> 16,
-                                                   info.dwProductVersionMS                        & 0xFFFF,
-                                                   (info.dwProductVersionLS                       & 0xFFFF0000) >> 16,
-                                                   info.dwProductVersionLS                        & 0xFFFF);
+                    FileVersion =
+                        $"{(info.dwFileVersionMS & 0xFFFF0000) >> 16}.{info.dwFileVersionMS & 0xFFFF:D2}.{(info.dwFileVersionLS & 0xFFFF0000) >> 16}.{info.dwFileVersionLS & 0xFFFF}";
+                    ProductVersion =
+                        $"{(info.dwProductVersionMS & 0xFFFF0000) >> 16}.{info.dwProductVersionMS & 0xFFFF:D2}.{(info.dwProductVersionLS & 0xFFFF0000) >> 16}.{info.dwProductVersionLS & 0xFFFF}";
                     FileFlags =
                         (VersionFileFlags)(info.dwFileFlags & info.dwFileFlagsMask);
                     FileOS      = (VersionFileOS)info.dwFileOS;
@@ -195,13 +185,13 @@ namespace libexeinfo
                     FileDate    = DateTime.FromFileTime(info.dwFileDateMS * 0x100000000 + info.dwFileDateLS);
                 }
 
-                if(parent == StringFileInfo)
+                if(parent == STRING_FILE_INFO)
                 {
                     Dictionary<string, string> strings = new Dictionary<string, string>();
                     StringsByLanguage.Add(node.szName, strings);
                 }
 
-                if(grandparent == StringFileInfo)
+                if(grandparent == STRING_FILE_INFO)
                     if(StringsByLanguage.TryGetValue(parent, out Dictionary<string, string> strings))
                     {
                         Encoding encoding;
@@ -212,9 +202,9 @@ namespace libexeinfo
                         strings.Add(node.szName, encoding.GetString(node.rgbData));
                     }
 
-                if(node.children     != null)
-                    for(int i = 0; i < node.children.Length; i++)
-                        DecodeNode(node.children[i], node.szName, parent);
+                if(node.children == null) return;
+
+                foreach(VersionNode n in node.children) DecodeNode(n, node.szName, parent);
             }
 
             /// <summary>
@@ -235,7 +225,7 @@ namespace libexeinfo
                     case VersionFileType.VFT_STATIC_LIB: return "Static-link library";
                     case VersionFileType.VFT_UNKNOWN:    return "Unknown";
                     case VersionFileType.VFT_VXD:        return "Virtual device";
-                    default:                             return string.Format("Unknown type code {0}", (uint)type);
+                    default:                             return $"Unknown type code {(uint)type}";
                 }
             }
 
@@ -263,7 +253,7 @@ namespace libexeinfo
                     case VersionFileSubtype.VFT2_DRV_VERSIONED_PRINTER: return "Versioned";
                     case VersionFileSubtype.VFT2_UNKNOWN:               return "Unknown";
                     default:
-                        return string.Format("Unknown type code {0}", (uint)subtype);
+                        return $"Unknown type code {(uint)subtype}";
                 }
             }
 
@@ -283,7 +273,7 @@ namespace libexeinfo
                     case VersionFileSubtype.VFT2_FONT_VECTOR:   return "Vector";
                     case VersionFileSubtype.VFT2_UNKNOWN:       return "Unknown";
                     default:
-                        return string.Format("Unknown type code {0}", (uint)subtype);
+                        return $"Unknown type code {(uint)subtype}";
                 }
             }
 
@@ -330,7 +320,7 @@ namespace libexeinfo
                         return "16-bit Presentation Manager running under 32-bit OS/2";
                     case VersionFileOS.VOS_OS232_PM32:
                         return "32-bit Presentation Manager running under 32-bit OS/2";
-                    default: return string.Format("Unknown OS code {0}", (uint)os);
+                    default: return $"Unknown OS code {(uint)os}";
                 }
             }
         }

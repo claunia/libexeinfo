@@ -72,16 +72,10 @@ namespace libexeinfo
             Initialize();
         }
 
-        /// <summary>
-        ///     The <see cref="FileStream" /> that contains the executable represented by this instance
-        /// </summary>
         public Stream BaseStream  { get; }
         public bool   IsBigEndian => false;
-        /// <summary>
-        ///     If true this instance correctly represents a Microsoft Portable Executable
-        /// </summary>
-        public bool   Recognized { get; private set; }
-        public string Type       { get; private set; }
+        public bool   Recognized  { get; private set; }
+        public string Type        { get; private set; }
 
         void Initialize()
         {
@@ -100,7 +94,7 @@ namespace libexeinfo
             Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
             Header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
             Marshal.FreeHGlobal(hdrPtr);
-            Recognized = Header.signature == Signature;
+            Recognized = Header.signature == SIGNATURE;
 
             if(!Recognized) return;
 
@@ -135,20 +129,20 @@ namespace libexeinfo
         /// <param name="path">Executable path.</param>
         public static bool Identify(string path)
         {
-            FileStream BaseStream     = File.Open(path, FileMode.Open, FileAccess.Read);
-            MZ         BaseExecutable = new MZ(BaseStream);
-            if(!BaseExecutable.Recognized) return false;
+            FileStream baseStream     = File.Open(path, FileMode.Open, FileAccess.Read);
+            MZ         baseExecutable = new MZ(baseStream);
+            if(!baseExecutable.Recognized) return false;
 
-            if(BaseExecutable.Header.new_offset >= BaseStream.Length) return false;
+            if(baseExecutable.Header.new_offset >= baseStream.Length) return false;
 
-            BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
+            baseStream.Seek(baseExecutable.Header.new_offset, SeekOrigin.Begin);
             byte[] buffer = new byte[Marshal.SizeOf(typeof(PEHeader))];
-            BaseStream.Read(buffer, 0, buffer.Length);
+            baseStream.Read(buffer, 0, buffer.Length);
             IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
             Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-            PEHeader Header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
+            PEHeader header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
             Marshal.FreeHGlobal(hdrPtr);
-            return Header.signature == Signature;
+            return header.signature == SIGNATURE;
         }
 
         /// <summary>
@@ -158,20 +152,20 @@ namespace libexeinfo
         /// <param name="stream">Stream containing the executable.</param>
         public static bool Identify(FileStream stream)
         {
-            FileStream BaseStream     = stream;
-            MZ         BaseExecutable = new MZ(BaseStream);
-            if(!BaseExecutable.Recognized) return false;
+            FileStream baseStream     = stream;
+            MZ         baseExecutable = new MZ(baseStream);
+            if(!baseExecutable.Recognized) return false;
 
-            if(BaseExecutable.Header.new_offset >= BaseStream.Length) return false;
+            if(baseExecutable.Header.new_offset >= baseStream.Length) return false;
 
-            BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
+            baseStream.Seek(baseExecutable.Header.new_offset, SeekOrigin.Begin);
             byte[] buffer = new byte[Marshal.SizeOf(typeof(PEHeader))];
-            BaseStream.Read(buffer, 0, buffer.Length);
+            baseStream.Read(buffer, 0, buffer.Length);
             IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
             Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-            PEHeader Header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
+            PEHeader header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
             Marshal.FreeHGlobal(hdrPtr);
-            return Header.signature == Signature;
+            return header.signature == SIGNATURE;
         }
 
         static WindowsHeader64 ToPlus(WindowsHeader header)

@@ -28,7 +28,7 @@ namespace libexeinfo
 {
     public partial class PE
     {
-        public static string SubsystemToString(Subsystems subsystem)
+        static string SubsystemToString(Subsystems subsystem)
         {
             switch(subsystem)
             {

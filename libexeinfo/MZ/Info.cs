@@ -41,7 +41,7 @@ namespace libexeinfo
         /// </summary>
         /// <returns>Human readable information for given MZ header.</returns>
         /// <param name="header">MZ executable header.</param>
-        public static string GetInfo(MZHeader header)
+        static string GetInfo(MZHeader header)
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("DOS MZ executable:");

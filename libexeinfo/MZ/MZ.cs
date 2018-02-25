@@ -94,7 +94,7 @@ namespace libexeinfo
             Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
             Header = (MZHeader)Marshal.PtrToStructure(hdrPtr, typeof(MZHeader));
             Marshal.FreeHGlobal(hdrPtr);
-            Recognized = Header.signature == Signature;
+            Recognized = Header.signature == SIGNATURE;
 
             if(!Recognized) return;
 
@@ -128,7 +128,7 @@ namespace libexeinfo
             MZHeader mzHdr = (MZHeader)Marshal.PtrToStructure(hdrPtr, typeof(MZHeader));
             Marshal.FreeHGlobal(hdrPtr);
 
-            return mzHdr.signature == Signature;
+            return mzHdr.signature == SIGNATURE;
         }
     }
 }

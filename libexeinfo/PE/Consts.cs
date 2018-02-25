@@ -31,8 +31,8 @@ namespace libexeinfo
         /// <summary>
         ///     Portable Executable signature, "PE\0\0"
         /// </summary>
-        public const ushort Signature = 0x00004550;
-        public const ushort PE32      = COFF.ZMAGIC;
-        public const ushort PE32Plus  = 0x20b;
+        const ushort SIGNATURE = 0x00004550;
+        const ushort PE32      = COFF.ZMAGIC;
+        internal const ushort PE32Plus  = 0x20b;
     }
 }

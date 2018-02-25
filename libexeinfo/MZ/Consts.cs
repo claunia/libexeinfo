@@ -31,6 +31,6 @@ namespace libexeinfo
         /// <summary>
         ///     MZ executable signature, "MZ"
         /// </summary>
-        public const ushort Signature = 0x5A4D;
+        const ushort SIGNATURE = 0x5A4D;
     }
 }

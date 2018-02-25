@@ -73,16 +73,10 @@ namespace libexeinfo
             Initialize();
         }
 
-        /// <summary>
-        ///     The <see cref="FileStream" /> that contains the executable represented by this instance
-        /// </summary>
         public Stream BaseStream  { get; }
         public bool   IsBigEndian => false;
-        /// <summary>
-        ///     If true this instance correctly represents a Microsoft New Executable
-        /// </summary>
-        public bool   Recognized { get; private set; }
-        public string Type       { get; }
+        public bool   Recognized  { get; private set; }
+        public string Type        { get; private set; }
 
         void Initialize()
         {
@@ -102,9 +96,10 @@ namespace libexeinfo
             Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
             Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
             Marshal.FreeHGlobal(hdrPtr);
-            if(Header.signature != Signature) return;
+            if(Header.signature != SIGNATURE) return;
 
             Recognized = true;
+            Type       = "New Executable (NE)";
             if(Header.resource_entries <= 0) return;
 
             Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset);
@@ -131,7 +126,7 @@ namespace libexeinfo
             Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
             NEHeader Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
             Marshal.FreeHGlobal(hdrPtr);
-            return Header.signature == Signature;
+            return Header.signature == SIGNATURE;
         }
 
         /// <summary>
@@ -154,7 +149,7 @@ namespace libexeinfo
             Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
             NEHeader Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
             Marshal.FreeHGlobal(hdrPtr);
-            return Header.signature == Signature;
+            return Header.signature == SIGNATURE;
         }
     }
 }

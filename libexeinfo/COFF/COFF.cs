@@ -68,17 +68,11 @@ namespace libexeinfo
         /// <summary>
         ///     Header for this executable
         /// </summary>
-        public COFFHeader Header { get; private set; }
-        /// <summary>
-        ///     The <see cref="FileStream" /> that contains the executable represented by this instance
-        /// </summary>
-        public Stream BaseStream  { get; }
-        public bool   IsBigEndian { get; private set; }
-        /// <summary>
-        ///     If true this instance correctly represents a Common Object File Format
-        /// </summary>
-        public bool   Recognized { get; private set; }
-        public string Type       { get; private set; }
+        public COFFHeader Header      { get; private set; }
+        public Stream     BaseStream  { get; }
+        public bool       IsBigEndian { get; private set; }
+        public bool       Recognized  { get; private set; }
+        public string     Type        { get; private set; }
 
         void Initialize()
         {

@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System;
+// ReSharper disable InconsistentNaming
 
 namespace libexeinfo
 {
