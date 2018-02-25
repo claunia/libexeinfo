@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="ExeInfo GUI" ClientSize="400, 350" Padding="10">
+	<StackLayout Orientation="Vertical">
+        <StackLayoutItem HorizontalAlignment="Stretch">
+            <StackLayout Orientation="Horizontal">
+                <Label ID="lblFile">File:</Label>
+                <StackLayoutItem Expand="True">
+                    <TextBox ID="txtFile" ReadOnly="True" />
+                </StackLayoutItem>
+                <StackLayoutItem HorizontalAlignment="Right">
+                    <Button ID="btnLoad" Click="OnBtnLoadClick">Load</Button>
+                </StackLayoutItem>
+            </StackLayout>
+        </StackLayoutItem>
+        <StackLayoutItem HorizontalAlignment="Stretch">
+            <StackLayout Orientation="Horizontal">
+                <Label ID="lblType">Type:</Label>
+                <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
+                    <TextBox ID="txtType" ReadOnly="True" />
+                </StackLayoutItem>
+            </StackLayout>
+        </StackLayoutItem>
+        <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
+            <StackLayout Orientation="Vertical">
+                <Label ID="lblInformation">Type:</Label>
+                <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+                    <TextArea ID="txtInformation" ReadOnly="True" />
+                </StackLayoutItem>
+            </StackLayout>
+        </StackLayoutItem>
+	</StackLayout>
+	<Form.Menu>
+		<MenuBar>
+			<MenuBar.QuitItem>
+				<ButtonMenuItem ID="mnuQuit" Text="Quit" Shortcut="CommonModifier+Q" Click="OnMnuQuitClick" />
+			</MenuBar.QuitItem>
+			<MenuBar.AboutItem>
+				<ButtonMenuItem ID="mnuAbout" Text="About..." Click="OnMnuAboutClick" />
+			</MenuBar.AboutItem>
+		</MenuBar>
+	</Form.Menu>
+</Form>
