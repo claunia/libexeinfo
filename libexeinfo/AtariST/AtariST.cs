@@ -23,84 +23,85 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System.IO;
 using System.Runtime.InteropServices;
 
 namespace libexeinfo
 {
 	/// <summary>
-	/// Represents an Atari ST executable
+	///     Represents an Atari ST executable
 	/// </summary>
 	public partial class AtariST
     {
-		/// <summary>
-		/// The <see cref="FileStream"/> that contains the executable represented by this instance
-		/// </summary>
-		public readonly FileStream BaseStream;
-		/// <summary>
-		/// Header for this executable
-		/// </summary>
-		public readonly AtariHeader Header;
-		/// <summary>
-		/// If true this instance correctly represents an Atari ST executable
-		/// </summary>
-        public readonly bool IsAtariST;
+	    /// <summary>
+	    ///     The <see cref="FileStream" /> that contains the executable represented by this instance
+	    /// </summary>
+	    public readonly FileStream BaseStream;
+	    /// <summary>
+	    ///     Header for this executable
+	    /// </summary>
+	    public readonly AtariHeader Header;
+	    /// <summary>
+	    ///     If true this instance correctly represents an Atari ST executable
+	    /// </summary>
+	    public readonly bool IsAtariST;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:libexeinfo.AtariST"/> class.
-		/// </summary>
-		/// <param name="path">Executable path.</param>
-		public AtariST(string path)
-		{
-			byte[] buffer = new byte[Marshal.SizeOf(typeof(AtariHeader))];
+	    /// <summary>
+	    ///     Initializes a new instance of the <see cref="T:libexeinfo.AtariST" /> class.
+	    /// </summary>
+	    /// <param name="path">Executable path.</param>
+	    public AtariST(string path)
+        {
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(AtariHeader))];
 
-			BaseStream = File.Open(path, FileMode.Open, FileAccess.Read);
-			BaseStream.Position = 0;
-			BaseStream.Read(buffer, 0, buffer.Length);
-            Header = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariHeader>(buffer);
-			IsAtariST = Header.signature == Signature;
-		}
+            BaseStream          = File.Open(path, FileMode.Open, FileAccess.Read);
+            BaseStream.Position = 0;
+            BaseStream.Read(buffer, 0, buffer.Length);
+            Header    = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariHeader>(buffer);
+            IsAtariST = Header.signature == SIGNATURE;
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:libexeinfo.AtariST"/> class.
-		/// </summary>
-		/// <param name="stream">Stream containing the executable.</param>
-		public AtariST(FileStream stream)
-		{
-			byte[] buffer = new byte[Marshal.SizeOf(typeof(AtariHeader))];
+	    /// <summary>
+	    ///     Initializes a new instance of the <see cref="T:libexeinfo.AtariST" /> class.
+	    /// </summary>
+	    /// <param name="stream">Stream containing the executable.</param>
+	    public AtariST(FileStream stream)
+        {
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(AtariHeader))];
 
-			BaseStream = stream;
-			BaseStream.Position = 0;
-			BaseStream.Read(buffer, 0, buffer.Length);
-			Header = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariHeader>(buffer);
-			IsAtariST = Header.signature == Signature;
-		}
+            BaseStream          = stream;
+            BaseStream.Position = 0;
+            BaseStream.Read(buffer, 0, buffer.Length);
+            Header    = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariHeader>(buffer);
+            IsAtariST = Header.signature == SIGNATURE;
+        }
 
-		/// <summary>
-		/// Identifies if the specified executable is a Atari ST executable
-		/// </summary>
-		/// <returns><c>true</c> if the specified executable is a Atari ST executable, <c>false</c> otherwise.</returns>
-		/// <param name="path">Executable path.</param>
-		public static bool Identify(string path)
-		{
-			FileStream exeFs = File.Open(path, FileMode.Open, FileAccess.Read);
-			return Identify(exeFs);
-		}
+	    /// <summary>
+	    ///     Identifies if the specified executable is a Atari ST executable
+	    /// </summary>
+	    /// <returns><c>true</c> if the specified executable is a Atari ST executable, <c>false</c> otherwise.</returns>
+	    /// <param name="path">Executable path.</param>
+	    public static bool Identify(string path)
+        {
+            FileStream exeFs = File.Open(path, FileMode.Open, FileAccess.Read);
+            return Identify(exeFs);
+        }
 
-		/// <summary>
-		/// Identifies if the specified executable is a Atari ST executable
-		/// </summary>
-		/// <returns><c>true</c> if the specified executable is a Atari ST executable, <c>false</c> otherwise.</returns>
-		/// <param name="stream">Stream containing the executable.</param>
-		public static bool Identify(FileStream stream)
-		{
-			byte[] buffer = new byte[Marshal.SizeOf(typeof(AtariHeader))];
+	    /// <summary>
+	    ///     Identifies if the specified executable is a Atari ST executable
+	    /// </summary>
+	    /// <returns><c>true</c> if the specified executable is a Atari ST executable, <c>false</c> otherwise.</returns>
+	    /// <param name="stream">Stream containing the executable.</param>
+	    public static bool Identify(FileStream stream)
+        {
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(AtariHeader))];
 
-			stream.Position = 0;
-			stream.Read(buffer, 0, buffer.Length);
-			AtariHeader hdr = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariHeader>(buffer);
+            stream.Position = 0;
+            stream.Read(buffer, 0, buffer.Length);
+            AtariHeader hdr = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariHeader>(buffer);
 
-			return hdr.signature == Signature;
-		}
-	}
+            return hdr.signature == SIGNATURE;
+        }
+    }
 }

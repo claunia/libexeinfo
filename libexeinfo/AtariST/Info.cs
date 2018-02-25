@@ -29,30 +29,30 @@ using System.Text;
 namespace libexeinfo
 {
     public partial class AtariST
-	{
-		/// <summary>
-		/// Gets a string with human readable information for a given Atari ST header
-		/// </summary>
-		/// <returns>Human readable information for given Atari ST header.</returns>
-		/// <param name="header">Atari ST executable header.</param>
-		public static string GetInfo(AtariHeader header)
-		{
+    {
+	    /// <summary>
+	    ///     Gets a string with human readable information for a given Atari ST header
+	    /// </summary>
+	    /// <returns>Human readable information for given Atari ST header.</returns>
+	    /// <param name="header">Atari ST executable header.</param>
+	    public static string GetInfo(AtariHeader header)
+        {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Atari ST executable:");
             sb.AppendFormat("\t{0} bytes in text segment", header.text_len).AppendLine();
             sb.AppendFormat("\t{0} bytes in data segment", header.data_len).AppendLine();
-            sb.AppendFormat("\t{0} bytes in BSS segment", header.bss_len).AppendLine();
+            sb.AppendFormat("\t{0} bytes in BSS segment",  header.bss_len).AppendLine();
             sb.AppendFormat("\t{0} bytes in symbol table", header.symb_len).AppendLine();
-			return sb.ToString();
-		}
+            return sb.ToString();
+        }
 
-		/// <summary>
-		/// Gets a string with human readable information for the Atari ST executable represented by this instance
-		/// </summary>
-		/// <returns>Human readable information for this instance.</returns>
-		public string GetInfo()
+	    /// <summary>
+	    ///     Gets a string with human readable information for the Atari ST executable represented by this instance
+	    /// </summary>
+	    /// <returns>Human readable information for this instance.</returns>
+	    public string GetInfo()
         {
             return GetInfo(Header);
         }
-	}
+    }
 }

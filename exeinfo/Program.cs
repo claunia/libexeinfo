@@ -25,10 +25,9 @@
 // THE SOFTWARE.
 
 using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using libexeinfo;
 
@@ -38,7 +37,7 @@ namespace exeinfo
     {
         public static void Main(string[] args)
         {
-            if (args.Length != 1)
+            if(args.Length != 1)
             {
                 Console.WriteLine("exeinfo version 0.1 © 2017 Natalia Portillo");
                 Console.WriteLine("Usage: exeinfo file.exe");
@@ -49,97 +48,100 @@ namespace exeinfo
 
             bool recognized = false;
 
-            MZ mzExe = new MZ(exeFs);
-            NE neExe = new NE(exeFs);
-            AtariST stExe = new AtariST(exeFs);
-            LX lxExe = new LX(exeFs);
-			COFF coffExe = new COFF(exeFs);
-			PE peExe = new PE(exeFs);
+            MZ      mzExe   = new MZ(exeFs);
+            NE      neExe   = new NE(exeFs);
+            AtariST stExe   = new AtariST(exeFs);
+            LX      lxExe   = new LX(exeFs);
+            COFF    coffExe = new COFF(exeFs);
+            PE      peExe   = new PE(exeFs);
 
-			if (mzExe.IsMZ)
+            if(mzExe.IsMZ)
             {
                 recognized = true;
                 Console.Write(mzExe.GetInfo());
             }
 
-            if (neExe.IsNE)
+            if(neExe.IsNE)
             {
                 recognized = true;
                 Console.Write(neExe.GetInfo());
-                if (neExe.Versions != null)
-                {
-                    foreach (NE.Version vers in neExe.Versions)
+                if(neExe.Versions != null)
+                    foreach(NE.Version vers in neExe.Versions)
                     {
-                        Console.WriteLine("\tVersion resource {0}:", vers.Name);
-                        Console.WriteLine("\t\tFile version: {0}", vers.FileVersion);
+                        Console.WriteLine("\tVersion resource {0}:",  vers.Name);
+                        Console.WriteLine("\t\tFile version: {0}",    vers.FileVersion);
                         Console.WriteLine("\t\tProduct version: {0}", vers.ProductVersion);
-                        Console.WriteLine("\t\tFile type: {0}", NE.Version.TypeToString(vers.FileType));
-                        if (vers.FileType == NE.VersionFileType.VFT_DRV)
-                            Console.WriteLine("\t\tFile subtype: {0} driver", NE.Version.DriverToString(vers.FileSubtype));
-                        else if (vers.FileType == NE.VersionFileType.VFT_DRV)
+                        Console.WriteLine("\t\tFile type: {0}",       NE.Version.TypeToString(vers.FileType));
+                        if(vers.FileType == NE.VersionFileType.VFT_DRV)
+                            Console.WriteLine("\t\tFile subtype: {0} driver",
+                                              NE.Version.DriverToString(vers.FileSubtype));
+                        else if(vers.FileType == NE.VersionFileType.VFT_DRV)
                             Console.WriteLine("\t\tFile subtype: {0} font", NE.Version.FontToString(vers.FileSubtype));
-                        else if (vers.FileSubtype > 0)
+                        else if(vers.FileSubtype > 0)
                             Console.WriteLine("\t\tFile subtype: {0}", (uint)vers.FileSubtype);
-                        Console.WriteLine("\t\tFile flags: {0}", vers.FileFlags);
-                        Console.WriteLine("\t\tFile OS: {0}", NE.Version.OsToString(vers.FileOS));
+                        Console.WriteLine("\t\tFile flags: {0}",       vers.FileFlags);
+                        Console.WriteLine("\t\tFile OS: {0}",          NE.Version.OsToString(vers.FileOS));
 
-                        foreach (KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
+                        foreach(KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
                         {
                             string cultureName;
                             string encodingName;
 
                             try
                             {
-                                cultureName = new CultureInfo(Convert.ToInt32(strByLang.Key.Substring(0, 4), 16)).DisplayName;
+                                cultureName = new CultureInfo(Convert.ToInt32(strByLang.Key.Substring(0, 4), 16))
+                                   .DisplayName;
                             }
                             catch
                             {
-                                cultureName = string.Format("unsupported culture 0x{0:X4}", Convert.ToInt32(strByLang.Key.Substring(0, 4), 16));
+                                cultureName =
+                                    $"unsupported culture 0x{Convert.ToInt32(strByLang.Key.Substring(0, 4), 16):X4}";
                             }
 
                             try
                             {
-                                encodingName = Encoding.GetEncoding(Convert.ToInt32(strByLang.Key.Substring(4), 16)).EncodingName;
+                                encodingName = Encoding
+                                              .GetEncoding(Convert.ToInt32(strByLang.Key.Substring(4), 16))
+                                              .EncodingName;
                             }
                             catch
                             {
-                                encodingName = string.Format("unsupported encoding 0x{0:X4}", Convert.ToInt32(strByLang.Key.Substring(4), 16));
+                                encodingName =
+                                    $"unsupported encoding 0x{Convert.ToInt32(strByLang.Key.Substring(4), 16):X4}";
                             }
 
                             Console.WriteLine("\t\tStrings for {0} in codepage {1}:", cultureName, encodingName);
-                            foreach (KeyValuePair<string, string> strings in strByLang.Value)
+                            foreach(KeyValuePair<string, string> strings in strByLang.Value)
                                 Console.WriteLine("\t\t\t{0}: {1}", strings.Key, strings.Value);
                         }
                     }
-                }
             }
 
-            if (stExe.IsAtariST)
-			{
-				recognized = true;
+            if(stExe.IsAtariST)
+            {
+                recognized = true;
                 Console.Write(stExe.GetInfo());
-			}
+            }
 
-			if (lxExe.IsLX)
-			{
-				recognized = true;
-				Console.Write(lxExe.GetInfo());
-			}
+            if(lxExe.IsLX)
+            {
+                recognized = true;
+                Console.Write(lxExe.GetInfo());
+            }
 
-            if (coffExe.IsCOFF)
-			{
-				recognized = true;
-				Console.Write(coffExe.GetInfo());
-			}
+            if(coffExe.IsCOFF)
+            {
+                recognized = true;
+                Console.Write(coffExe.GetInfo());
+            }
 
-            if (peExe.IsPE)
-			{
-				recognized = true;
-				Console.Write(peExe.GetInfo());
-			}
+            if(peExe.IsPE)
+            {
+                recognized = true;
+                Console.Write(peExe.GetInfo());
+            }
 
-			if (!recognized)
-                Console.WriteLine("Executable format not recognized");
+            if(!recognized) Console.WriteLine("Executable format not recognized");
         }
     }
 }

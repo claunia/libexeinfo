@@ -31,7 +31,7 @@ namespace libexeinfo
     public partial class MZ
     {
         /// <summary>
-        /// Header of a DOS relocatable executable
+        ///     Header of a DOS relocatable executable
         /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct MZHeader
@@ -52,15 +52,15 @@ namespace libexeinfo
             public ushort overlay_number;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
             public ushort[] reserved;
-            public ushort oem_id;
-            public ushort oem_info;
+            public ushort   oem_id;
+            public ushort   oem_info;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
             public ushort[] reserved2;
-            public uint new_offset;
+            public uint     new_offset;
         }
 
         /// <summary>
-        /// Entry in the relocation table
+        ///     Entry in the relocation table
         /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct RelocationTableEntry

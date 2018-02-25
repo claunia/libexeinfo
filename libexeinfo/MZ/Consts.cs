@@ -24,14 +24,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
 namespace libexeinfo
 {
     public partial class MZ
     {
-        /// <summary>
-        /// MZ executable signature, "MZ"
-        /// </summary>
-		public const ushort Signature = 0x5A4D;
-	}
+	    /// <summary>
+	    ///     MZ executable signature, "MZ"
+	    /// </summary>
+	    public const ushort Signature = 0x5A4D;
+    }
 }

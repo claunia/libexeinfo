@@ -23,6 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -30,144 +31,138 @@ using System.Runtime.InteropServices;
 namespace libexeinfo
 {
 	/// <summary>
-	/// Represents a Microsoft New Executable
+	///     Represents a Microsoft New Executable
 	/// </summary>
 	public partial class NE
     {
-		/// <summary>
-		/// The <see cref="FileStream"/> that contains the executable represented by this instance
-		/// </summary>
-		public readonly FileStream BaseStream;
-		/// <summary>
-		/// Header for this executable
-		/// </summary>
-		public readonly NEHeader Header;
-		/// <summary>
-		/// If true this instance correctly represents a Microsoft New Executable
-		/// </summary>
-		public readonly bool IsNE;
-		public readonly MZ BaseExecutable;
+        public readonly MZ BaseExecutable;
+	    /// <summary>
+	    ///     The <see cref="FileStream" /> that contains the executable represented by this instance
+	    /// </summary>
+	    public readonly FileStream BaseStream;
+	    /// <summary>
+	    ///     Header for this executable
+	    /// </summary>
+	    public readonly NEHeader Header;
+	    /// <summary>
+	    ///     If true this instance correctly represents a Microsoft New Executable
+	    /// </summary>
+	    public readonly bool          IsNE;
         public readonly ResourceTable Resources;
-        public readonly Version[] Versions;
+        public readonly Version[]     Versions;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:libexeinfo.NE"/> class.
-		/// </summary>
-		/// <param name="path">Executable path.</param>
-		public NE(string path)
-		{
-            IsNE = false;
-			BaseStream = File.Open(path, FileMode.Open, FileAccess.Read);
+	    /// <summary>
+	    ///     Initializes a new instance of the <see cref="T:libexeinfo.NE" /> class.
+	    /// </summary>
+	    /// <param name="path">Executable path.</param>
+	    public NE(string path)
+        {
+            IsNE           = false;
+            BaseStream     = File.Open(path, FileMode.Open, FileAccess.Read);
             BaseExecutable = new MZ(BaseStream);
             if(BaseExecutable.IsMZ)
-            {
-				if(BaseExecutable.Header.new_offset < BaseStream.Length)
+                if(BaseExecutable.Header.new_offset < BaseStream.Length)
                 {
-					BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
-					byte[] buffer = new byte[Marshal.SizeOf(typeof(NEHeader))];
-					BaseStream.Read(buffer, 0, buffer.Length);
-					IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-					Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
+                    BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
+                    byte[] buffer = new byte[Marshal.SizeOf(typeof(NEHeader))];
+                    BaseStream.Read(buffer, 0, buffer.Length);
+                    IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
+                    Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
                     Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
-					Marshal.FreeHGlobal(hdrPtr);
+                    Marshal.FreeHGlobal(hdrPtr);
                     if(Header.signature == Signature)
                     {
                         IsNE = true;
-						if (Header.resource_entries > 0)
-						{
-							Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset);
-							Versions = GetVersions().ToArray();
-						}
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:libexeinfo.NE"/> class.
-		/// </summary>
-		/// <param name="stream">Stream containing the executable.</param>
-		public NE(FileStream stream)
-		{
-			IsNE = false;
-            BaseStream = stream;
-			BaseExecutable = new MZ(BaseStream);
-			if (BaseExecutable.IsMZ)
-			{
-				if (BaseExecutable.Header.new_offset < BaseStream.Length)
-				{
-					BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
-					byte[] buffer = new byte[Marshal.SizeOf(typeof(NEHeader))];
-					BaseStream.Read(buffer, 0, buffer.Length);
-					IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-					Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-					Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
-					Marshal.FreeHGlobal(hdrPtr);
-					if (Header.signature == Signature)
-					{
-						IsNE = true;
-                        if (Header.resource_entries > 0)
+                        if(Header.resource_entries > 0)
                         {
-                            Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset);
+                            Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset,
+                                                     Header.resource_table_offset);
                             Versions = GetVersions().ToArray();
                         }
-					}
-				}
-			}
-		}
+                    }
+                }
+        }
 
-		/// <summary>
-		/// Identifies if the specified executable is a Microsoft New Executable
-		/// </summary>
-		/// <returns><c>true</c> if the specified executable is a Microsoft New Executable, <c>false</c> otherwise.</returns>
-		/// <param name="path">Executable path.</param>
-		public static bool Identify(string path)
-		{
-			FileStream BaseStream = File.Open(path, FileMode.Open, FileAccess.Read);
-			MZ BaseExecutable = new MZ(BaseStream);
-			if (BaseExecutable.IsMZ)
-			{
-				if (BaseExecutable.Header.new_offset < BaseStream.Length)
-				{
-					BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
-					byte[] buffer = new byte[Marshal.SizeOf(typeof(NEHeader))];
-					BaseStream.Read(buffer, 0, buffer.Length);
-					IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-					Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-					NEHeader Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
-					Marshal.FreeHGlobal(hdrPtr);
-					return Header.signature == Signature;
-				}
-			}
+	    /// <summary>
+	    ///     Initializes a new instance of the <see cref="T:libexeinfo.NE" /> class.
+	    /// </summary>
+	    /// <param name="stream">Stream containing the executable.</param>
+	    public NE(FileStream stream)
+        {
+            IsNE           = false;
+            BaseStream     = stream;
+            BaseExecutable = new MZ(BaseStream);
+            if(BaseExecutable.IsMZ)
+                if(BaseExecutable.Header.new_offset < BaseStream.Length)
+                {
+                    BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
+                    byte[] buffer = new byte[Marshal.SizeOf(typeof(NEHeader))];
+                    BaseStream.Read(buffer, 0, buffer.Length);
+                    IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
+                    Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
+                    Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
+                    Marshal.FreeHGlobal(hdrPtr);
+                    if(Header.signature == Signature)
+                    {
+                        IsNE = true;
+                        if(Header.resource_entries > 0)
+                        {
+                            Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset,
+                                                     Header.resource_table_offset);
+                            Versions = GetVersions().ToArray();
+                        }
+                    }
+                }
+        }
+
+	    /// <summary>
+	    ///     Identifies if the specified executable is a Microsoft New Executable
+	    /// </summary>
+	    /// <returns><c>true</c> if the specified executable is a Microsoft New Executable, <c>false</c> otherwise.</returns>
+	    /// <param name="path">Executable path.</param>
+	    public static bool Identify(string path)
+        {
+            FileStream BaseStream     = File.Open(path, FileMode.Open, FileAccess.Read);
+            MZ         BaseExecutable = new MZ(BaseStream);
+            if(BaseExecutable.IsMZ)
+                if(BaseExecutable.Header.new_offset < BaseStream.Length)
+                {
+                    BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
+                    byte[] buffer = new byte[Marshal.SizeOf(typeof(NEHeader))];
+                    BaseStream.Read(buffer, 0, buffer.Length);
+                    IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
+                    Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
+                    NEHeader Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
+                    Marshal.FreeHGlobal(hdrPtr);
+                    return Header.signature == Signature;
+                }
 
             return false;
-		}
+        }
 
-		/// <summary>
-		/// Identifies if the specified executable is a Microsoft New Executable
-		/// </summary>
-		/// <returns><c>true</c> if the specified executable is a Microsoft New Executable, <c>false</c> otherwise.</returns>
-		/// <param name="stream">Stream containing the executable.</param>
-		public static bool Identify(FileStream stream)
-		{
-            FileStream BaseStream = stream;
-			MZ BaseExecutable = new MZ(BaseStream);
-			if (BaseExecutable.IsMZ)
-			{
-				if (BaseExecutable.Header.new_offset < BaseStream.Length)
-				{
-					BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
-					byte[] buffer = new byte[Marshal.SizeOf(typeof(NEHeader))];
-					BaseStream.Read(buffer, 0, buffer.Length);
-					IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
-					Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-					NEHeader Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
-					Marshal.FreeHGlobal(hdrPtr);
-					return Header.signature == Signature;
-				}
-			}
+	    /// <summary>
+	    ///     Identifies if the specified executable is a Microsoft New Executable
+	    /// </summary>
+	    /// <returns><c>true</c> if the specified executable is a Microsoft New Executable, <c>false</c> otherwise.</returns>
+	    /// <param name="stream">Stream containing the executable.</param>
+	    public static bool Identify(FileStream stream)
+        {
+            FileStream BaseStream     = stream;
+            MZ         BaseExecutable = new MZ(BaseStream);
+            if(BaseExecutable.IsMZ)
+                if(BaseExecutable.Header.new_offset < BaseStream.Length)
+                {
+                    BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
+                    byte[] buffer = new byte[Marshal.SizeOf(typeof(NEHeader))];
+                    BaseStream.Read(buffer, 0, buffer.Length);
+                    IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
+                    Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
+                    NEHeader Header = (NEHeader)Marshal.PtrToStructure(hdrPtr, typeof(NEHeader));
+                    Marshal.FreeHGlobal(hdrPtr);
+                    return Header.signature == Signature;
+                }
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 }

@@ -23,11 +23,11 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System;
+
 namespace libexeinfo
 {
-	public partial class AtariST
-	{
-		public const ushort Signature = 0x601A;
-	}
+    public partial class AtariST
+    {
+        const ushort SIGNATURE = 0x601A;
+    }
 }

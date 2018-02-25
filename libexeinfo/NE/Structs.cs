@@ -24,7 +24,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
 using System.Runtime.InteropServices;
 
 namespace libexeinfo
@@ -32,62 +31,62 @@ namespace libexeinfo
     public partial class NE
     {
         /// <summary>
-        /// Header for a Microsoft New Executable
+        ///     Header for a Microsoft New Executable
         /// </summary>
-        [StructLayout(LayoutKind.Sequential/*, Pack = 2*/)]
+        [StructLayout(LayoutKind.Sequential /*, Pack = 2*/)]
         public struct NEHeader
         {
-            public ushort signature;
-            public byte linker_major;
-            public byte linker_minor;
-            public ushort entry_table_offset;
-            public ushort entry_table_length;
-            public uint crc;
-            public ProgramFlags program_flags;
+            public ushort           signature;
+            public byte             linker_major;
+            public byte             linker_minor;
+            public ushort           entry_table_offset;
+            public ushort           entry_table_length;
+            public uint             crc;
+            public ProgramFlags     program_flags;
             public ApplicationFlags application_flags;
-            public byte auto_data_segment_index;
-            public ushort initial_heap;
-            public ushort initial_stack;
-            public uint entry_point;
-            public uint stack_pointer;
-            public ushort segment_count;
-            public ushort reference_count;
-            public ushort nonresident_table_size;
-            public ushort segment_table_offset;
-            public ushort resource_table_offset;
-            public ushort resident_names_offset;
-            public ushort module_reference_offset;
-            public ushort imported_names_offset;
-            public uint nonresident_names_offset;
-            public ushort movable_entries;
-            public ushort alignment_shift;
-            public ushort resource_entries;
-            public TargetOS target_os;
-            public OS2Flags os2_flags;
-            public ushort return_thunks_offset;
-            public ushort segment_reference_thunks;
-            public ushort minimum_swap_area;
-            public byte os_minor;
-            public byte os_major;
+            public byte             auto_data_segment_index;
+            public ushort           initial_heap;
+            public ushort           initial_stack;
+            public uint             entry_point;
+            public uint             stack_pointer;
+            public ushort           segment_count;
+            public ushort           reference_count;
+            public ushort           nonresident_table_size;
+            public ushort           segment_table_offset;
+            public ushort           resource_table_offset;
+            public ushort           resident_names_offset;
+            public ushort           module_reference_offset;
+            public ushort           imported_names_offset;
+            public uint             nonresident_names_offset;
+            public ushort           movable_entries;
+            public ushort           alignment_shift;
+            public ushort           resource_entries;
+            public TargetOS         target_os;
+            public OS2Flags         os2_flags;
+            public ushort           return_thunks_offset;
+            public ushort           segment_reference_thunks;
+            public ushort           minimum_swap_area;
+            public byte             os_minor;
+            public byte             os_major;
         }
 
         /// <summary>
-        /// Resource table
+        ///     Resource table
         /// </summary>
         public struct ResourceTable
         {
-            public ushort alignment_shift;
+            public ushort         alignment_shift;
             public ResourceType[] types;
         }
 
         /// <summary>
-        /// Resource type
+        ///     Resource type
         /// </summary>
         public struct ResourceType
         {
-            public ushort id;
-            public ushort count;
-            public uint reserved;
+            public ushort     id;
+            public ushort     count;
+            public uint       reserved;
             public Resource[] resources;
 
             // Not sequentially stored
@@ -95,15 +94,15 @@ namespace libexeinfo
         }
 
         /// <summary>
-        /// Resource
+        ///     Resource
         /// </summary>
         public struct Resource
         {
-            public ushort dataOffset;
-            public ushort length;
+            public ushort        dataOffset;
+            public ushort        length;
             public ResourceFlags flags;
-            public ushort id;
-            public uint reserved;
+            public ushort        id;
+            public uint          reserved;
 
             // Not sequentially stored
             public string name;
@@ -111,36 +110,36 @@ namespace libexeinfo
         }
 
         /// <summary>
-        /// Node in a version resource
+        ///     Node in a version resource
         /// </summary>
         class VersionNode
         {
-            public ushort cbNode;
-            public ushort cbData;
-            public string szName;
-            public byte[] rgbData;
+            public ushort        cbData;
+            public ushort        cbNode;
             public VersionNode[] children;
+            public byte[]        rgbData;
+            public string        szName;
         }
 
         /// <summary>
-        /// Fixed file version info
+        ///     Fixed file version info
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
         public class FixedFileInfo
         {
+            public uint dwFileDateLS;
+            public uint dwFileDateMS;
+            public uint dwFileFlags;
+            public uint dwFileFlagsMask;
+            public uint dwFileOS;
+            public uint dwFileSubtype;
+            public uint dwFileType;
+            public uint dwFileVersionLS;
+            public uint dwFileVersionMS;
+            public uint dwProductVersionLS;
+            public uint dwProductVersionMS;
             public uint dwSignature;
             public uint dwStrucVersion;
-            public uint dwFileVersionMS;
-            public uint dwFileVersionLS;
-            public uint dwProductVersionMS;
-            public uint dwProductVersionLS;
-            public uint dwFileFlagsMask;
-            public uint dwFileFlags;
-            public uint dwFileOS;
-            public uint dwFileType;
-            public uint dwFileSubtype;
-            public uint dwFileDateMS;
-            public uint dwFileDateLS;
         }
     }
 }

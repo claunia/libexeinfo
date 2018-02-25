@@ -23,7 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System;
+
 namespace libexeinfo
 {
     public partial class PE
@@ -32,39 +32,23 @@ namespace libexeinfo
         {
             switch(subsystem)
             {
-							/// <summary>
-							/// An unknown subsystem
-							/// </summary>
-                case Subsystems.IMAGE_SUBSYSTEM_UNKNOWN:
-                    return "for an unknown subsystem with no code";
-                case Subsystems.IMAGE_SUBSYSTEM_NATIVE:
-                    return "an application for native Windows API";
-                case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_GUI:
-                    return "an application for Windows GUI";
+                case Subsystems.IMAGE_SUBSYSTEM_UNKNOWN:     return "for an unknown subsystem with no code";
+                case Subsystems.IMAGE_SUBSYSTEM_NATIVE:      return "an application for native Windows API";
+                case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_GUI: return "an application for Windows GUI";
                 case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_CUI:
                     return "an application for Windows command-line";
-                case Subsystems.IMAGE_SUBSYSTEM_OS2_CUI:
-                    return "an application for OS/2 command-line";
-                case Subsystems.IMAGE_SUBSYSTEM_POSIX_CUI:
-                    return "an application for POSIX command-line";
-                case Subsystems.IMAGE_SUBSYSTEM_NATIVE_WINDOWS:
-                    return "a driver for Windows 9x";
-                case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_CE_GUI:
-                    return "an application for Windows CE";
-                case Subsystems.IMAGE_SUBSYSTEM_EFI_APPLICATION:
-                    return "an EFI application";
-                case Subsystems.IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
-                    return "an EFI boot services driver";
-                case Subsystems.IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
-                    return "an EFI run-time services driver";
-                case Subsystems.IMAGE_SUBSYSTEM_EFI_ROM:
-                    return "an EFI ROM image";
-                case Subsystems.IMAGE_SUBSYSTEM_XBOX:
-                    return "a Xbox executable";
+                case Subsystems.IMAGE_SUBSYSTEM_OS2_CUI:                 return "an application for OS/2 command-line";
+                case Subsystems.IMAGE_SUBSYSTEM_POSIX_CUI:               return "an application for POSIX command-line";
+                case Subsystems.IMAGE_SUBSYSTEM_NATIVE_WINDOWS:          return "a driver for Windows 9x";
+                case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_CE_GUI:          return "an application for Windows CE";
+                case Subsystems.IMAGE_SUBSYSTEM_EFI_APPLICATION:         return "an EFI application";
+                case Subsystems.IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER: return "an EFI boot services driver";
+                case Subsystems.IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:      return "an EFI run-time services driver";
+                case Subsystems.IMAGE_SUBSYSTEM_EFI_ROM:                 return "an EFI ROM image";
+                case Subsystems.IMAGE_SUBSYSTEM_XBOX:                    return "a Xbox executable";
                 case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION:
                     return "an application for Windows Boot environment";
-                default:
-                    return string.Format("for an unknown subsystem with code {0}", (ushort)subsystem);
+                default: return $"for an unknown subsystem with code {(ushort)subsystem}";
             }
         }
     }

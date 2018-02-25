@@ -1,3 +1,29 @@
+//
+// MainForm.xeto.cs
+//
+// Author:
+//       Natalia Portillo <claunia@claunia.com>
+//
+// Copyright (c) 2017 Copyright © Claunia.com
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
 using System;
 using System.IO;
 using Eto.Forms;
@@ -8,9 +34,9 @@ namespace exeinfogui
 {
     public class MainForm : Form
     {
-        TextBox txtFile;
-        TextBox txtType;
+        TextBox  txtFile;
         TextArea txtInformation;
+        TextBox  txtType;
 
         public MainForm()
         {
@@ -19,9 +45,9 @@ namespace exeinfogui
 
         protected void OnBtnLoadClick(object sender, EventArgs e)
         {
-            txtFile.Text = "";
-            txtType.Text = "";
-            txtInformation.Text ="";
+            txtFile.Text        = "";
+            txtType.Text        = "";
+            txtInformation.Text = "";
 
             OpenFileDialog dlgOpen = new OpenFileDialog {Title = "Choose executable file", MultiSelect = false};
 
@@ -57,17 +83,17 @@ namespace exeinfogui
                 }
                 else
                     txtType.Text = "DOS Executable (MZ)";
-                
+
                 txtInformation.Text += mzExe.GetInfo();
             }
             else if(stExe.IsAtariST)
             {
-                txtType.Text = "Atari ST executable";
+                txtType.Text        = "Atari ST executable";
                 txtInformation.Text = stExe.GetInfo();
             }
             else if(coffExe.IsCOFF)
             {
-                txtType.Text = "Common Object File Format (COFF)";
+                txtType.Text        = "Common Object File Format (COFF)";
                 txtInformation.Text = coffExe.GetInfo();
             }
             else
