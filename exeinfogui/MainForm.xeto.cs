@@ -98,6 +98,8 @@ namespace exeinfogui
             }
             else
                 txtType.Text = "Format not recognized";
+            
+            exeFs.Close();
         }
 
         protected void OnMnuAboutClick(object sender, EventArgs e)
