@@ -24,6 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -67,12 +68,13 @@ namespace libexeinfo
         /// <summary>
         ///     Header for this executable
         /// </summary>
-        public AtariHeader    Header        { get; private set; }
-        public Stream         BaseStream    { get; }
-        public bool           IsBigEndian   => true;
-        public bool           Recognized    { get; private set; }
-        public string         Type          { get; private set; }
-        public Architecture[] Architectures => new[] {Architecture.M68K};
+        public AtariHeader               Header                  { get; private set; }
+        public Stream                    BaseStream              { get; }
+        public bool                      IsBigEndian             => true;
+        public bool                      Recognized              { get; private set; }
+        public string                    Type                    { get; private set; }
+        public IEnumerable<Architecture> Architectures           => new[] {Architecture.M68K};
+        public OperatingSystem           RequiredOperatingSystem => new OperatingSystem {Name = "Atari TOS"};
 
         void Initialize()
         {

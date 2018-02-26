@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -68,12 +69,14 @@ namespace libexeinfo
         /// <summary>
         ///     Header for this executable
         /// </summary>
-        public COFFHeader     Header        { get; private set; }
-        public Stream         BaseStream    { get; }
-        public bool           IsBigEndian   { get; private set; }
-        public bool           Recognized    { get; private set; }
-        public string         Type          { get; private set; }
-        public Architecture[] Architectures => new[] {MachineTypeToArchitecture(Header.machine)};
+        public COFFHeader                Header                  { get; private set; }
+        public Stream                    BaseStream              { get; }
+        public bool                      IsBigEndian             { get; private set; }
+        public bool                      Recognized              { get; private set; }
+        public string                    Type                    { get; private set; }
+        public IEnumerable<Architecture> Architectures           => new[] {MachineTypeToArchitecture(Header.machine)};
+        public OperatingSystem           RequiredOperatingSystem =>
+            new OperatingSystem {Name = "Unknown"}; // TODO: Know
 
         void Initialize()
         {

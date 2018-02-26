@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace libexeinfo
 {
@@ -27,6 +28,10 @@ namespace libexeinfo
         /// <summary>
         ///     Architectures that the executable can run on
         /// </summary>
-        Architecture[] Architectures { get; }
+        IEnumerable<Architecture> Architectures { get; }
+        /// <summary>
+        ///     Operating system the executable requires to run on
+        /// </summary>
+        OperatingSystem RequiredOperatingSystem { get; }
     }
 }

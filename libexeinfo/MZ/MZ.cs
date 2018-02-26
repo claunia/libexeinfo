@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -78,9 +79,10 @@ namespace libexeinfo
         /// <summary>
         ///     If true this instance correctly represents a DOS relocatable executable
         /// </summary>
-        public bool   Recognized { get; private set; }
-        public string Type       { get; private set; }
-        public Architecture[] Architectures => new[] {Architecture.I86};
+        public bool                      Recognized              { get; private set; }
+        public string                    Type                    { get; private set; }
+        public IEnumerable<Architecture> Architectures           => new[] {Architecture.I86};
+        public OperatingSystem           RequiredOperatingSystem => new OperatingSystem {Name = "DOS"};
 
         void Initialize()
         {

@@ -64,105 +64,123 @@ namespace libexeinfo
             if(header.program_flags.HasFlag(ProgramFlags.i87))
                 sb.AppendLine("\tApplication uses floating point instructions");
 
-            if(header.target_os == TargetOS.OS2)
+            switch(header.target_os)
             {
-                sb.AppendLine("\tOS/2 application");
-                if(header.os_major > 0)
-                    sb.AppendFormat("\tApplication requires OS/2 {0}.{1} to run", header.os_major, header.os_minor)
-                      .AppendLine();
-                else sb.AppendLine("\tApplication requires OS/2 1.0 to run");
-                if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                   !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication is full screen, unaware of Presentation Manager");
-                else if(!header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                        header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication is aware of Presentation Manager, but doesn't use it");
-                else if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                        header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication uses Presentation Manager");
-                if(header.os2_flags.HasFlag(OS2Flags.LongFilename))
-                    sb.AppendLine("\tApplication supports long filenames");
-                if(header.os2_flags.HasFlag(OS2Flags.ProtectedMode2))
-                    sb.AppendLine("\tApplication uses OS/2 2.x protected mode");
-                if(header.os2_flags.HasFlag(OS2Flags.ProportionalFonts))
-                    sb.AppendLine("\tApplication uses OS/2 2.x proportional fonts");
-                if(header.os2_flags.HasFlag(OS2Flags.GangloadArea))
-                    sb.AppendFormat("\tGangload area starts at {0} an runs for {1} bytes", header.return_thunks_offset,
-                                    header.segment_reference_thunks).AppendLine();
-                else
-                {
+                case TargetOS.OS2:
+                    sb.AppendLine("\tOS/2 application");
+                    if(header.os_major > 0)
+                        sb.AppendFormat("\tApplication requires OS/2 {0}.{1} to run", header.os_major, header.os_minor)
+                          .AppendLine();
+                    else sb.AppendLine("\tApplication requires OS/2 1.0 to run");
+                    if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                       !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication is full screen, unaware of Presentation Manager");
+                    else if(!header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                            header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication is aware of Presentation Manager, but doesn't use it");
+                    else if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                            header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication uses Presentation Manager");
+                    if(header.os2_flags.HasFlag(OS2Flags.LongFilename))
+                        sb.AppendLine("\tApplication supports long filenames");
+                    if(header.os2_flags.HasFlag(OS2Flags.ProtectedMode2))
+                        sb.AppendLine("\tApplication uses OS/2 2.x protected mode");
+                    if(header.os2_flags.HasFlag(OS2Flags.ProportionalFonts))
+                        sb.AppendLine("\tApplication uses OS/2 2.x proportional fonts");
+                    if(header.os2_flags.HasFlag(OS2Flags.GangloadArea))
+                        sb.AppendFormat("\tGangload area starts at {0} an runs for {1} bytes",
+                                        header.return_thunks_offset, header.segment_reference_thunks).AppendLine();
+                    else
+                    {
+                        sb.AppendFormat("\tReturn thunks are at: {0}", header.return_thunks_offset)
+                          .AppendLine();
+                        sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks)
+                          .AppendLine();
+                    }
+
+                    break;
+                case TargetOS.Windows:
+                case TargetOS.Win32:
+                case TargetOS.Unknown:
+                    switch(header.target_os)
+                    {
+                        case TargetOS.Windows:
+                        case TargetOS.Unknown:
+                            sb.AppendLine("\t16-bit Windows application");
+                            break;
+                        case TargetOS.Win32:
+                            sb.AppendLine("\t32-bit Windows application");
+                            break;
+                    }
+
+                    if(header.os_major > 0)
+                        sb.AppendFormat("\tApplication requires Windows {0}.{1} to run", header.os_major,
+                                        header.os_minor).AppendLine();
+                    else
+                        switch(header.target_os)
+                        {
+                            case TargetOS.Windows:
+                                sb.AppendLine("\tApplication requires Windows 2.0 to run");
+                                break;
+                            case TargetOS.Unknown:
+                                sb.AppendLine("\tApplication requires Windows 1.0 to run");
+                                break;
+                        }
+                    if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                       !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication is full screen, unaware of Windows");
+                    else if(!header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                            header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
+                    else if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                            header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication uses Windows");
                     sb.AppendFormat("\tReturn thunks are at: {0}",            header.return_thunks_offset).AppendLine();
                     sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks)
                       .AppendLine();
-                }
-            }
-            else if(header.target_os == TargetOS.Windows || header.target_os == TargetOS.Win32 ||
-                    header.target_os == TargetOS.Unknown)
-            {
-                if(header.target_os == TargetOS.Windows || header.target_os == TargetOS.Unknown)
-                    sb.AppendLine("\t16-bit Windows application");
-                else if(header.target_os == TargetOS.Win32)
-                    sb.AppendLine("\t32-bit Windows application");
-                if(header.os_major > 0)
-                    sb.AppendFormat("\tApplication requires Windows {0}.{1} to run", header.os_major, header.os_minor)
+                    break;
+                case TargetOS.DOS:
+                    sb.AppendLine("\tDOS application");
+                    sb.AppendFormat("\tApplication requires DOS {0}.{1} to run", header.os_major, header.os_minor)
                       .AppendLine();
-                else if(header.target_os == TargetOS.Windows)
-                    sb.AppendLine("\tApplication requires Windows 2.0 to run");
-                else if(header.target_os == TargetOS.Unknown)
-                    sb.AppendLine("\tApplication requires Windows 1.0 to run");
-                if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                   !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication is full screen, unaware of Windows");
-                else if(!header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                        header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
-                else if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                        header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication uses Windows");
-                sb.AppendFormat("\tReturn thunks are at: {0}",            header.return_thunks_offset).AppendLine();
-                sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks).AppendLine();
-            }
-            else if(header.target_os == TargetOS.DOS)
-            {
-                sb.AppendLine("\tDOS application");
-                sb.AppendFormat("\tApplication requires DOS {0}.{1} to run", header.os_major, header.os_minor)
-                  .AppendLine();
-                if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                   !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication is full screen, unaware of Windows");
-                else if(!header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                        header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
-                else if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                        header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication uses Windows");
-                sb.AppendFormat("\tReturn thunks are at: {0}",            header.return_thunks_offset).AppendLine();
-                sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks).AppendLine();
-            }
-            else if(header.target_os == TargetOS.Borland)
-            {
-                sb.AppendLine("\tBorland Operating System Services application");
-                sb.AppendFormat("\tApplication requires DOS {0}.{1} to run", header.os_major, header.os_minor)
-                  .AppendLine();
-                if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                   !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication is full screen, unaware of Windows");
-                else if(!header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                        header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
-                else if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
-                        header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
-                    sb.AppendLine("\tApplication uses Windows");
-                sb.AppendFormat("\tReturn thunks are at: {0}",            header.return_thunks_offset).AppendLine();
-                sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks).AppendLine();
-            }
-            else
-            {
-                sb.AppendFormat("\tApplication for unknown OS {0}",         (byte)header.target_os).AppendLine();
-                sb.AppendFormat("\tApplication requires OS {0}.{1} to run", header.os_major, header.os_minor)
-                  .AppendLine();
-                sb.AppendFormat("\tReturn thunks are at: {0}",            header.return_thunks_offset).AppendLine();
-                sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks).AppendLine();
+                    if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                       !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication is full screen, unaware of Windows");
+                    else if(!header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                            header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
+                    else if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                            header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication uses Windows");
+                    sb.AppendFormat("\tReturn thunks are at: {0}",            header.return_thunks_offset).AppendLine();
+                    sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks)
+                      .AppendLine();
+                    break;
+                case TargetOS.Borland:
+                    sb.AppendLine("\tBorland Operating System Services application");
+                    sb.AppendFormat("\tApplication requires DOS {0}.{1} to run", header.os_major, header.os_minor)
+                      .AppendLine();
+                    if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                       !header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication is full screen, unaware of Windows");
+                    else if(!header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                            header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication is aware of Windows, but doesn't use it");
+                    else if(header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                            header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        sb.AppendLine("\tApplication uses Windows");
+                    sb.AppendFormat("\tReturn thunks are at: {0}",            header.return_thunks_offset).AppendLine();
+                    sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks)
+                      .AppendLine();
+                    break;
+                default:
+                    sb.AppendFormat("\tApplication for unknown OS {0}",         (byte)header.target_os).AppendLine();
+                    sb.AppendFormat("\tApplication requires OS {0}.{1} to run", header.os_major, header.os_minor)
+                      .AppendLine();
+                    sb.AppendFormat("\tReturn thunks are at: {0}",            header.return_thunks_offset).AppendLine();
+                    sb.AppendFormat("\tSegment reference thunks are at: {0}", header.segment_reference_thunks)
+                      .AppendLine();
+                    break;
             }
 
             if(header.application_flags.HasFlag(ApplicationFlags.Errors)) sb.AppendLine("\tExecutable has errors");

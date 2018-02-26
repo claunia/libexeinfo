@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -73,11 +74,11 @@ namespace libexeinfo
             Initialize();
         }
 
-        public Stream BaseStream  { get; }
-        public bool   IsBigEndian => false;
-        public bool   Recognized  { get; private set; }
-        public string Type        { get; private set; }
-        public Architecture[] Architectures =>
+        public Stream                    BaseStream    { get; }
+        public bool                      IsBigEndian   => false;
+        public bool                      Recognized    { get; private set; }
+        public string                    Type          { get; private set; }
+        public IEnumerable<Architecture> Architectures =>
             new[]
             {
                 Header.target_os == TargetOS.Win32 || Header.program_flags.HasFlag(ProgramFlags.i386)
@@ -86,6 +87,7 @@ namespace libexeinfo
                         ? Architecture.I286
                         : Architecture.I86
             };
+        public OperatingSystem RequiredOperatingSystem { get; private set; }
 
         void Initialize()
         {
@@ -109,6 +111,71 @@ namespace libexeinfo
 
             Recognized = true;
             Type       = "New Executable (NE)";
+
+            OperatingSystem reqOs = new OperatingSystem();
+
+            switch(Header.target_os)
+            {
+                case TargetOS.OS2:
+                    reqOs.Name = "OS/2";
+                    if(Header.os_major > 0)
+                    {
+                        reqOs.MajorVersion = Header.os_major;
+                        reqOs.MinorVersion = Header.os_minor;
+                    }
+                    else
+                    {
+                        reqOs.MajorVersion = 1;
+                        reqOs.MinorVersion = 0;
+                    }
+
+                    if(Header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                       !Header.application_flags.HasFlag(ApplicationFlags.GUICompatible) ||
+                       !Header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                       Header.application_flags.HasFlag(ApplicationFlags.GUICompatible)) reqOs.Subsystem = "Console";
+                    else if(Header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
+                            Header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
+                        reqOs.Subsystem = "Presentation Manager";
+                    break;
+                case TargetOS.Windows:
+                case TargetOS.Win32:
+                case TargetOS.Unknown:
+                    reqOs.Name = "Windows";
+                    if(Header.os_major > 0)
+                    {
+                        reqOs.MajorVersion = Header.os_major;
+                        reqOs.MinorVersion = Header.os_minor;
+                    }
+                    else
+                        switch(Header.target_os)
+                        {
+                            case TargetOS.Windows:
+                                reqOs.MajorVersion = 2;
+                                reqOs.MinorVersion = 0;
+                                break;
+                            case TargetOS.Unknown:
+                                reqOs.MajorVersion = 1;
+                                reqOs.MinorVersion = 0;
+                                break;
+                        }
+
+                    break;
+                case TargetOS.DOS:
+                case TargetOS.Borland:
+                    reqOs.Name                                               = "DOS";
+                    reqOs.MajorVersion                                       = Header.os_major;
+                    reqOs.MinorVersion                                       = Header.os_minor;
+                    if(Header.target_os == TargetOS.Borland) reqOs.Subsystem = "Borland Operating System Services";
+                    break;
+                default:
+                    reqOs.Name         = $"Unknown code {(byte)Header.target_os}";
+                    reqOs.MajorVersion = Header.os_major;
+                    reqOs.MinorVersion = Header.os_minor;
+                    break;
+            }
+
+            RequiredOperatingSystem = reqOs;
+
             if(Header.resource_entries <= 0) return;
 
             Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset);

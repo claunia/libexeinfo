@@ -36,8 +36,11 @@ namespace exeinfogui
     public class MainForm : Form
     {
         ComboBox cmbArch;
+        Label    lblSubsystem;
         TextBox  txtFile;
         TextArea txtInformation;
+        TextBox  txtOs;
+        TextBox  txtSubsystem;
         TextBox  txtType;
 
         public MainForm()
@@ -51,6 +54,8 @@ namespace exeinfogui
             txtType.Text        = "";
             txtInformation.Text = "";
             cmbArch.Items.Clear();
+            lblSubsystem.Visible = false;
+            txtSubsystem.Visible = false;
 
             OpenFileDialog dlgOpen = new OpenFileDialog {Title = "Choose executable file", MultiSelect = false};
 
@@ -82,8 +87,6 @@ namespace exeinfogui
             else
                 txtType.Text = "Format not recognized";
 
-            cmbArch.SelectedIndex = 0;
-
             exeFs.Close();
 
             if(recognizedExe == null) return;
@@ -92,6 +95,20 @@ namespace exeinfogui
             txtInformation.Text = recognizedExe.Information;
             foreach(Architecture arch in recognizedExe.Architectures)
                 cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(ar => ar.arch == arch).longName);
+            cmbArch.SelectedIndex = 0;
+
+            if(recognizedExe.RequiredOperatingSystem.MajorVersion > 0)
+                txtOs.Text = $"{recognizedExe.RequiredOperatingSystem.Name}"          +
+                             $" {recognizedExe.RequiredOperatingSystem.MajorVersion}" +
+                             $".{recognizedExe.RequiredOperatingSystem.MinorVersion}";
+            else txtOs.Text = recognizedExe.RequiredOperatingSystem.Name;
+
+            if(!string.IsNullOrEmpty(recognizedExe.RequiredOperatingSystem.Subsystem))
+            {
+                lblSubsystem.Visible = true;
+                txtSubsystem.Visible = true;
+                txtSubsystem.Text    = recognizedExe.RequiredOperatingSystem.Subsystem;
+            }
         }
 
         protected void OnMnuAboutClick(object sender, EventArgs e)

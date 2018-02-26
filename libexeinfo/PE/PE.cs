@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -72,11 +73,13 @@ namespace libexeinfo
             Initialize();
         }
 
-        public Stream BaseStream  { get; }
-        public bool   IsBigEndian => false;
-        public bool   Recognized  { get; private set; }
-        public string Type        { get; private set; }
-        public Architecture[] Architectures => new[] {COFF.MachineTypeToArchitecture(Header.coff.machine)};
+        public Stream                    BaseStream    { get; }
+        public bool                      IsBigEndian   => false;
+        public bool                      Recognized    { get; private set; }
+        public string                    Type          { get; private set; }
+        public IEnumerable<Architecture> Architectures =>
+            new[] {COFF.MachineTypeToArchitecture(Header.coff.machine)};
+        public OperatingSystem RequiredOperatingSystem { get; private set; }
 
         void Initialize()
         {
@@ -121,6 +124,62 @@ namespace libexeinfo
                 Marshal.FreeHGlobal(hdrPtr);
                 WinHeader = ToPlus(hdr32);
             }
+
+            OperatingSystem reqOs = new OperatingSystem();
+
+            switch(WinHeader.subsystem)
+            {
+                case Subsystems.IMAGE_SUBSYSTEM_UNKNOWN:
+                    reqOs.Name = "Unknown";
+                    break;
+                case Subsystems.IMAGE_SUBSYSTEM_NATIVE:
+                    reqOs.Name      = "Windows NT";
+                    reqOs.Subsystem = "Native";
+                    break;
+                case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_GUI:
+                    reqOs.Name      = WinHeader.majorOperatingSystemVersion < 3 ? "Windows NT" : "Windows";
+                    reqOs.Subsystem = "GUI";
+                    break;
+                case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_CUI:
+                    reqOs.Name      = WinHeader.majorOperatingSystemVersion < 3 ? "Windows NT" : "Windows";
+                    reqOs.Subsystem = "Console";
+                    break;
+                case Subsystems.IMAGE_SUBSYSTEM_OS2_CUI:
+                    reqOs.Name      = "Windows NT";
+                    reqOs.Subsystem = "OS/2";
+                    break;
+                case Subsystems.IMAGE_SUBSYSTEM_POSIX_CUI:
+                    reqOs.Name      = "Windows NT";
+                    reqOs.Subsystem = "POSIX";
+                    break;
+                case Subsystems.IMAGE_SUBSYSTEM_NATIVE_WINDOWS:
+                    reqOs.Name      = "Windows";
+                    reqOs.Subsystem = "Native";
+                    break;
+                case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_CE_GUI:
+                    reqOs.Name = "Windows CE";
+                    break;
+                case Subsystems.IMAGE_SUBSYSTEM_EFI_APPLICATION:
+                case Subsystems.IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
+                case Subsystems.IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
+                case Subsystems.IMAGE_SUBSYSTEM_EFI_ROM:
+                    reqOs.Name = "EFI";
+                    break;
+                case Subsystems.IMAGE_SUBSYSTEM_XBOX:
+                    reqOs.Name = "Xbox OS";
+                    break;
+                case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION:
+                    reqOs.Name      = "Windows NT";
+                    reqOs.Subsystem = "Boot environment";
+                    break;
+                default:
+                    reqOs.Name = $"Unknown code ${(ushort)WinHeader.subsystem}";
+                    break;
+            }
+
+            reqOs.MajorVersion      = WinHeader.majorOperatingSystemVersion;
+            reqOs.MinorVersion      = WinHeader.minorOperatingSystemVersion;
+            RequiredOperatingSystem = reqOs;
         }
 
         /// <summary>

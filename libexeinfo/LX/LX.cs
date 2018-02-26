@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -75,11 +76,12 @@ namespace libexeinfo
         /// <summary>
         ///     The <see cref="FileStream" /> that contains the executable represented by this instance
         /// </summary>
-        public Stream BaseStream  { get; }
-        public bool   IsBigEndian => false;
-        public bool   Recognized  { get; private set; }
-        public string Type        { get; private set; }
-        public Architecture[] Architectures => new[] {CpuToArchitecture(header.cpu_type)};
+        public Stream                    BaseStream              { get; }
+        public bool                      IsBigEndian             { get; private set; }
+        public bool                      Recognized              { get; private set; }
+        public string                    Type                    { get; private set; }
+        public IEnumerable<Architecture> Architectures           => new[] {CpuToArchitecture(header.cpu_type)};
+        public OperatingSystem           RequiredOperatingSystem { get; private set; }
 
         void Initialize()
         {
@@ -102,7 +104,36 @@ namespace libexeinfo
 
             if(!Recognized) return;
 
-            Type = header.signature == SIGNATURE16 ? "Linear Executable (LE)" : "Linear eXecutable (LX)";
+            Type        = header.signature  == SIGNATURE16 ? "Linear Executable (LE)" : "Linear eXecutable (LX)";
+            IsBigEndian = header.byte_order == 1 || header.word_order == 1;
+
+            OperatingSystem reqOs = new OperatingSystem();
+            switch(header.os_type)
+            {
+                case TargetOS.OS2:
+                    reqOs.Name = "OS/2";
+                    if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                       !header.module_flags.HasFlag(ModuleFlags.PMCompatible) ||
+                       !header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                       header.module_flags.HasFlag(ModuleFlags.PMCompatible)) reqOs.Subsystem = "Console";
+                    else if(header.module_flags.HasFlag(ModuleFlags.PMIncompatible) &&
+                            header.module_flags.HasFlag(ModuleFlags.PMCompatible))
+                        reqOs.Subsystem = "Presentation Manager";
+                    break;
+                case TargetOS.Windows:
+                case TargetOS.Win32:
+                case TargetOS.Unknown:
+                    reqOs.Name = "Windows";
+                    break;
+                case TargetOS.DOS:
+                    reqOs.Name = "Windows";
+                    break;
+                default:
+                    reqOs.Name = $"Unknown code {(ushort)header.os_type}";
+                    break;
+            }
+
+            RequiredOperatingSystem = reqOs;
         }
 
         /// <summary>

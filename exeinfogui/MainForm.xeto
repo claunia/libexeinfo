@@ -28,6 +28,18 @@
                 </StackLayoutItem>
             </StackLayout>
         </StackLayoutItem>
+        <StackLayoutItem HorizontalAlignment="Stretch">
+            <StackLayout Orientation="Horizontal">
+                <Label ID="lblOs">Required operating system:</Label>
+                <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
+                    <TextBox ID="txtOs" ReadOnly="True" />
+                </StackLayoutItem>
+                <Label ID="lblSubsystem" Visible="False">Subsystem:</Label>
+                <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
+                    <TextBox ID="txtSubsystem" ReadOnly="True" Visible="False" />
+                </StackLayoutItem>
+            </StackLayout>
+        </StackLayoutItem>
         <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
             <StackLayout Orientation="Vertical">
                 <Label ID="lblInformation">Information:</Label>
