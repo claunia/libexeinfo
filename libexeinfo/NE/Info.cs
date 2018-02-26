@@ -213,7 +213,7 @@ namespace libexeinfo
             return sb.ToString();
         }
 
-        public static ResourceTable GetResources(Stream stream, uint neStart, ushort tableOff)
+        public static ResourceTable GetResources(Stream stream, uint neStart, ushort tableOff, ushort upperLimit)
         {
             long   oldPosition = stream.Position;
             byte[] DW          = new byte[2];
@@ -226,7 +226,7 @@ namespace libexeinfo
 
             List<ResourceType> types = new List<ResourceType>();
 
-            while(true)
+            while(stream.Position < upperLimit + neStart)
             {
                 ResourceType type = new ResourceType();
                 stream.Read(DW, 0, 2);
@@ -255,7 +255,6 @@ namespace libexeinfo
                 }
 
                 types.Add(type);
-                Console.WriteLine("{0}", stream.Position);
             }
 
             table.types = types.ToArray();
@@ -264,11 +263,9 @@ namespace libexeinfo
             {
                 if((table.types[t].id & 0x8000) == 0)
                 {
-                    byte   len;
-                    byte[] str;
                     stream.Position = neStart + tableOff + table.types[t].id;
-                    len             = (byte)stream.ReadByte();
-                    str             = new byte[len];
+                    byte len = (byte)stream.ReadByte();
+                    byte[] str = new byte[len];
                     stream.Read(str, 0, len);
                     table.types[t].name = Encoding.ASCII.GetString(str);
                 }
@@ -278,17 +275,14 @@ namespace libexeinfo
                 {
                     if((table.types[t].resources[r].id & 0x8000) == 0)
                     {
-                        byte   len;
-                        byte[] str;
                         stream.Position = neStart + tableOff + table.types[t].resources[r].id;
-                        len             = (byte)stream.ReadByte();
-                        str             = new byte[len];
+                        byte len = (byte)stream.ReadByte();
+                        byte[] str = new byte[len];
                         stream.Read(str, 0, len);
                         table.types[t].resources[r].name = Encoding.ASCII.GetString(str);
                     }
                     else
-                        table.types[t].resources[r].name =
-                            string.Format("{0}", table.types[t].resources[r].id & 0x7FFF);
+                        table.types[t].resources[r].name = $"{table.types[t].resources[r].id & 0x7FFF}";
 
                     table.types[t].resources[r].data =
                         new byte[table.types[t].resources[r].length          * (1 << table.alignment_shift)];

@@ -176,10 +176,29 @@ namespace libexeinfo
 
             RequiredOperatingSystem = reqOs;
 
-            if(Header.resource_entries <= 0) return;
+            // Some executable indicates 0 entries, some indicate a table start and no limit, will need to explore till next item
+            ushort resourceUpperLimit = ushort.MaxValue;
 
-            Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset);
-            Versions  = GetVersions().ToArray();
+            if(Header.entry_table_offset      >= Header.resource_table_offset &&
+               Header.entry_table_offset      <= resourceUpperLimit) resourceUpperLimit = Header.entry_table_offset;
+            if(Header.segment_table_offset    >= Header.resource_table_offset &&
+               Header.segment_table_offset    <= resourceUpperLimit) resourceUpperLimit = Header.segment_table_offset;
+            if(Header.module_reference_offset >= Header.resource_table_offset &&
+               Header.module_reference_offset <= resourceUpperLimit)
+                resourceUpperLimit = Header.module_reference_offset;
+            if(Header.nonresident_names_offset >= Header.resource_table_offset &&
+               Header.nonresident_names_offset <= resourceUpperLimit)
+                resourceUpperLimit = (ushort)Header.nonresident_names_offset;
+            if(Header.resident_names_offset >= Header.resource_table_offset &&
+               Header.resident_names_offset <= resourceUpperLimit) resourceUpperLimit = Header.resident_names_offset;
+            if(Header.imported_names_offset >= Header.resource_table_offset &&
+               Header.imported_names_offset <= resourceUpperLimit) resourceUpperLimit = Header.imported_names_offset;
+
+            if(Header.resource_table_offset >= resourceUpperLimit || Header.resource_table_offset == 0) return;
+
+            Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset,
+                                     resourceUpperLimit);
+            Versions = GetVersions().ToArray();
         }
 
         /// <summary>
