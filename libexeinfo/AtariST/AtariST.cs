@@ -67,11 +67,12 @@ namespace libexeinfo
         /// <summary>
         ///     Header for this executable
         /// </summary>
-        public AtariHeader Header      { get; private set; }
-        public Stream      BaseStream  { get; }
-        public bool        IsBigEndian => true;
-        public bool        Recognized  { get; private set; }
-        public string      Type        { get; private set; }
+        public AtariHeader    Header        { get; private set; }
+        public Stream         BaseStream    { get; }
+        public bool           IsBigEndian   => true;
+        public bool           Recognized    { get; private set; }
+        public string         Type          { get; private set; }
+        public Architecture[] Architectures => new[] {Architecture.M68K};
 
         void Initialize()
         {

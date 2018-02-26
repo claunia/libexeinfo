@@ -79,6 +79,7 @@ namespace libexeinfo
         public bool   IsBigEndian => false;
         public bool   Recognized  { get; private set; }
         public string Type        { get; private set; }
+        public Architecture[] Architectures => new[] {CpuToArchitecture(header.cpu_type)};
 
         void Initialize()
         {

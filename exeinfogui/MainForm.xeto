@@ -20,9 +20,17 @@
                 </StackLayoutItem>
             </StackLayout>
         </StackLayoutItem>
+        <StackLayoutItem HorizontalAlignment="Stretch">
+            <StackLayout Orientation="Horizontal">
+                <Label ID="lblArch">Architectures:</Label>
+                <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
+                    <ComboBox ID="cmbArch" ReadOnly="True" />
+                </StackLayoutItem>
+            </StackLayout>
+        </StackLayoutItem>
         <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
             <StackLayout Orientation="Vertical">
-                <Label ID="lblInformation">Type:</Label>
+                <Label ID="lblInformation">Information:</Label>
                 <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
                     <TextArea ID="txtInformation" ReadOnly="True" />
                 </StackLayoutItem>

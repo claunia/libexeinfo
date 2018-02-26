@@ -26,6 +26,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
 using libexeinfo;
@@ -37,6 +38,7 @@ namespace exeinfogui
         TextBox  txtFile;
         TextArea txtInformation;
         TextBox  txtType;
+        ComboBox cmbArch;
 
         public MainForm()
         {
@@ -70,19 +72,29 @@ namespace exeinfogui
                 {
                     txtType.Text        = neExe.Type;
                     txtInformation.Text = neExe.Information;
+                    foreach(Architecture arch in neExe.Architectures)
+                        cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
                 }
                 else if(lxExe.Recognized)
                 {
                     txtType.Text        = lxExe.Type;
                     txtInformation.Text = lxExe.Information;
+                    foreach(Architecture arch in lxExe.Architectures)
+                        cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
                 }
                 else if(peExe.Recognized)
                 {
                     txtType.Text        = peExe.Type;
                     txtInformation.Text = peExe.Information;
+                    foreach(Architecture arch in peExe.Architectures)
+                        cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
                 }
                 else
+                {
                     txtType.Text = mzExe.Type;
+                    foreach(Architecture arch in mzExe.Architectures)
+                        cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
+                }
 
                 txtInformation.Text += mzExe.Information;
             }
@@ -90,14 +102,20 @@ namespace exeinfogui
             {
                 txtType.Text        = stExe.Type;
                 txtInformation.Text = stExe.Information;
+                foreach(Architecture arch in stExe.Architectures)
+                    cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
             }
             else if(coffExe.Recognized)
             {
                 txtType.Text        = coffExe.Type;
                 txtInformation.Text = coffExe.Information;
+                foreach(Architecture arch in coffExe.Architectures)
+                    cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
             }
             else
                 txtType.Text = "Format not recognized";
+            
+            cmbArch.SelectedIndex = 0;
 
             exeFs.Close();
         }

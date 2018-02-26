@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Eto.Forms" Version="2.4.1" />
     <PackageReference Include="Eto.Serialization.Xaml" Version="2.4.1" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\libexeinfo\libexeinfo.csproj">

@@ -24,5 +24,9 @@ namespace libexeinfo
         ///     General description of executable contents
         /// </summary>
         string Information { get; }
+        /// <summary>
+        ///     Architectures that the executable can run on
+        /// </summary>
+        Architecture[] Architectures { get; }
     }
 }

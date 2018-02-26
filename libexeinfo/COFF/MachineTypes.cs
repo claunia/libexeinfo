@@ -72,5 +72,47 @@ namespace libexeinfo
                     return $"Unknown machine type with code {(ushort)machine}";
             }
         }
+
+        internal static Architecture MachineTypeToArchitecture(MachineTypes machine)
+        {
+            switch(machine)
+            {
+                case MachineTypes.IMAGE_FILE_MACHINE_ALPHA:
+                case MachineTypes.IMAGE_FILE_MACHINE_ALPHA64: return Architecture.Alpha;
+                case MachineTypes.IMAGE_FILE_MACHINE_AM33:    return Architecture.Am33;
+                case MachineTypes.IMAGE_FILE_MACHINE_AMD64:   return Architecture.Amd64;
+                case MachineTypes.IMAGE_FILE_MACHINE_ARM:     return Architecture.Arm;
+                case MachineTypes.IMAGE_FILE_MACHINE_ARM64:   return Architecture.Aarch64;
+                case MachineTypes.IMAGE_FILE_MACHINE_ARMNT:   return Architecture.Thumb2;
+                case MachineTypes.IMAGE_FILE_MACHINE_EBC:     return Architecture.EfiByteCode;
+                case MachineTypes.IMAGE_FILE_MACHINE_I386:
+                case MachineTypes.IMAGE_FILE_MACHINE_I386_AIX: return Architecture.I386;
+                case MachineTypes.IMAGE_FILE_MACHINE_IA64:     return Architecture.IA64;
+                case MachineTypes.IMAGE_FILE_MACHINE_M32R:     return Architecture.M32R;
+                case MachineTypes.IMAGE_FILE_MACHINE_M68K:
+                case MachineTypes.IMAGE_FILE_MACHINE_M68K_OTHER: return Architecture.M68K;
+                case MachineTypes.IMAGE_FILE_MACHINE_MIPS16:
+                case MachineTypes.IMAGE_FILE_MACHINE_MIPSFPU16: return Architecture.Mips16;
+                case MachineTypes.IMAGE_FILE_MACHINE_POWERPC:
+                case MachineTypes.IMAGE_FILE_MACHINE_POWERPCFP: return Architecture.PowerPc;
+                case MachineTypes.IMAGE_FILE_MACHINE_MIPSFPU:
+                case MachineTypes.IMAGE_FILE_MACHINE_MIPSEB:
+                case MachineTypes.IMAGE_FILE_MACHINE_WCEMIPSV2:
+                case MachineTypes.IMAGE_FILE_MACHINE_R3000: return Architecture.Mips;
+                case MachineTypes.IMAGE_FILE_MACHINE_R4000:
+                case MachineTypes.IMAGE_FILE_MACHINE_R10000: return Architecture.Mips3;
+                case MachineTypes.IMAGE_FILE_MACHINE_RISCV32:
+                case MachineTypes.IMAGE_FILE_MACHINE_RISCV64:
+                case MachineTypes.IMAGE_FILE_MACHINE_RISCV128: return Architecture.RiscV;
+                case MachineTypes.IMAGE_FILE_MACHINE_SH3:
+                case MachineTypes.IMAGE_FILE_MACHINE_SH3DSP:  return Architecture.Sh3;
+                case MachineTypes.IMAGE_FILE_MACHINE_SH4:     return Architecture.Sh4;
+                case MachineTypes.IMAGE_FILE_MACHINE_SH5:     return Architecture.Sh5;
+                case MachineTypes.IMAGE_FILE_MACHINE_THUMB:   return Architecture.Thumb;
+                case MachineTypes.IMAGE_FILE_MACHINE_CLIPPER: return Architecture.Clipper;
+                case MachineTypes.IMAGE_FILE_MACHINE_WE32000: return Architecture.We32000;
+                default:                                      return Architecture.Unknown;
+            }
+        }
     }
 }

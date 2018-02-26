@@ -80,6 +80,7 @@ namespace libexeinfo
         /// </summary>
         public bool   Recognized { get; private set; }
         public string Type       { get; private set; }
+        public Architecture[] Architectures => new[] {Architecture.I86};
 
         void Initialize()
         {

@@ -111,5 +111,22 @@ namespace libexeinfo
             DOS     = 3,
             Win32   = 4
         }
+
+        static Architecture CpuToArchitecture(TargetCpu cpu)
+        {
+            switch(cpu)
+            {
+                case TargetCpu.i286: return Architecture.I286;
+                case TargetCpu.i386: 
+                case TargetCpu.i486: 
+                case TargetCpu.Pentium: return Architecture.I386;
+                case TargetCpu.i860: 
+                case TargetCpu.N11: return Architecture.I860;
+                case TargetCpu.MIPS1: 
+                case TargetCpu.MIPS2: return Architecture.Mips;
+                case TargetCpu.MIPS3: return Architecture.Mips3;
+                default: return Architecture.Unknown;
+            }
+        }
     }
 }

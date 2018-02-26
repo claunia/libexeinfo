@@ -76,6 +76,7 @@ namespace libexeinfo
         public bool   IsBigEndian => false;
         public bool   Recognized  { get; private set; }
         public string Type        { get; private set; }
+        public Architecture[] Architectures => new[] {COFF.MachineTypeToArchitecture(Header.coff.machine)};
 
         void Initialize()
         {

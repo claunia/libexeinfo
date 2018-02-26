@@ -77,6 +77,15 @@ namespace libexeinfo
         public bool   IsBigEndian => false;
         public bool   Recognized  { get; private set; }
         public string Type        { get; private set; }
+        public Architecture[] Architectures =>
+            new[]
+            {
+                Header.target_os == TargetOS.Win32 || Header.program_flags.HasFlag(ProgramFlags.i386)
+                    ? Architecture.I386
+                    : Header.target_os == TargetOS.OS2 || Header.program_flags.HasFlag(ProgramFlags.i286)
+                        ? Architecture.I286
+                        : Architecture.I86
+            };
 
         void Initialize()
         {

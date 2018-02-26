@@ -68,11 +68,12 @@ namespace libexeinfo
         /// <summary>
         ///     Header for this executable
         /// </summary>
-        public COFFHeader Header      { get; private set; }
-        public Stream     BaseStream  { get; }
-        public bool       IsBigEndian { get; private set; }
-        public bool       Recognized  { get; private set; }
-        public string     Type        { get; private set; }
+        public COFFHeader     Header        { get; private set; }
+        public Stream         BaseStream    { get; }
+        public bool           IsBigEndian   { get; private set; }
+        public bool           Recognized    { get; private set; }
+        public string         Type          { get; private set; }
+        public Architecture[] Architectures => new[] {MachineTypeToArchitecture(Header.machine)};
 
         void Initialize()
         {
