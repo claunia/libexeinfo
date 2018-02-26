@@ -109,6 +109,20 @@ namespace exeinfo
                                 Console.WriteLine("\t\t\t{0}: {1}", strings.Key, strings.Value);
                         }
                     }
+
+                if(((NE)neExe).ResidentNames != null)
+                {
+                    Console.WriteLine("\tResident names:");
+                    foreach(NE.ResidentName name in ((NE)neExe).ResidentNames)
+                        Console.WriteLine("\t\t{0} at index {1}", name.name, name.entryTableIndex);
+                }
+
+                if(((NE)neExe).NonResidentNames != null)
+                {
+                    Console.WriteLine("\tNon-resident names:");
+                    foreach(NE.ResidentName name in ((NE)neExe).NonResidentNames)
+                        Console.WriteLine("\t\t{0} at index {1}", name.name, name.entryTableIndex);
+                }
             }
             else if(lxExe.Recognized)
             {

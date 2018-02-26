@@ -43,6 +43,8 @@ namespace libexeinfo
         public NEHeader      Header;
         public ResourceTable Resources;
         public Version[]     Versions;
+        public ResidentName[] ResidentNames;
+        public ResidentName[] NonResidentNames;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.NE" /> class.
@@ -194,11 +196,35 @@ namespace libexeinfo
             if(Header.imported_names_offset >= Header.resource_table_offset &&
                Header.imported_names_offset <= resourceUpperLimit) resourceUpperLimit = Header.imported_names_offset;
 
-            if(Header.resource_table_offset >= resourceUpperLimit || Header.resource_table_offset == 0) return;
+            if(Header.resource_table_offset < resourceUpperLimit && Header.resource_table_offset != 0)
+            {
+                Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset,
+                                         resourceUpperLimit);
+                Versions = GetVersions().ToArray();
+            }
+            
+            resourceUpperLimit = ushort.MaxValue;
 
-            Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset,
-                                     resourceUpperLimit);
-            Versions = GetVersions().ToArray();
+            if(Header.entry_table_offset      >= Header.resident_names_offset &&
+               Header.entry_table_offset      <= resourceUpperLimit) resourceUpperLimit = Header.entry_table_offset;
+            if(Header.segment_table_offset    >= Header.resident_names_offset &&
+               Header.segment_table_offset    <= resourceUpperLimit) resourceUpperLimit = Header.segment_table_offset;
+            if(Header.module_reference_offset >= Header.resident_names_offset &&
+               Header.module_reference_offset <= resourceUpperLimit)
+                resourceUpperLimit = Header.module_reference_offset;
+            if(Header.nonresident_names_offset >= Header.resident_names_offset &&
+               Header.nonresident_names_offset <= resourceUpperLimit)
+                resourceUpperLimit = (ushort)Header.nonresident_names_offset;
+            if(Header.imported_names_offset >= Header.resident_names_offset &&
+               Header.imported_names_offset <= resourceUpperLimit) resourceUpperLimit = Header.imported_names_offset;
+
+            if(Header.resource_table_offset < resourceUpperLimit && Header.resource_table_offset != 0)
+                ResidentNames = GetResidentStrings(BaseStream,                   BaseExecutable.Header.new_offset,
+                                                   Header.resident_names_offset, resourceUpperLimit);
+
+            if(Header.nonresident_table_size > 0)
+                NonResidentNames = GetResidentStrings(BaseStream, Header.nonresident_names_offset,
+                                                      0,          (ushort)(Header.nonresident_names_offset + Header.nonresident_table_size));
         }
 
         /// <summary>

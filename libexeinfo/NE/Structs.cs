@@ -141,5 +141,17 @@ namespace libexeinfo
             public uint dwSignature;
             public uint dwStrucVersion;
         }
+
+        public struct ResidentName
+        {
+            /// <summary>
+            /// Text of string
+            /// </summary>
+            public string name;
+            /// <summary>
+            /// Index in the entry table this string refers to
+            /// </summary>
+            public ushort entryTableIndex;
+        }
     }
 }

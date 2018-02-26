@@ -213,6 +213,40 @@ namespace libexeinfo
             return sb.ToString();
         }
 
+        static ResidentName[] GetResidentStrings(Stream stream, uint neStart, ushort tableOff, ushort upperLimit)
+        {
+            if(tableOff >= upperLimit) return null;
+
+            List<ResidentName> names = new List<ResidentName>();
+            byte               stringSize;
+            byte[]             nameString;
+            byte[] DW = new byte[2];
+            
+            long oldPosition = stream.Position;
+            
+            stream.Position = neStart + tableOff;
+            while(stream.Position < upperLimit + neStart)
+            {
+                stringSize = (byte)stream.ReadByte();
+
+                if(stringSize == 0) break;
+                
+                nameString = new byte[stringSize];
+                stream.Read(nameString, 0, stringSize);
+                stream.Read(DW, 0, 2);
+
+                names.Add(new ResidentName
+                    {
+                        name            = Encoding.ASCII.GetString(nameString),
+                        entryTableIndex = BitConverter.ToUInt16(DW, 0)
+                    });
+            }
+            
+            stream.Position = oldPosition;
+
+            return names.Count > 0 ? names.ToArray() : null;
+        }
+        
         public static ResourceTable GetResources(Stream stream, uint neStart, ushort tableOff, ushort upperLimit)
         {
             long   oldPosition = stream.Position;
