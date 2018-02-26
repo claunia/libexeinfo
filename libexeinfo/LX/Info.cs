@@ -30,11 +30,12 @@ namespace libexeinfo
 {
     public partial class LX
     {
-        public string Information => GetInfo(header);
+        public string Information => GetInfo(header, baseExecutable);
 
-        static string GetInfo(LXHeader header)
+        static string GetInfo(LXHeader header, IExecutable baseExecutable)
         {
             StringBuilder sb = new StringBuilder();
+            sb.Append(baseExecutable.Information);
             sb.AppendLine(header.signature == SIGNATURE16 ? "Linear Executable (LE):" : "Linear eXecutable (LX):");
 
             switch(header.os_type)

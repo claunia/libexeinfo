@@ -35,10 +35,10 @@ namespace exeinfogui
 {
     public class MainForm : Form
     {
+        ComboBox cmbArch;
         TextBox  txtFile;
         TextArea txtInformation;
         TextBox  txtType;
-        ComboBox cmbArch;
 
         public MainForm()
         {
@@ -50,6 +50,7 @@ namespace exeinfogui
             txtFile.Text        = "";
             txtType.Text        = "";
             txtInformation.Text = "";
+            cmbArch.Items.Clear();
 
             OpenFileDialog dlgOpen = new OpenFileDialog {Title = "Choose executable file", MultiSelect = false};
 
@@ -59,65 +60,38 @@ namespace exeinfogui
 
             FileStream exeFs = File.Open(dlgOpen.FileName, FileMode.Open, FileAccess.Read);
 
-            IExecutable mzExe   = new MZ(exeFs);
-            IExecutable neExe   = new NE(exeFs);
-            IExecutable stExe   = new AtariST(exeFs);
-            IExecutable lxExe   = new LX(exeFs);
-            IExecutable coffExe = new COFF(exeFs);
-            IExecutable peExe   = new PE(exeFs);
+            IExecutable mzExe         = new MZ(exeFs);
+            IExecutable neExe         = new NE(exeFs);
+            IExecutable stExe         = new AtariST(exeFs);
+            IExecutable lxExe         = new LX(exeFs);
+            IExecutable coffExe       = new COFF(exeFs);
+            IExecutable peExe         = new PE(exeFs);
+            IExecutable recognizedExe = null;
 
-            if(mzExe.Recognized)
-            {
-                if(neExe.Recognized)
-                {
-                    txtType.Text        = neExe.Type;
-                    txtInformation.Text = neExe.Information;
-                    foreach(Architecture arch in neExe.Architectures)
-                        cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
-                }
-                else if(lxExe.Recognized)
-                {
-                    txtType.Text        = lxExe.Type;
-                    txtInformation.Text = lxExe.Information;
-                    foreach(Architecture arch in lxExe.Architectures)
-                        cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
-                }
-                else if(peExe.Recognized)
-                {
-                    txtType.Text        = peExe.Type;
-                    txtInformation.Text = peExe.Information;
-                    foreach(Architecture arch in peExe.Architectures)
-                        cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
-                }
-                else
-                {
-                    txtType.Text = mzExe.Type;
-                    foreach(Architecture arch in mzExe.Architectures)
-                        cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
-                }
+            if(mzExe.Recognized) recognizedExe = mzExe;
 
-                txtInformation.Text += mzExe.Information;
-            }
+            if(neExe.Recognized) recognizedExe = neExe;
+            else if(lxExe.Recognized)
+                recognizedExe = lxExe;
+            else if(peExe.Recognized)
+                recognizedExe = peExe;
             else if(stExe.Recognized)
-            {
-                txtType.Text        = stExe.Type;
-                txtInformation.Text = stExe.Information;
-                foreach(Architecture arch in stExe.Architectures)
-                    cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
-            }
+                recognizedExe = stExe;
             else if(coffExe.Recognized)
-            {
-                txtType.Text        = coffExe.Type;
-                txtInformation.Text = coffExe.Information;
-                foreach(Architecture arch in coffExe.Architectures)
-                    cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(t => t.arch == arch).longName);
-            }
+                recognizedExe = coffExe;
             else
                 txtType.Text = "Format not recognized";
-            
+
             cmbArch.SelectedIndex = 0;
 
             exeFs.Close();
+
+            if(recognizedExe == null) return;
+
+            txtType.Text        = recognizedExe.Type;
+            txtInformation.Text = recognizedExe.Information;
+            foreach(Architecture arch in recognizedExe.Architectures)
+                cmbArch.Items.Add(Enums.ArchitectureName.FirstOrDefault(ar => ar.arch == arch).longName);
         }
 
         protected void OnMnuAboutClick(object sender, EventArgs e)

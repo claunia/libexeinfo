@@ -55,12 +55,6 @@ namespace exeinfo
             IExecutable coffExe = new COFF(exeFs);
             IExecutable peExe   = new PE(exeFs);
 
-            if(mzExe.Recognized)
-            {
-                recognized = true;
-                Console.Write(mzExe.Information);
-            }
-
             if(neExe.Recognized)
             {
                 recognized = true;
@@ -116,6 +110,21 @@ namespace exeinfo
                         }
                     }
             }
+            else if(lxExe.Recognized)
+            {
+                recognized = true;
+                Console.Write(lxExe.Information);
+            }
+            else if(peExe.Recognized)
+            {
+                recognized = true;
+                Console.Write(peExe.Information);
+            }
+            else if(mzExe.Recognized)
+            {
+                recognized = true;
+                Console.Write(mzExe.Information);
+            }
 
             if(stExe.Recognized)
             {
@@ -123,22 +132,10 @@ namespace exeinfo
                 Console.Write(stExe.Information);
             }
 
-            if(lxExe.Recognized)
-            {
-                recognized = true;
-                Console.Write(lxExe.Information);
-            }
-
             if(coffExe.Recognized)
             {
                 recognized = true;
                 Console.Write(coffExe.Information);
-            }
-
-            if(peExe.Recognized)
-            {
-                recognized = true;
-                Console.Write(peExe.Information);
             }
 
             if(!recognized) Console.WriteLine("Executable format not recognized");

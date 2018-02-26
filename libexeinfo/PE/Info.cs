@@ -30,11 +30,12 @@ namespace libexeinfo
 {
     public partial class PE
     {
-        public string Information => GetInfo(Header, WinHeader);
+        public string Information => GetInfo(Header, WinHeader, BaseExecutable);
 
-        static string GetInfo(PEHeader header, WindowsHeader64 winheader)
+        static string GetInfo(PEHeader header, WindowsHeader64 winheader, IExecutable baseExecutable)
         {
             StringBuilder sb = new StringBuilder();
+            sb.Append(baseExecutable.Information);
             sb.Append(COFF.GetInfo(header.coff));
             sb.AppendLine("Portable Executable (PE):");
 

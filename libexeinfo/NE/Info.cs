@@ -33,11 +33,12 @@ namespace libexeinfo
 {
     public partial class NE
     {
-        public string Information => GetInfo(Header);
+        public string Information => GetInfo(Header, BaseExecutable);
 
-        public static string GetInfo(NEHeader header)
+        static string GetInfo(NEHeader header, IExecutable baseExecutable)
         {
             StringBuilder sb = new StringBuilder();
+            sb.Append(baseExecutable.Information);
             sb.AppendLine("New Executable (NE):");
             sb.AppendFormat("\tFile's CRC: 0x{0:X8}",    header.crc).AppendLine();
             sb.AppendFormat("\tLinker version: {0}.{1}", header.linker_major, header.linker_minor).AppendLine();
