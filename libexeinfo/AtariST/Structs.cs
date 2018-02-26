@@ -38,7 +38,7 @@ namespace libexeinfo
             public uint   data_len;
             public uint   bss_len;
             public uint   symb_len;
-            public uint   reserved;
+            public uint   mint;
             public uint   flags;
             public ushort absflags;
         }

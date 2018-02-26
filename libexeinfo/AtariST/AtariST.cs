@@ -74,7 +74,8 @@ namespace libexeinfo
         public bool                      Recognized              { get; private set; }
         public string                    Type                    { get; private set; }
         public IEnumerable<Architecture> Architectures           => new[] {Architecture.M68K};
-        public OperatingSystem           RequiredOperatingSystem => new OperatingSystem {Name = "Atari TOS"};
+        public OperatingSystem           RequiredOperatingSystem =>
+            new OperatingSystem {Name = Header.mint == MINT_SIGNATURE ? "MiNT" : "Atari TOS"};
 
         void Initialize()
         {
