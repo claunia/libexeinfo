@@ -52,7 +52,7 @@ namespace libexeinfo
         /// <param name="path">Executable path.</param>
         public NE(string path)
         {
-            BaseStream = File.Open(path, FileMode.Open, FileAccess.Read);
+            BaseStream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             Initialize();
         }
 

@@ -41,7 +41,32 @@ namespace libexeinfo
         /// <param name="path">Executable path.</param>
         public AtariST(string path)
         {
-            BaseStream = File.Open(path, FileMode.Open, FileAccess.Read);
+            BaseStream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+            string pathDir = Path.GetDirectoryName(path);
+            string filename = Path.GetFileNameWithoutExtension(path);
+            string testPath = Path.Combine(pathDir, filename);
+            string resourceFilePath = null;
+
+            if(File.Exists(testPath         + ".rsc"))
+                resourceFilePath = testPath + ".rsc";
+            else if(File.Exists(testPath         + ".rsC"))
+                resourceFilePath = testPath + ".rsC";
+            else if(File.Exists(testPath         + ".rSc"))
+                resourceFilePath = testPath + ".rSc";
+            else if(File.Exists(testPath         + ".rSC"))
+                resourceFilePath = testPath + ".rSC";
+            else if(File.Exists(testPath         + ".Rsc"))
+                resourceFilePath = testPath + ".Rsc";
+            else if(File.Exists(testPath         + ".RsC"))
+                resourceFilePath = testPath + ".RsC";
+            else if(File.Exists(testPath         + ".RSc"))
+                resourceFilePath = testPath + ".RSc";
+            else if(File.Exists(testPath         + ".RSC"))
+                resourceFilePath = testPath + ".RSC";
+
+            if(resourceFilePath != null) resourceStream = File.Open(resourceFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            
             Initialize();
         }
 
@@ -76,6 +101,8 @@ namespace libexeinfo
         public IEnumerable<Architecture> Architectures           => new[] {Architecture.M68K};
         public OperatingSystem           RequiredOperatingSystem =>
             new OperatingSystem {Name = Header.mint == MINT_SIGNATURE ? "MiNT" : "Atari TOS"};
+        public Stream resourceStream;
+        public AtariResource Resource;
 
         void Initialize()
         {
@@ -89,7 +116,16 @@ namespace libexeinfo
             Header     = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariHeader>(buffer);
             Recognized = Header.signature == SIGNATURE;
 
-            if(Recognized) Type = "Atari ST executable";
+            if(!Recognized) return;
+            
+            Type = "Atari ST executable";
+
+            if(resourceStream == null) return;
+            
+            buffer       = new byte[Marshal.SizeOf(typeof(AtariResource))];
+            resourceStream.Position = 0;
+            resourceStream.Read(buffer, 0, buffer.Length);
+            Resource = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariResource>(buffer);
         }
 
         /// <summary>

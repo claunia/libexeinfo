@@ -49,7 +49,7 @@ namespace libexeinfo
         /// <param name="path">Executable path.</param>
         public LX(string path)
         {
-            BaseStream = File.Open(path, FileMode.Open, FileAccess.Read);
+            BaseStream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             Initialize();
         }
 

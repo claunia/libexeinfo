@@ -44,16 +44,14 @@ namespace exeinfo
                 return;
             }
 
-            FileStream exeFs = File.Open(args[0], FileMode.Open, FileAccess.Read);
-
             bool recognized = false;
 
-            IExecutable mzExe   = new MZ(exeFs);
-            IExecutable neExe   = new NE(exeFs);
-            IExecutable stExe   = new AtariST(exeFs);
-            IExecutable lxExe   = new LX(exeFs);
-            IExecutable coffExe = new COFF(exeFs);
-            IExecutable peExe   = new PE(exeFs);
+            IExecutable mzExe   = new MZ(args[0]);
+            IExecutable neExe   = new NE(args[0]);
+            IExecutable stExe   = new AtariST(args[0]);
+            IExecutable lxExe   = new LX(args[0]);
+            IExecutable coffExe = new COFF(args[0]);
+            IExecutable peExe   = new PE(args[0]);
 
             if(neExe.Recognized)
             {
@@ -144,6 +142,22 @@ namespace exeinfo
             {
                 recognized = true;
                 Console.Write(stExe.Information);
+                if(((AtariST)stExe).resourceStream     != null ||
+                   (((AtariST)stExe).Resource.rsh_vrsn != 0 && ((AtariST)stExe).Resource.rsh_vrsn != 1 &&
+                    ((AtariST)stExe).Resource.rsh_vrsn != 4 && ((AtariST)stExe).Resource.rsh_vrsn != 5))
+                {
+                    Console.WriteLine("\tResources:");
+                    Console.WriteLine("\t\t{0} OBJECTs start at {1}", ((AtariST)stExe).Resource.rsh_nobs, ((AtariST)stExe).Resource.rsh_object);
+                    Console.WriteLine("\t\t{0} TEDINFOs start at {1}", ((AtariST)stExe).Resource.rsh_nted, ((AtariST)stExe).Resource.rsh_tedinfo);
+                    Console.WriteLine("\t\t{0} ICONBLKs start at {1}", ((AtariST)stExe).Resource.rsh_nib, ((AtariST)stExe).Resource.rsh_iconblk);
+                    Console.WriteLine("\t\t{0} BITBLKs start at {1}", ((AtariST)stExe).Resource.rsh_nbb, ((AtariST)stExe).Resource.rsh_bitblk);
+                    Console.WriteLine("\t\t{0} object trees start at {1}", ((AtariST)stExe).Resource.rsh_ntree, ((AtariST)stExe).Resource.rsh_trindex);
+                    Console.WriteLine("\t\t{0} free strings start at {1}", ((AtariST)stExe).Resource.rsh_nstring, ((AtariST)stExe).Resource.rsh_frstr);
+                    Console.WriteLine("\t\t{0} free images start at {1}", ((AtariST)stExe).Resource.rsh_nimages, ((AtariST)stExe).Resource.rsh_frimg);
+                    Console.WriteLine("\t\tString data starts at {0}", ((AtariST)stExe).Resource.rsh_string);
+                    Console.WriteLine("\t\tImage data starts at {0}", ((AtariST)stExe).Resource.rsh_imdata);
+                    Console.WriteLine("\t\tStandard resource data is {0} bytes", ((AtariST)stExe).Resource.rsh_rssize);
+                }
             }
 
             if(coffExe.Recognized)

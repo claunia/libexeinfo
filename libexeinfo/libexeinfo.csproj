@@ -46,6 +46,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AtariST\Enums.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="IExecutable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

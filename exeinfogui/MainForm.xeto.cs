@@ -63,14 +63,12 @@ namespace exeinfogui
 
             txtFile.Text = dlgOpen.FileName;
 
-            FileStream exeFs = File.Open(dlgOpen.FileName, FileMode.Open, FileAccess.Read);
-
-            IExecutable mzExe         = new MZ(exeFs);
-            IExecutable neExe         = new NE(exeFs);
-            IExecutable stExe         = new AtariST(exeFs);
-            IExecutable lxExe         = new LX(exeFs);
-            IExecutable coffExe       = new COFF(exeFs);
-            IExecutable peExe         = new PE(exeFs);
+            IExecutable mzExe         = new MZ(dlgOpen.FileName);
+            IExecutable neExe         = new NE(dlgOpen.FileName);
+            IExecutable stExe         = new AtariST(dlgOpen.FileName);
+            IExecutable lxExe         = new LX(dlgOpen.FileName);
+            IExecutable coffExe       = new COFF(dlgOpen.FileName);
+            IExecutable peExe         = new PE(dlgOpen.FileName);
             IExecutable recognizedExe = null;
 
             if(mzExe.Recognized) recognizedExe = mzExe;
@@ -86,8 +84,6 @@ namespace exeinfogui
                 recognizedExe = coffExe;
             else
                 txtType.Text = "Format not recognized";
-
-            exeFs.Close();
 
             if(recognizedExe == null) return;
 
