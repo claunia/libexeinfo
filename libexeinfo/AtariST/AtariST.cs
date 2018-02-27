@@ -149,31 +149,6 @@ namespace libexeinfo
             }
         }
 
-        static TreeObjectNode ProcessResourceObject(IList<ObjectNode> nodes, ref List<short> knownNodes, short nodeNumber)
-        {
-            TreeObjectNode node = new TreeObjectNode
-            {
-                type   = (ObjectTypes)nodes[nodeNumber].ob_type,
-                flags  = (ObjectFlags)nodes[nodeNumber].ob_flags,
-                state  = (ObjectStates)nodes[nodeNumber].ob_state,
-                data   = nodes[nodeNumber].ob_spec,
-                x      = nodes[nodeNumber].ob_x,
-                y      = nodes[nodeNumber].ob_y,
-                width  = nodes[nodeNumber].ob_width,
-                height = nodes[nodeNumber].ob_height
-            };
-
-            knownNodes.Add(nodeNumber);
-
-            if(nodes[nodeNumber].ob_head > 0 && !knownNodes.Contains(nodes[nodeNumber].ob_head))
-                node.child = ProcessResourceObject(nodes, ref knownNodes, nodes[nodeNumber].ob_head);
-
-            if(nodes[nodeNumber].ob_next > 0 && !knownNodes.Contains(nodes[nodeNumber].ob_next))
-                node.sibling = ProcessResourceObject(nodes, ref knownNodes, nodes[nodeNumber].ob_next);
-
-            return node;
-        }
-
         /// <summary>
         ///     Identifies if the specified executable is a Atari ST executable
         /// </summary>
