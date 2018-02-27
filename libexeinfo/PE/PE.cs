@@ -80,6 +80,7 @@ namespace libexeinfo
         public IEnumerable<Architecture> Architectures =>
             new[] {COFF.MachineTypeToArchitecture(Header.coff.machine)};
         public OperatingSystem RequiredOperatingSystem { get; private set; }
+        public IEnumerable<string> Strings { get; }
 
         void Initialize()
         {

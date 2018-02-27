@@ -90,6 +90,7 @@ namespace libexeinfo
                         : Architecture.I86
             };
         public OperatingSystem RequiredOperatingSystem { get; private set; }
+        public IEnumerable<string> Strings { get; }
 
         void Initialize()
         {

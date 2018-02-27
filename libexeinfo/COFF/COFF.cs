@@ -77,6 +77,7 @@ namespace libexeinfo
         public IEnumerable<Architecture> Architectures           => new[] {MachineTypeToArchitecture(Header.machine)};
         public OperatingSystem           RequiredOperatingSystem =>
             new OperatingSystem {Name = "Unknown"}; // TODO: Know
+        public IEnumerable<string> Strings { get; }
 
         void Initialize()
         {

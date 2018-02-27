@@ -83,6 +83,7 @@ namespace libexeinfo
         public string                    Type                    { get; private set; }
         public IEnumerable<Architecture> Architectures           => new[] {Architecture.I86};
         public OperatingSystem           RequiredOperatingSystem => new OperatingSystem {Name = "DOS"};
+        public IEnumerable<string> Strings { get; }
 
         void Initialize()
         {

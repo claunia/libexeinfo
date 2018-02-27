@@ -33,5 +33,9 @@ namespace libexeinfo
         ///     Operating system the executable requires to run on
         /// </summary>
         OperatingSystem RequiredOperatingSystem { get; }
+        /// <summary>
+        ///     List of all strings available in the executable resources, if any
+        /// </summary>
+        IEnumerable<string> Strings { get; }
     }
 }

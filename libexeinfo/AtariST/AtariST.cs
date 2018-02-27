@@ -102,6 +102,7 @@ namespace libexeinfo
         public IEnumerable<Architecture> Architectures           => new[] {Architecture.M68K};
         public OperatingSystem           RequiredOperatingSystem =>
             new OperatingSystem {Name = Header.mint == MINT_SIGNATURE ? "MiNT" : "Atari TOS"};
+        public IEnumerable<string> Strings { get; }
         public Stream resourceStream;
         public AtariResourceHeader ResourceHeader;
         public TreeObjectNode ResourceObjectRoot;
