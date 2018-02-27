@@ -41,12 +41,15 @@
             </StackLayout>
         </StackLayoutItem>
         <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
-            <StackLayout Orientation="Vertical">
-                <Label ID="lblInformation">Information:</Label>
-                <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
-                    <TextArea ID="txtInformation" ReadOnly="True" />
-                </StackLayoutItem>
-            </StackLayout>
+            <TabControl ID="tabMain">
+                <TabPage Text="Information">
+                    <StackLayout Orientation="Vertical">
+                        <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+                            <TextArea ID="txtInformation" ReadOnly="True" />
+                        </StackLayoutItem>
+                    </StackLayout>
+                </TabPage>
+            </TabControl>
         </StackLayoutItem>
 	</StackLayout>
 	<Form.Menu>

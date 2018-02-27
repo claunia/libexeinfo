@@ -15,8 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\libexeinfo\libexeinfo.csproj">
-      <Project>{5DD22357-AEA1-4B1D-9CAB-F51873A3A5D0}</Project>
-      <Name>libexeinfo</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

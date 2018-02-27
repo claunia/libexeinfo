@@ -42,6 +42,7 @@ namespace exeinfogui
         TextBox  txtOs;
         TextBox  txtSubsystem;
         TextBox  txtType;
+        TabControl tabMain;
 
         public MainForm()
         {
@@ -104,6 +105,12 @@ namespace exeinfogui
                 lblSubsystem.Visible = true;
                 txtSubsystem.Visible = true;
                 txtSubsystem.Text    = recognizedExe.RequiredOperatingSystem.Subsystem;
+            }
+
+            if(recognizedExe.Strings != null && recognizedExe.Strings.Any())
+            {
+                TabPageStrings tabStrings = new TabPageStrings(recognizedExe.Strings);
+                tabMain.Pages.Add(tabStrings);
             }
         }
 
