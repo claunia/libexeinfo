@@ -30,7 +30,7 @@ namespace libexeinfo
 {
     public partial class AtariST
     {
-        public enum ObjectTypes : ushort
+        public enum ObjectTypes : short
         {
             /// <summary>
             ///     A graphic box. Its <see cref="ObjectNode.ob_spec" /> contains the object's color word and thickness.
@@ -106,7 +106,7 @@ namespace libexeinfo
         }
 
         [Flags]
-        public enum ObjectFlags : ushort
+        public enum ObjectFlags : short
         {
             /// <summary>
             /// No flags
@@ -151,7 +151,7 @@ namespace libexeinfo
         }
 
         [Flags]
-        public enum ObjectStates : ushort
+        public enum ObjectStates : short
         {
             /// <summary>
             /// Indicates that the object is drawn in normal colors
