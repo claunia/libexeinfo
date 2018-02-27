@@ -49,6 +49,20 @@ namespace libexeinfo
         }
 
         /// <summary>
+        ///     Marshals a little endian structure from a byte array.
+        /// </summary>
+        /// <returns>The structure.</returns>
+        /// <param name="bytes">Byte array.</param>
+        /// <typeparam name="T">Structure type.</typeparam>
+        public static T ByteArrayToStructureLittleEndian<T>(byte[] bytes) where T : struct
+        {
+            GCHandle ptr = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            T        str = (T)Marshal.PtrToStructure(ptr.AddrOfPinnedObject(), typeof(T));
+            ptr.Free();
+            return str;
+        }
+
+        /// <summary>
         ///     Swaps endian of structure members that correspond to numerical types.
         ///     Does not traverse nested structures.
         /// </summary>
