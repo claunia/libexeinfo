@@ -102,7 +102,7 @@ namespace libexeinfo
             ///     An object that describes a color icon. Its <see cref="ObjectNode.ob_spec" /> is a pointer to an <see cref="ColorIconBlock" />
             ///     structure.
             /// </summary>
-            G_CICON = 31,
+            G_CICON = 33,
         }
 
         [Flags]
@@ -177,55 +177,68 @@ namespace libexeinfo
 
         public enum ObjectColors : byte
         {
-            White = 0,
-            Black = 1,
-            Red = 2,
-            Green = 3,
-            Blue = 4,
-            Cyan = 5,
-            Yellow = 6,
-            Magenta = 7,
-            White2 = 8,
-            Black2 = 9,
-            LightRed = 10,
-            LightGreen = 11,
-            LightBlue = 12,
-            LightCyan = 13,
-            LightYellow = 14,
+            White        = 0,
+            Black        = 1,
+            Red          = 2,
+            Green        = 3,
+            Blue         = 4,
+            Cyan         = 5,
+            Yellow       = 6,
+            Magenta      = 7,
+            White2       = 8,
+            Black2       = 9,
+            LightRed     = 10,
+            LightGreen   = 11,
+            LightBlue    = 12,
+            LightCyan    = 13,
+            LightYellow  = 14,
             LightMagenta = 15
         }
 
         public enum ObjectFillPattern : byte
         {
-            Hollow = 0,
+            Hollow  = 0,
             Dither1 = 1,
             Dither2 = 2,
             Dither3 = 3,
             Dither4 = 4,
             Dither5 = 5,
             Dither6 = 6,
-            Solid = 7,
+            Solid   = 7,
         }
-        
+
+        public enum ObjectJustification : short
+        {
+            Left   = 0,
+            Right  = 1,
+            Center = 2
+        }
+
+        public enum ObjectFont : short
+        {
+            System = 3,
+            Small = 5
+        }
+
         /// <summary>
         /// Mask for border <see cref="ObjectColors"/>
         /// </summary>
-        const ushort BorderColorMask = 0xF000;
+        public const ushort BorderColorMask = 0xF000;
         /// <summary>
         /// Mask for text <see cref="ObjectColors"/>
         /// </summary>
-        const ushort TextColorMask = 0x0F00;
+        public const ushort TextColorMask = 0x0F00;
         /// <summary>
         /// If set text is in transparent mode. Replace mode otherwise.
         /// </summary>
-        const ushort TransparentColor = 0x0080;
+        public const ushort TransparentColor = 0x0080;
         /// <summary>
         /// Mask for <see cref="ObjectFillPattern"/>
         /// </summary>
-        const ushort FillPatternMask = 0x0070;
+        public const ushort FillPatternMask = 0x0070;
         /// <summary>
         /// Mask for inside <see cref="ObjectColors"/>
         /// </summary>
-        const ushort InsideColorMask = 0x000F;
+        public const ushort InsideColorMask = 0x000F;
     }
 }

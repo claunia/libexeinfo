@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace libexeinfo
@@ -102,10 +103,10 @@ namespace libexeinfo
         public IEnumerable<Architecture> Architectures           => new[] {Architecture.M68K};
         public OperatingSystem           RequiredOperatingSystem =>
             new OperatingSystem {Name = Header.mint == MINT_SIGNATURE ? "MiNT" : "Atari TOS"};
-        public IEnumerable<string> Strings { get; }
+        public IEnumerable<string> Strings { get; private set; }
         public Stream resourceStream;
         public AtariResourceHeader ResourceHeader;
-        public TreeObjectNode ResourceObjectRoot;
+        public TreeObjectNode[] ResourceObjectRoots;
 
         void Initialize()
         {
@@ -132,20 +133,63 @@ namespace libexeinfo
 
             if(ResourceHeader.rsh_vrsn != 0 && ResourceHeader.rsh_vrsn != 1 && ResourceHeader.rsh_vrsn != 4 && ResourceHeader.rsh_vrsn != 5) return;
 
-            if(ResourceHeader.rsh_nobs > 0)
+            List<string> strings = new List<string>();
+            
+            if(ResourceHeader.rsh_ntree > 0)
+            {
+                resourceStream.Position = ResourceHeader.rsh_trindex;
+                int[] treeOffsets = new int[ResourceHeader.rsh_ntree];
+                byte[] tmp = new byte[4];
+
+                for(int i = 0; i < ResourceHeader.rsh_ntree; i++)
+                {
+                    resourceStream.Read(tmp, 0, 4);
+                    treeOffsets[i] = BitConverter.ToInt32(tmp.Reverse().ToArray(), 0);
+                }
+
+                ResourceObjectRoots = new TreeObjectNode[ResourceHeader.rsh_ntree];
+                
+                for(int i = 0; i < ResourceHeader.rsh_ntree; i++)
+                {
+                    if(treeOffsets[i] <= 0 || treeOffsets[i] >= resourceStream.Length) continue;
+                    
+                    resourceStream.Position = treeOffsets[i];
+
+                    List<ObjectNode> nodes = new List<ObjectNode>();
+                    while(true)
+                    {
+                        buffer = new byte[Marshal.SizeOf(typeof(ObjectNode))];
+                        resourceStream.Read(buffer, 0, buffer.Length);
+                        ObjectNode node = BigEndianMarshal.ByteArrayToStructureBigEndian<ObjectNode>(buffer);
+                        nodes.Add(node);
+                        if(((ObjectFlags)node.ob_flags).HasFlag(ObjectFlags.Lastob)) break;
+                    }
+
+                    List<short> knownNodes = new List<short>();
+                    ResourceObjectRoots[i]     = ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings);
+                }
+            }
+            else if(ResourceHeader.rsh_nobs > 0)
             {
                 ObjectNode[] nodes = new ObjectNode[ResourceHeader.rsh_nobs];
 
                 resourceStream.Position = ResourceHeader.rsh_object;
                 for(short i = 0; i < ResourceHeader.rsh_nobs; i++)
                 {
-                    buffer                  = new byte[Marshal.SizeOf(typeof(ObjectNode))];
+                    buffer = new byte[Marshal.SizeOf(typeof(ObjectNode))];
                     resourceStream.Read(buffer, 0, buffer.Length);
                     nodes[i] = BigEndianMarshal.ByteArrayToStructureBigEndian<ObjectNode>(buffer);
                 }
                 
                 List<short> knownNodes = new List<short>();
-                ResourceObjectRoot = ProcessResourceObject(nodes, ref knownNodes, 0);
+                ResourceObjectRoots = new TreeObjectNode[1];
+                ResourceObjectRoots[0]    = ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings);
+            }
+
+            if(strings.Count > 0)
+            {
+                strings.Sort();
+                Strings = strings.Distinct();
             }
         }
 

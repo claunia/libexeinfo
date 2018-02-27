@@ -207,6 +207,57 @@ namespace libexeinfo
             public short y;
             public short width;
             public short height;
+
+            public TextBlock TedInfo;
+            public BitmapBlock BitBlock;
+            public UserBlock UserBlock;
+            public Icon IconBlock;
+            public string String;
+        }
+
+        public class TextBlock
+        {
+            public string Text;
+            public string Template;
+            public string Validation;
+            public ObjectFont Font;
+            public ObjectJustification Justification;
+            public short Thickness;
+            public ObjectColors BorderColor;
+            public ObjectColors TextColor;
+            public ObjectColors InsideColor;
+            public bool Transparency;
+            public ObjectFillPattern Fill;
+        }
+
+        public class BitmapBlock
+        {
+            public byte[] Data;
+            public int Width;
+            public int Height;
+            public short X;
+            public short Y;
+            public ObjectColors Color;
+        }
+
+        public class Icon
+        {
+            public byte[] Mask;
+            public byte[] Data;
+            public int Width;
+            public int Height;
+            public short X;
+            public short Y;
+            public ObjectColors BackgroundColor;
+            public ObjectColors ForegroundColor;
+            public char Character;
+            public short CharX;
+            public short CharY;
+            public string Text;
+            public short TextX;
+            public short TextY;
+            public short TextWidth;
+            public short TextHeight;
         }
         
         /// <summary>

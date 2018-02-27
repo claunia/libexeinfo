@@ -24,16 +24,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using Claunia.Encoding;
 
 namespace libexeinfo
 {
     public partial class AtariST : IExecutable
     {
-        static TreeObjectNode ProcessResourceObject(IList<ObjectNode> nodes, ref List<short> knownNodes, short nodeNumber)
+        static TreeObjectNode ProcessResourceObject(IList<ObjectNode> nodes, ref List<short> knownNodes,
+                                                    short             nodeNumber, Stream     resourceStream,
+                                                    List<string>      strings)
         {
             TreeObjectNode node = new TreeObjectNode
             {
@@ -47,13 +49,187 @@ namespace libexeinfo
                 height = nodes[nodeNumber].ob_height
             };
 
+            byte[]     buffer;
+            List<byte> chars;
+            switch(node.type)
+            {
+                case ObjectTypes.G_TEXT:
+                case ObjectTypes.G_BOXTEXT:
+                case ObjectTypes.G_FTEXT:
+                case ObjectTypes.G_FBOXTEXT:
+                    if(node.data <= 0 || node.data >= resourceStream.Length) break;
+
+                    resourceStream.Position = node.data;
+                    buffer                  = new byte[Marshal.SizeOf(typeof(TedInfo))];
+                    resourceStream.Read(buffer, 0, buffer.Length);
+                    TedInfo ted = BigEndianMarshal.ByteArrayToStructureBigEndian<TedInfo>(buffer);
+
+                    node.TedInfo = new TextBlock
+                    {
+                        Font          = (ObjectFont)ted.te_font,
+                        Justification = (ObjectJustification)ted.te_just,
+                        BorderColor   = (ObjectColors)((ted.te_color      & BorderColorMask) >> 12),
+                        TextColor     = (ObjectColors)((ted.te_color      & TextColorMask)   >> 8),
+                        Transparency  = (ted.te_color                     & TransparentColor) != TransparentColor,
+                        Fill          = (ObjectFillPattern)((ted.te_color & FillPatternMask) >> 4),
+                        InsideColor   = (ObjectColors)(ted.te_color       & InsideColorMask),
+                        Thickness     = ted.te_thickness
+                    };
+
+                    byte[] tmpStr;
+
+                    if(ted.te_ptext > 0 && ted.te_ptext < resourceStream.Length && ted.te_txtlen > 1)
+                    {
+                        tmpStr                  = new byte[ted.te_txtlen - 1];
+                        resourceStream.Position = ted.te_ptext;
+                        resourceStream.Read(tmpStr, 0, ted.te_txtlen - 1);
+                        node.TedInfo.Text = Encoding.AtariSTEncoding.GetString(tmpStr);
+                        strings.Add(node.TedInfo.Text.Trim());
+                    }
+
+                    if(ted.te_pvalid > 0 && ted.te_pvalid < resourceStream.Length && ted.te_txtlen > 1)
+                    {
+                        tmpStr                  = new byte[ted.te_txtlen - 1];
+                        resourceStream.Position = ted.te_pvalid;
+                        resourceStream.Read(tmpStr, 0, ted.te_txtlen - 1);
+                        node.TedInfo.Validation = Encoding.AtariSTEncoding.GetString(tmpStr);
+                        strings.Add(node.TedInfo.Validation.Trim());
+                    }
+
+                    if(ted.te_ptmplt > 0 && ted.te_ptmplt < resourceStream.Length && ted.te_tmplen > 1)
+                    {
+                        tmpStr                  = new byte[ted.te_tmplen - 1];
+                        resourceStream.Position = ted.te_ptmplt;
+                        resourceStream.Read(tmpStr, 0, ted.te_tmplen - 1);
+                        node.TedInfo.Template = Encoding.AtariSTEncoding.GetString(tmpStr);
+                        strings.Add(node.TedInfo.Template.Trim());
+                    }
+
+                    break;
+                // TODO: This is indeed a CUT from a bigger image, need to cut it out
+                case ObjectTypes.G_IMAGE:
+                    if(node.data <= 0 || node.data >= resourceStream.Length) break;
+
+                    resourceStream.Position = node.data;
+                    buffer                  = new byte[Marshal.SizeOf(typeof(BitBlock))];
+                    resourceStream.Read(buffer, 0, buffer.Length);
+                    BitBlock bitBlock = BigEndianMarshal.ByteArrayToStructureBigEndian<BitBlock>(buffer);
+
+                    node.BitBlock = new BitmapBlock
+                    {
+                        Color  = (ObjectColors)bitBlock.bi_color,
+                        Height = bitBlock.bi_hl,
+                        Width  = bitBlock.bi_wb * 8,
+                        X      = bitBlock.bi_x,
+                        Y      = bitBlock.bi_y
+                    };
+
+                    if(bitBlock.bi_pdata == 0 || bitBlock.bi_pdata >= resourceStream.Length) break;
+
+                    node.BitBlock.Data      = new byte[bitBlock.bi_wb * bitBlock.bi_hl];
+                    resourceStream.Position = bitBlock.bi_pdata;
+                    resourceStream.Read(node.BitBlock.Data, 0, node.BitBlock.Data.Length);
+
+                    break;
+                case ObjectTypes.G_USERDEF:
+                    if(node.data <= 0 || node.data >= resourceStream.Length) break;
+
+                    resourceStream.Position = node.data;
+                    buffer                  = new byte[Marshal.SizeOf(typeof(UserBlock))];
+                    resourceStream.Read(buffer, 0, buffer.Length);
+                    node.UserBlock = BigEndianMarshal.ByteArrayToStructureBigEndian<UserBlock>(buffer);
+                    break;
+                case ObjectTypes.G_ICON:
+                    if(node.data <= 0 || node.data >= resourceStream.Length) break;
+
+                    resourceStream.Position = node.data;
+                    buffer                  = new byte[Marshal.SizeOf(typeof(IconBlock))];
+                    resourceStream.Read(buffer, 0, buffer.Length);
+                    IconBlock iconBlock = BigEndianMarshal.ByteArrayToStructureBigEndian<IconBlock>(buffer);
+
+                    node.IconBlock = new Icon
+                    {
+                        Width           = iconBlock.ib_wicon,
+                        Height          = iconBlock.ib_hicon,
+                        X               = iconBlock.ib_xicon,
+                        Y               = iconBlock.ib_yicon,
+                        ForegroundColor = (ObjectColors)((iconBlock.ib_char >> 12) & 0x000F),
+                        BackgroundColor = (ObjectColors)((iconBlock.ib_char >> 8)  & 0x000F),
+                        Character       =
+                            Encoding.AtariSTEncoding.GetString(new[] {(byte)(iconBlock.ib_char & 0xFF)})[0],
+                        CharX      = iconBlock.ib_xchar,
+                        CharY      = iconBlock.ib_ychar,
+                        TextX      = iconBlock.ib_xtext,
+                        TextY      = iconBlock.ib_ytext,
+                        TextWidth  = iconBlock.ib_wtext,
+                        TextHeight = iconBlock.ib_htext
+                    };
+
+                    if(iconBlock.ib_ptext > 0 && iconBlock.ib_ptext < resourceStream.Length)
+                    {
+                        resourceStream.Position = iconBlock.ib_ptext;
+                        chars                   = new List<byte>();
+                        while(true)
+                        {
+                            int character = resourceStream.ReadByte();
+
+                            if(character <= 0) break;
+
+                            chars.Add((byte)character);
+                        }
+
+                        node.IconBlock.Text = Encoding.AtariSTEncoding.GetString(chars.ToArray());
+                        strings.Add(node.IconBlock.Text.Trim());
+                    }
+
+                    if(iconBlock.ib_pdata > 0 && iconBlock.ib_pdata < resourceStream.Length)
+                    {
+                        resourceStream.Position = iconBlock.ib_pdata;
+                        node.IconBlock.Data     = new byte[node.IconBlock.Width * node.IconBlock.Height / 8];
+                        resourceStream.Read(node.IconBlock.Data, 0, node.IconBlock.Data.Length);
+                    }
+
+                    if(iconBlock.ib_pmask > 0 && iconBlock.ib_pmask < resourceStream.Length)
+                    {
+                        resourceStream.Position = iconBlock.ib_pmask;
+                        node.IconBlock.Mask     = new byte[node.IconBlock.Width * node.IconBlock.Height / 8];
+                        resourceStream.Read(node.IconBlock.Mask, 0, node.IconBlock.Mask.Length);
+                    }
+
+                    break;
+                case ObjectTypes.G_CICON:
+                    //Console.WriteLine("ColorIconBlock pointer {0}", node.data);
+                    break;
+                case ObjectTypes.G_BUTTON:
+                case ObjectTypes.G_STRING:
+                case ObjectTypes.G_TITLE:
+                    if(node.data <= 0 || node.data >= resourceStream.Length) break;
+
+                    resourceStream.Position = node.data;
+                    chars                   = new List<byte>();
+                    while(true)
+                    {
+                        int character = resourceStream.ReadByte();
+
+                        if(character <= 0) break;
+
+                        chars.Add((byte)character);
+                    }
+
+                    node.String = Encoding.AtariSTEncoding.GetString(chars.ToArray());
+                    strings.Add(node.String.Trim());
+                    break;
+            }
+
             knownNodes.Add(nodeNumber);
 
             if(nodes[nodeNumber].ob_head > 0 && !knownNodes.Contains(nodes[nodeNumber].ob_head))
-                node.child = ProcessResourceObject(nodes, ref knownNodes, nodes[nodeNumber].ob_head);
+                node.child = ProcessResourceObject(nodes, ref knownNodes, nodes[nodeNumber].ob_head, resourceStream,
+                                                   strings);
 
             if(nodes[nodeNumber].ob_next > 0 && !knownNodes.Contains(nodes[nodeNumber].ob_next))
-                node.sibling = ProcessResourceObject(nodes, ref knownNodes, nodes[nodeNumber].ob_next);
+                node.sibling =
+                    ProcessResourceObject(nodes, ref knownNodes, nodes[nodeNumber].ob_next, resourceStream, strings);
 
             return node;
         }

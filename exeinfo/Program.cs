@@ -27,7 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
+using System.Linq;
 using System.Text;
 using libexeinfo;
 
@@ -121,48 +121,88 @@ namespace exeinfo
                     foreach(NE.ResidentName name in ((NE)neExe).NonResidentNames)
                         Console.WriteLine("\t\t{0} at index {1}", name.name, name.entryTableIndex);
                 }
+
+                if(neExe.Strings != null && neExe.Strings.Any())
+                {
+                    Console.WriteLine("\tStrings:");
+                    foreach(string str in neExe.Strings) Console.WriteLine("\t\t{0}", str);
+                }
             }
             else if(lxExe.Recognized)
             {
                 recognized = true;
                 Console.Write(lxExe.Information);
+
+                if(lxExe.Strings != null && lxExe.Strings.Any())
+                {
+                    Console.WriteLine("\tStrings:");
+                    foreach(string str in lxExe.Strings) Console.WriteLine("\t\t{0}", str);
+                }
             }
             else if(peExe.Recognized)
             {
                 recognized = true;
                 Console.Write(peExe.Information);
+
+                if(peExe.Strings != null && peExe.Strings.Any())
+                {
+                    Console.WriteLine("\tStrings:");
+                    foreach(string str in peExe.Strings) Console.WriteLine("\t\t{0}", str);
+                }
             }
             else if(mzExe.Recognized)
             {
                 recognized = true;
                 Console.Write(mzExe.Information);
+
+                if(mzExe.Strings != null && mzExe.Strings.Any())
+                {
+                    Console.WriteLine("\tStrings:");
+                    foreach(string str in mzExe.Strings) Console.WriteLine("\t\t{0}", str);
+                }
             }
 
             if(stExe.Recognized)
             {
                 recognized = true;
                 Console.Write(stExe.Information);
-                if(((AtariST)stExe).resourceStream     != null ||
-                   (((AtariST)stExe).ResourceHeader.rsh_vrsn != 0 && ((AtariST)stExe).ResourceHeader.rsh_vrsn != 1 &&
-                    ((AtariST)stExe).ResourceHeader.rsh_vrsn != 4 && ((AtariST)stExe).ResourceHeader.rsh_vrsn != 5))
+                if(((AtariST)stExe).resourceStream          != null || ((AtariST)stExe).ResourceHeader.rsh_vrsn != 0 &&
+                   ((AtariST)stExe).ResourceHeader.rsh_vrsn != 1                                                     &&
+                   ((AtariST)stExe).ResourceHeader.rsh_vrsn != 4                                                     &&
+                   ((AtariST)stExe).ResourceHeader.rsh_vrsn != 5)
                 {
                     Console.WriteLine("\tResources:");
-                    Console.WriteLine("\t\t{0} OBJECTs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nobs, ((AtariST)stExe).ResourceHeader.rsh_object);
-                    Console.WriteLine("\t\t{0} TEDINFOs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nted, ((AtariST)stExe).ResourceHeader.rsh_tedinfo);
-                    Console.WriteLine("\t\t{0} ICONBLKs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nib, ((AtariST)stExe).ResourceHeader.rsh_iconblk);
-                    Console.WriteLine("\t\t{0} BITBLKs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nbb, ((AtariST)stExe).ResourceHeader.rsh_bitblk);
-                    Console.WriteLine("\t\t{0} object trees start at {1}", ((AtariST)stExe).ResourceHeader.rsh_ntree, ((AtariST)stExe).ResourceHeader.rsh_trindex);
-                    Console.WriteLine("\t\t{0} free strings start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nstring, ((AtariST)stExe).ResourceHeader.rsh_frstr);
-                    Console.WriteLine("\t\t{0} free images start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nimages, ((AtariST)stExe).ResourceHeader.rsh_frimg);
+                    Console.WriteLine("\t\t{0} OBJECTs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nobs,
+                                      ((AtariST)stExe).ResourceHeader.rsh_object);
+                    Console.WriteLine("\t\t{0} TEDINFOs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nted,
+                                      ((AtariST)stExe).ResourceHeader.rsh_tedinfo);
+                    Console.WriteLine("\t\t{0} ICONBLKs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nib,
+                                      ((AtariST)stExe).ResourceHeader.rsh_iconblk);
+                    Console.WriteLine("\t\t{0} BITBLKs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nbb,
+                                      ((AtariST)stExe).ResourceHeader.rsh_bitblk);
+                    Console.WriteLine("\t\t{0} object trees start at {1}", ((AtariST)stExe).ResourceHeader.rsh_ntree,
+                                      ((AtariST)stExe).ResourceHeader.rsh_trindex);
+                    Console.WriteLine("\t\t{0} free strings start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nstring,
+                                      ((AtariST)stExe).ResourceHeader.rsh_frstr);
+                    Console.WriteLine("\t\t{0} free images start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nimages,
+                                      ((AtariST)stExe).ResourceHeader.rsh_frimg);
                     Console.WriteLine("\t\tString data starts at {0}", ((AtariST)stExe).ResourceHeader.rsh_string);
-                    Console.WriteLine("\t\tImage data starts at {0}", ((AtariST)stExe).ResourceHeader.rsh_imdata);
-                    Console.WriteLine("\t\tStandard resource data is {0} bytes", ((AtariST)stExe).ResourceHeader.rsh_rssize);
+                    Console.WriteLine("\t\tImage data starts at {0}",  ((AtariST)stExe).ResourceHeader.rsh_imdata);
+                    Console.WriteLine("\t\tStandard resource data is {0} bytes",
+                                      ((AtariST)stExe).ResourceHeader.rsh_rssize);
 
-                    if(((AtariST)stExe).ResourceObjectRoot != null)
-                    {
-                        Console.WriteLine("\tObject tree:");
-                        PrintAtariResourceTree(((AtariST)stExe).ResourceObjectRoot, 2);
-                    }
+                    if(((AtariST)stExe).ResourceObjectRoots != null && ((AtariST)stExe).ResourceObjectRoots.Length > 0)
+                        for(int i = 0; i                    < ((AtariST)stExe).ResourceObjectRoots.Length; i++)
+                        {
+                            Console.WriteLine("\tObject tree {0}:", i);
+                            PrintAtariResourceTree(((AtariST)stExe).ResourceObjectRoots[i], 2);
+                        }
+                }
+
+                if(stExe.Strings != null && stExe.Strings.Any())
+                {
+                    Console.WriteLine("\tStrings:");
+                    foreach(string str in stExe.Strings) Console.WriteLine("\t\t{0}", str);
                 }
             }
 
@@ -170,6 +210,12 @@ namespace exeinfo
             {
                 recognized = true;
                 Console.Write(coffExe.Information);
+
+                if(coffExe.Strings != null && coffExe.Strings.Any())
+                {
+                    Console.WriteLine("\tStrings:");
+                    foreach(string str in coffExe.Strings) Console.WriteLine("\t\t{0}", str);
+                }
             }
 
             if(!recognized) Console.WriteLine("Executable format not recognized");
@@ -177,11 +223,106 @@ namespace exeinfo
 
         static void PrintAtariResourceTree(AtariST.TreeObjectNode node, int level)
         {
-            for(int i = 0; i < level; i++)
-                Console.Write("\t");
+            for(int i = 0; i < level; i++) Console.Write("\t");
 
-            Console.WriteLine("{0} ({1} {2}) data = {3}, coordinates ({4},{5}) size {6}x{7}", node.type, node.flags,
-                          node.state, node.data, node.x, node.y, node.width, node.height);
+            string thickStr;
+
+            switch(node.type)
+            {
+                case AtariST.ObjectTypes.G_BOX:
+                case AtariST.ObjectTypes.G_IBOX:
+                    Console.WriteLine("{0} ({1} {2}) {3} border, {4} text, {5} interior, {6} fill, {7} mode, coordinates ({8},{9}) size {10}x{11}",
+                                      node.type, node.flags, node.state,
+                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.BorderColorMask) >> 12),
+                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.TextColorMask)   >> 8),
+                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.InsideColorMask) >> 8),
+                                      (AtariST.ObjectFillPattern)((node.data & 0xFFFF & AtariST.FillPatternMask) >> 4),
+                                      (node.data                             & 0xFFFF & AtariST.TransparentColor) != 0
+                                          ? "transparent"
+                                          : "replace",
+                                      node.x, node.y, node.width, node.height);
+                    break;
+                case AtariST.ObjectTypes.G_BOXCHAR:
+                    sbyte thickness = (sbyte)((node.data & 0xFF0000) >> 16);
+
+                    if(thickness      < 0) thickStr = $"{thickness * -1} pixels outward thickness";
+                    else if(thickness > 0)
+                        thickStr = $"{thickness} pixels inward thickness";
+                    else
+                        thickStr = "no thickness";
+
+                    char character =
+                        Claunia.Encoding.Encoding.AtariSTEncoding.GetString(new[]
+                        {
+                            (byte)((node.data & 0xFF000000) >> 24)
+                        })[0];
+
+                    Console.WriteLine(
+                                      "{0} ({1} {2}) {3} border, {4} text, {5} interior, {6} fill, {7} mode, {8}, '{9}' character, coordinates ({10},{11}) size {12}x{13}",
+                                      node.type, node.flags, node.state,
+                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.BorderColorMask) >> 12),
+                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.TextColorMask)   >> 8),
+                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.InsideColorMask) >> 8),
+                                      (AtariST.ObjectFillPattern)((node.data & 0xFFFF & AtariST.FillPatternMask) >> 4),
+                                      (node.data                             & 0xFFFF & AtariST.TransparentColor) != 0
+                                          ? "transparent"
+                                          : "replace",
+                                      thickStr, character, node.x, node.y, node.width, node.height);
+                    break;
+                case AtariST.ObjectTypes.G_BUTTON:
+                case AtariST.ObjectTypes.G_STRING:
+                case AtariST.ObjectTypes.G_TITLE:
+                    Console.WriteLine("{0} ({1} {2}), coordinates ({3},{4}) size {5}x{6}: {7}", node.type, node.flags,
+                                      node.state, node.x, node.y, node.width, node.height, node.String);
+                    break;
+                case AtariST.ObjectTypes.G_TEXT:
+                case AtariST.ObjectTypes.G_BOXTEXT:
+                case AtariST.ObjectTypes.G_FTEXT:
+                case AtariST.ObjectTypes.G_FBOXTEXT:
+                    if(node.TedInfo == null) goto default;
+
+                    if(node.TedInfo.Thickness < 0)
+                        thickStr = $"{node.TedInfo.Thickness * -1} pixels outward thickness";
+                    else if(node.TedInfo.Thickness > 0)
+                        thickStr = $"{node.TedInfo.Thickness} pixels inward thickness";
+                    else
+                        thickStr = "no thickness";
+
+                    Console.WriteLine("{0} ({1} {2}), coordinates ({3},{4}) size {5}x{6}, font {7}, {8}-justified, {9}," + " {10} border, {11} text, {12} interior, {13} fill, {14} mode, text: \"{15}\"," + " validation: \"{16}\", template: \"{17}\"",
+                                      node.type, node.flags, node.state, node.x, node.y, node.width, node.height,
+                                      node.TedInfo.Font, node.TedInfo.Justification, thickStr, node.TedInfo.BorderColor,
+                                      node.TedInfo.TextColor, node.TedInfo.InsideColor, node.TedInfo.Fill,
+                                      node.TedInfo.Transparency ? "transparent" : "replace", node.TedInfo.Text,
+                                      node.TedInfo.Validation, node.TedInfo.Template);
+                    break;
+                case AtariST.ObjectTypes.G_IMAGE:
+                    if(node.BitBlock == null) goto default;
+
+                    Console.WriteLine("{0} ({1} {2}), coordinates ({3},{4}) size {5}x{6}, colored {7}, {8} bytes", node.type,
+                                      node.flags, node.state, node.BitBlock.X, node.BitBlock.Y, node.BitBlock.Width,
+                                      node.BitBlock.Height, node.BitBlock.Color, node.BitBlock.Data?.Length);
+                    break;
+                /*
+            case AtariST.ObjectTypes.G_USERDEF: break;*/
+                case AtariST.ObjectTypes.G_ICON:
+                    if(node.IconBlock == null) goto default;
+
+                    Console.WriteLine(
+                                      "{0} ({1} {2}), coordinates ({3},{4}) size {5}x{6}, {7} foreground,"            +
+                                      " {8} background, char '{9}' at ({10},{11}), {12} bytes data, text \"{13}\" at" +
+                                      " ({14},{15}) within a box {16}x{17} pixels", node.type, node.flags, node.state,
+                                      node.IconBlock.X, node.IconBlock.Y, node.IconBlock.Width, node.IconBlock.Height,
+                                      node.IconBlock.ForegroundColor, node.IconBlock.BackgroundColor,
+                                      node.IconBlock.Character, node.IconBlock.CharX, node.IconBlock.CharY,
+                                      node.IconBlock.Data?.Length, node.IconBlock.Text, node.IconBlock.TextX,
+                                      node.IconBlock.TextY, node.IconBlock.TextWidth, node.IconBlock.TextHeight);
+
+                    break;
+                default:
+                    Console.WriteLine("{0} ({1} {2}) data = {3}, coordinates ({4},{5}) size {6}x{7}", node.type,
+                                      node.flags, node.state, node.data, node.x, node.y, node.width, node.height);
+                    break;
+            }
 
             if(node.child != null) PrintAtariResourceTree(node.child, level + 1);
 
