@@ -24,6 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -102,7 +103,8 @@ namespace libexeinfo
         public OperatingSystem           RequiredOperatingSystem =>
             new OperatingSystem {Name = Header.mint == MINT_SIGNATURE ? "MiNT" : "Atari TOS"};
         public Stream resourceStream;
-        public AtariResource Resource;
+        public AtariResourceHeader ResourceHeader;
+        public TreeObjectNode ResourceObjectRoot;
 
         void Initialize()
         {
@@ -122,10 +124,53 @@ namespace libexeinfo
 
             if(resourceStream == null) return;
             
-            buffer       = new byte[Marshal.SizeOf(typeof(AtariResource))];
+            buffer       = new byte[Marshal.SizeOf(typeof(AtariResourceHeader))];
             resourceStream.Position = 0;
             resourceStream.Read(buffer, 0, buffer.Length);
-            Resource = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariResource>(buffer);
+            ResourceHeader = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariResourceHeader>(buffer);
+
+            if(ResourceHeader.rsh_vrsn != 0 && ResourceHeader.rsh_vrsn != 1 && ResourceHeader.rsh_vrsn != 4 && ResourceHeader.rsh_vrsn != 5) return;
+
+            if(ResourceHeader.rsh_nobs > 0)
+            {
+                ObjectNode[] nodes = new ObjectNode[ResourceHeader.rsh_nobs];
+
+                resourceStream.Position = ResourceHeader.rsh_object;
+                for(short i = 0; i < ResourceHeader.rsh_nobs; i++)
+                {
+                    buffer                  = new byte[Marshal.SizeOf(typeof(ObjectNode))];
+                    resourceStream.Read(buffer, 0, buffer.Length);
+                    nodes[i] = BigEndianMarshal.ByteArrayToStructureBigEndian<ObjectNode>(buffer);
+                }
+                
+                List<short> knownNodes = new List<short>();
+                ResourceObjectRoot = ProcessResourceObject(nodes, ref knownNodes, 0);
+            }
+        }
+
+        static TreeObjectNode ProcessResourceObject(IList<ObjectNode> nodes, ref List<short> knownNodes, short nodeNumber)
+        {
+            TreeObjectNode node = new TreeObjectNode
+            {
+                type   = (ObjectTypes)nodes[nodeNumber].ob_type,
+                flags  = (ObjectFlags)nodes[nodeNumber].ob_flags,
+                state  = (ObjectStates)nodes[nodeNumber].ob_state,
+                data   = nodes[nodeNumber].ob_spec,
+                x      = nodes[nodeNumber].ob_x,
+                y      = nodes[nodeNumber].ob_y,
+                width  = nodes[nodeNumber].ob_width,
+                height = nodes[nodeNumber].ob_height
+            };
+
+            knownNodes.Add(nodeNumber);
+
+            if(nodes[nodeNumber].ob_head > 0 && !knownNodes.Contains(nodes[nodeNumber].ob_head))
+                node.child = ProcessResourceObject(nodes, ref knownNodes, nodes[nodeNumber].ob_head);
+
+            if(nodes[nodeNumber].ob_next > 0 && !knownNodes.Contains(nodes[nodeNumber].ob_next))
+                node.sibling = ProcessResourceObject(nodes, ref knownNodes, nodes[nodeNumber].ob_next);
+
+            return node;
         }
 
         /// <summary>

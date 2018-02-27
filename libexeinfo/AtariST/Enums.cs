@@ -109,10 +109,6 @@ namespace libexeinfo
         public enum ObjectFlags : short
         {
             /// <summary>
-            /// No flags
-            /// </summary>
-            None = 0x0000,
-            /// <summary>
             /// Indicates that the user can select the object
             /// </summary>
             Selectable = 0x0001,
@@ -153,10 +149,6 @@ namespace libexeinfo
         [Flags]
         public enum ObjectStates : short
         {
-            /// <summary>
-            /// Indicates that the object is drawn in normal colors
-            /// </summary>
-            Normal = 0x0000,
             /// <summary>
             /// Indicates that the object is highlighted by being drawn with reversed colors
             /// </summary>

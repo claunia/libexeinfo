@@ -192,6 +192,24 @@ namespace libexeinfo
         }
 
         /// <summary>
+        /// The OBJECT structure contains values that describe the object, its relationship to the other objects in the tree, and its location relative to its parent or (in the case of the root object) the screen.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public class TreeObjectNode
+        {
+            public TreeObjectNode sibling;
+            public TreeObjectNode child;
+            public ObjectTypes type;
+            public ObjectFlags flags;
+            public ObjectStates state;
+            public int data;
+            public short x;
+            public short y;
+            public short width;
+            public short height;
+        }
+        
+        /// <summary>
         /// The  TEDINFO structure lets a user edit formatted text. The object types G_TEXT, G_BOXTEXT, G_FTEXT and G_FBOXTEXT use their <see cref="ObjectNode.ob_spec"/> to point to TEDINFO structures.
         /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 1)]

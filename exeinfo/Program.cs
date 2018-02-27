@@ -143,20 +143,26 @@ namespace exeinfo
                 recognized = true;
                 Console.Write(stExe.Information);
                 if(((AtariST)stExe).resourceStream     != null ||
-                   (((AtariST)stExe).Resource.rsh_vrsn != 0 && ((AtariST)stExe).Resource.rsh_vrsn != 1 &&
-                    ((AtariST)stExe).Resource.rsh_vrsn != 4 && ((AtariST)stExe).Resource.rsh_vrsn != 5))
+                   (((AtariST)stExe).ResourceHeader.rsh_vrsn != 0 && ((AtariST)stExe).ResourceHeader.rsh_vrsn != 1 &&
+                    ((AtariST)stExe).ResourceHeader.rsh_vrsn != 4 && ((AtariST)stExe).ResourceHeader.rsh_vrsn != 5))
                 {
                     Console.WriteLine("\tResources:");
-                    Console.WriteLine("\t\t{0} OBJECTs start at {1}", ((AtariST)stExe).Resource.rsh_nobs, ((AtariST)stExe).Resource.rsh_object);
-                    Console.WriteLine("\t\t{0} TEDINFOs start at {1}", ((AtariST)stExe).Resource.rsh_nted, ((AtariST)stExe).Resource.rsh_tedinfo);
-                    Console.WriteLine("\t\t{0} ICONBLKs start at {1}", ((AtariST)stExe).Resource.rsh_nib, ((AtariST)stExe).Resource.rsh_iconblk);
-                    Console.WriteLine("\t\t{0} BITBLKs start at {1}", ((AtariST)stExe).Resource.rsh_nbb, ((AtariST)stExe).Resource.rsh_bitblk);
-                    Console.WriteLine("\t\t{0} object trees start at {1}", ((AtariST)stExe).Resource.rsh_ntree, ((AtariST)stExe).Resource.rsh_trindex);
-                    Console.WriteLine("\t\t{0} free strings start at {1}", ((AtariST)stExe).Resource.rsh_nstring, ((AtariST)stExe).Resource.rsh_frstr);
-                    Console.WriteLine("\t\t{0} free images start at {1}", ((AtariST)stExe).Resource.rsh_nimages, ((AtariST)stExe).Resource.rsh_frimg);
-                    Console.WriteLine("\t\tString data starts at {0}", ((AtariST)stExe).Resource.rsh_string);
-                    Console.WriteLine("\t\tImage data starts at {0}", ((AtariST)stExe).Resource.rsh_imdata);
-                    Console.WriteLine("\t\tStandard resource data is {0} bytes", ((AtariST)stExe).Resource.rsh_rssize);
+                    Console.WriteLine("\t\t{0} OBJECTs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nobs, ((AtariST)stExe).ResourceHeader.rsh_object);
+                    Console.WriteLine("\t\t{0} TEDINFOs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nted, ((AtariST)stExe).ResourceHeader.rsh_tedinfo);
+                    Console.WriteLine("\t\t{0} ICONBLKs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nib, ((AtariST)stExe).ResourceHeader.rsh_iconblk);
+                    Console.WriteLine("\t\t{0} BITBLKs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nbb, ((AtariST)stExe).ResourceHeader.rsh_bitblk);
+                    Console.WriteLine("\t\t{0} object trees start at {1}", ((AtariST)stExe).ResourceHeader.rsh_ntree, ((AtariST)stExe).ResourceHeader.rsh_trindex);
+                    Console.WriteLine("\t\t{0} free strings start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nstring, ((AtariST)stExe).ResourceHeader.rsh_frstr);
+                    Console.WriteLine("\t\t{0} free images start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nimages, ((AtariST)stExe).ResourceHeader.rsh_frimg);
+                    Console.WriteLine("\t\tString data starts at {0}", ((AtariST)stExe).ResourceHeader.rsh_string);
+                    Console.WriteLine("\t\tImage data starts at {0}", ((AtariST)stExe).ResourceHeader.rsh_imdata);
+                    Console.WriteLine("\t\tStandard resource data is {0} bytes", ((AtariST)stExe).ResourceHeader.rsh_rssize);
+
+                    if(((AtariST)stExe).ResourceObjectRoot != null)
+                    {
+                        Console.WriteLine("\tObject tree:");
+                        PrintAtariResourceTree(((AtariST)stExe).ResourceObjectRoot, 2);
+                    }
                 }
             }
 
@@ -167,6 +173,19 @@ namespace exeinfo
             }
 
             if(!recognized) Console.WriteLine("Executable format not recognized");
+        }
+
+        static void PrintAtariResourceTree(AtariST.TreeObjectNode node, int level)
+        {
+            for(int i = 0; i < level; i++)
+                Console.Write("\t");
+
+            Console.WriteLine("{0} ({1} {2}) data = {3}, coordinates ({4},{5}) size {6}x{7}", node.type, node.flags,
+                          node.state, node.data, node.x, node.y, node.width, node.height);
+
+            if(node.child != null) PrintAtariResourceTree(node.child, level + 1);
+
+            if(node.sibling != null) PrintAtariResourceTree(node.sibling, level);
         }
     }
 }
