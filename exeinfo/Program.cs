@@ -154,6 +154,11 @@ namespace exeinfo
             {
                 recognized = true;
                 Console.Write(mzExe.Information);
+                if(((MZ)mzExe).resourceStream          != null || ((MZ)mzExe).ResourceHeader.rsh_vrsn != 0 &&
+                   ((MZ)mzExe).ResourceHeader.rsh_vrsn != 1                                                &&
+                   ((MZ)mzExe).ResourceHeader.rsh_vrsn != 4                                                &&
+                   ((MZ)mzExe).ResourceHeader.rsh_vrsn != 5)
+                    PrintGemResources(((MZ)mzExe).ResourceHeader, ((MZ)mzExe).ResourceObjectRoots);
 
                 if(mzExe.Strings != null && mzExe.Strings.Any())
                 {
@@ -170,34 +175,7 @@ namespace exeinfo
                    ((AtariST)stExe).ResourceHeader.rsh_vrsn != 1                                                     &&
                    ((AtariST)stExe).ResourceHeader.rsh_vrsn != 4                                                     &&
                    ((AtariST)stExe).ResourceHeader.rsh_vrsn != 5)
-                {
-                    Console.WriteLine("\tResources:");
-                    Console.WriteLine("\t\t{0} OBJECTs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nobs,
-                                      ((AtariST)stExe).ResourceHeader.rsh_object);
-                    Console.WriteLine("\t\t{0} TEDINFOs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nted,
-                                      ((AtariST)stExe).ResourceHeader.rsh_tedinfo);
-                    Console.WriteLine("\t\t{0} ICONBLKs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nib,
-                                      ((AtariST)stExe).ResourceHeader.rsh_iconblk);
-                    Console.WriteLine("\t\t{0} BITBLKs start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nbb,
-                                      ((AtariST)stExe).ResourceHeader.rsh_bitblk);
-                    Console.WriteLine("\t\t{0} object trees start at {1}", ((AtariST)stExe).ResourceHeader.rsh_ntree,
-                                      ((AtariST)stExe).ResourceHeader.rsh_trindex);
-                    Console.WriteLine("\t\t{0} free strings start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nstring,
-                                      ((AtariST)stExe).ResourceHeader.rsh_frstr);
-                    Console.WriteLine("\t\t{0} free images start at {1}", ((AtariST)stExe).ResourceHeader.rsh_nimages,
-                                      ((AtariST)stExe).ResourceHeader.rsh_frimg);
-                    Console.WriteLine("\t\tString data starts at {0}", ((AtariST)stExe).ResourceHeader.rsh_string);
-                    Console.WriteLine("\t\tImage data starts at {0}",  ((AtariST)stExe).ResourceHeader.rsh_imdata);
-                    Console.WriteLine("\t\tStandard resource data is {0} bytes",
-                                      ((AtariST)stExe).ResourceHeader.rsh_rssize);
-
-                    if(((AtariST)stExe).ResourceObjectRoots != null && ((AtariST)stExe).ResourceObjectRoots.Length > 0)
-                        for(int i = 0; i                    < ((AtariST)stExe).ResourceObjectRoots.Length; i++)
-                        {
-                            Console.WriteLine("\tObject tree {0}:", i);
-                            PrintAtariResourceTree(((AtariST)stExe).ResourceObjectRoots[i], 2);
-                        }
-                }
+                    PrintGemResources(((AtariST)stExe).ResourceHeader, ((AtariST)stExe).ResourceObjectRoots);
 
                 if(stExe.Strings != null && stExe.Strings.Any())
                 {
@@ -221,7 +199,33 @@ namespace exeinfo
             if(!recognized) Console.WriteLine("Executable format not recognized");
         }
 
-        static void PrintAtariResourceTree(AtariST.TreeObjectNode node, int level)
+        static void PrintGemResources(GEM.GemResourceHeader resourceHeader, IReadOnlyList<GEM.TreeObjectNode> roots)
+        {
+            Console.WriteLine("\t\tGEM Resources:");
+            Console.WriteLine("\t\t\t{0} OBJECTs start at {1}",  resourceHeader.rsh_nobs, resourceHeader.rsh_object);
+            Console.WriteLine("\t\t\t{0} TEDINFOs start at {1}", resourceHeader.rsh_nted, resourceHeader.rsh_tedinfo);
+            Console.WriteLine("\t\t\t{0} ICONBLKs start at {1}", resourceHeader.rsh_nib,  resourceHeader.rsh_iconblk);
+            Console.WriteLine("\t\t\t{0} BITBLKs start at {1}",  resourceHeader.rsh_nbb,  resourceHeader.rsh_bitblk);
+            Console.WriteLine("\t\t\t{0} object trees start at {1}", resourceHeader.rsh_ntree,
+                              resourceHeader.rsh_trindex);
+            Console.WriteLine("\t\t\t{0} free strings start at {1}", resourceHeader.rsh_nstring,
+                              resourceHeader.rsh_frstr);
+            Console.WriteLine("\t\t\t{0} free images start at {1}", resourceHeader.rsh_nimages,
+                              resourceHeader.rsh_frimg);
+            Console.WriteLine("\t\t\tString data starts at {0}",           resourceHeader.rsh_string);
+            Console.WriteLine("\t\t\tImage data starts at {0}",            resourceHeader.rsh_imdata);
+            Console.WriteLine("\t\t\tStandard resource data is {0} bytes", resourceHeader.rsh_rssize);
+
+            if(roots == null || roots.Count <= 0) return;
+
+            for(int i = 0; i < roots.Count; i++)
+            {
+                Console.WriteLine("\t\t\tObject tree {0}:", i);
+                PrintGemResourceTree(roots[i], 4);
+            }
+        }
+
+        static void PrintGemResourceTree(GEM.TreeObjectNode node, int level)
         {
             for(int i = 0; i < level; i++) Console.Write("\t");
 
@@ -229,20 +233,20 @@ namespace exeinfo
 
             switch(node.type)
             {
-                case AtariST.ObjectTypes.G_BOX:
-                case AtariST.ObjectTypes.G_IBOX:
+                case GEM.ObjectTypes.G_BOX:
+                case GEM.ObjectTypes.G_IBOX:
                     Console.WriteLine("{0} ({1} {2}) {3} border, {4} text, {5} interior, {6} fill, {7} mode, coordinates ({8},{9}) size {10}x{11}",
                                       node.type, node.flags, node.state,
-                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.BorderColorMask) >> 12),
-                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.TextColorMask)   >> 8),
-                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.InsideColorMask) >> 8),
-                                      (AtariST.ObjectFillPattern)((node.data & 0xFFFF & AtariST.FillPatternMask) >> 4),
-                                      (node.data                             & 0xFFFF & AtariST.TransparentColor) != 0
+                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.BorderColorMask) >> 12),
+                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.TextColorMask)   >> 8),
+                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.InsideColorMask) >> 8),
+                                      (GEM.ObjectFillPattern)((node.data & 0xFFFF & GEM.FillPatternMask) >> 4),
+                                      (node.data                         & 0xFFFF & GEM.TransparentColor) != 0
                                           ? "transparent"
                                           : "replace",
                                       node.x, node.y, node.width, node.height);
                     break;
-                case AtariST.ObjectTypes.G_BOXCHAR:
+                case GEM.ObjectTypes.G_BOXCHAR:
                     sbyte thickness = (sbyte)((node.data & 0xFF0000) >> 16);
 
                     if(thickness      < 0) thickStr = $"{thickness * -1} pixels outward thickness";
@@ -260,25 +264,25 @@ namespace exeinfo
                     Console.WriteLine(
                                       "{0} ({1} {2}) {3} border, {4} text, {5} interior, {6} fill, {7} mode, {8}, '{9}' character, coordinates ({10},{11}) size {12}x{13}",
                                       node.type, node.flags, node.state,
-                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.BorderColorMask) >> 12),
-                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.TextColorMask)   >> 8),
-                                      (AtariST.ObjectColors)((node.data      & 0xFFFF & AtariST.InsideColorMask) >> 8),
-                                      (AtariST.ObjectFillPattern)((node.data & 0xFFFF & AtariST.FillPatternMask) >> 4),
-                                      (node.data                             & 0xFFFF & AtariST.TransparentColor) != 0
+                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.BorderColorMask) >> 12),
+                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.TextColorMask)   >> 8),
+                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.InsideColorMask) >> 8),
+                                      (GEM.ObjectFillPattern)((node.data & 0xFFFF & GEM.FillPatternMask) >> 4),
+                                      (node.data                         & 0xFFFF & GEM.TransparentColor) != 0
                                           ? "transparent"
                                           : "replace",
                                       thickStr, character, node.x, node.y, node.width, node.height);
                     break;
-                case AtariST.ObjectTypes.G_BUTTON:
-                case AtariST.ObjectTypes.G_STRING:
-                case AtariST.ObjectTypes.G_TITLE:
+                case GEM.ObjectTypes.G_BUTTON:
+                case GEM.ObjectTypes.G_STRING:
+                case GEM.ObjectTypes.G_TITLE:
                     Console.WriteLine("{0} ({1} {2}), coordinates ({3},{4}) size {5}x{6}: {7}", node.type, node.flags,
                                       node.state, node.x, node.y, node.width, node.height, node.String);
                     break;
-                case AtariST.ObjectTypes.G_TEXT:
-                case AtariST.ObjectTypes.G_BOXTEXT:
-                case AtariST.ObjectTypes.G_FTEXT:
-                case AtariST.ObjectTypes.G_FBOXTEXT:
+                case GEM.ObjectTypes.G_TEXT:
+                case GEM.ObjectTypes.G_BOXTEXT:
+                case GEM.ObjectTypes.G_FTEXT:
+                case GEM.ObjectTypes.G_FBOXTEXT:
                     if(node.TedInfo == null) goto default;
 
                     if(node.TedInfo.Thickness < 0)
@@ -295,16 +299,17 @@ namespace exeinfo
                                       node.TedInfo.Transparency ? "transparent" : "replace", node.TedInfo.Text,
                                       node.TedInfo.Validation, node.TedInfo.Template);
                     break;
-                case AtariST.ObjectTypes.G_IMAGE:
+                case GEM.ObjectTypes.G_IMAGE:
                     if(node.BitBlock == null) goto default;
 
-                    Console.WriteLine("{0} ({1} {2}), coordinates ({3},{4}) size {5}x{6}, colored {7}, {8} bytes", node.type,
-                                      node.flags, node.state, node.BitBlock.X, node.BitBlock.Y, node.BitBlock.Width,
-                                      node.BitBlock.Height, node.BitBlock.Color, node.BitBlock.Data?.Length);
+                    Console.WriteLine("{0} ({1} {2}), coordinates ({3},{4}) size {5}x{6}, colored {7}, {8} bytes",
+                                      node.type, node.flags, node.state, node.BitBlock.X, node.BitBlock.Y,
+                                      node.BitBlock.Width, node.BitBlock.Height, node.BitBlock.Color,
+                                      node.BitBlock.Data?.Length);
                     break;
                 /*
-            case AtariST.ObjectTypes.G_USERDEF: break;*/
-                case AtariST.ObjectTypes.G_ICON:
+            case GEM.ObjectTypes.G_USERDEF: break;*/
+                case GEM.ObjectTypes.G_ICON:
                     if(node.IconBlock == null) goto default;
 
                     Console.WriteLine(
@@ -324,9 +329,9 @@ namespace exeinfo
                     break;
             }
 
-            if(node.child != null) PrintAtariResourceTree(node.child, level + 1);
+            if(node.child != null) PrintGemResourceTree(node.child, level + 1);
 
-            if(node.sibling != null) PrintAtariResourceTree(node.sibling, level);
+            if(node.sibling != null) PrintGemResourceTree(node.sibling, level);
         }
     }
 }

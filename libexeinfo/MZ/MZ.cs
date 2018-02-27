@@ -27,7 +27,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using Claunia.Encoding;
 
 namespace libexeinfo
 {
@@ -39,7 +41,10 @@ namespace libexeinfo
         /// <summary>
         ///     Header for this executable
         /// </summary>
-        internal MZHeader Header;
+        internal MZHeader              Header;
+        public   GEM.GemResourceHeader ResourceHeader;
+        public   GEM.TreeObjectNode[]  ResourceObjectRoots;
+        public   Stream                resourceStream;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.MZ" /> class.
@@ -48,6 +53,31 @@ namespace libexeinfo
         public MZ(string path)
         {
             BaseStream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+            string pathDir          = Path.GetDirectoryName(path);
+            string filename         = Path.GetFileNameWithoutExtension(path);
+            string testPath         = Path.Combine(pathDir, filename);
+            string resourceFilePath = null;
+
+            if(File.Exists(testPath         + ".rsc")) resourceFilePath = testPath + ".rsc";
+            else if(File.Exists(testPath    + ".rsC"))
+                resourceFilePath = testPath + ".rsC";
+            else if(File.Exists(testPath    + ".rSc"))
+                resourceFilePath = testPath + ".rSc";
+            else if(File.Exists(testPath    + ".rSC"))
+                resourceFilePath = testPath + ".rSC";
+            else if(File.Exists(testPath    + ".Rsc"))
+                resourceFilePath = testPath + ".Rsc";
+            else if(File.Exists(testPath    + ".RsC"))
+                resourceFilePath = testPath + ".RsC";
+            else if(File.Exists(testPath    + ".RSc"))
+                resourceFilePath = testPath + ".RSc";
+            else if(File.Exists(testPath    + ".RSC"))
+                resourceFilePath = testPath + ".RSC";
+
+            if(resourceFilePath != null)
+                resourceStream = File.Open(resourceFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
             Initialize();
         }
 
@@ -83,7 +113,7 @@ namespace libexeinfo
         public string                    Type                    { get; private set; }
         public IEnumerable<Architecture> Architectures           => new[] {Architecture.I86};
         public OperatingSystem           RequiredOperatingSystem => new OperatingSystem {Name = "DOS"};
-        public IEnumerable<string> Strings { get; }
+        public IEnumerable<string>       Strings                 { get; private set; }
 
         void Initialize()
         {
@@ -103,6 +133,80 @@ namespace libexeinfo
             if(!Recognized) return;
 
             Type = "DOS Executable (MZ)";
+
+            if(resourceStream == null) return;
+
+            buffer                  = new byte[Marshal.SizeOf(typeof(GEM.GemResourceHeader))];
+            resourceStream.Position = 0;
+            resourceStream.Read(buffer, 0, buffer.Length);
+            ResourceHeader = BigEndianMarshal.ByteArrayToStructureLittleEndian<GEM.GemResourceHeader>(buffer);
+
+            if(ResourceHeader.rsh_vrsn != 0 && ResourceHeader.rsh_vrsn != 1 && ResourceHeader.rsh_vrsn != 4 &&
+               ResourceHeader.rsh_vrsn != 5) return;
+
+            List<string> strings = new List<string>();
+
+            if(ResourceHeader.rsh_ntree > 0)
+            {
+                resourceStream.Position = ResourceHeader.rsh_trindex;
+                int[]  treeOffsets      = new int[ResourceHeader.rsh_ntree];
+                byte[] tmp              = new byte[4];
+
+                for(int i = 0; i < ResourceHeader.rsh_ntree; i++)
+                {
+                    resourceStream.Read(tmp, 0, 4);
+                    treeOffsets[i] = BitConverter.ToInt32(tmp, 0);
+                }
+
+                ResourceObjectRoots = new GEM.TreeObjectNode[ResourceHeader.rsh_ntree];
+
+                for(int i = 0; i < ResourceHeader.rsh_ntree; i++)
+                {
+                    if(treeOffsets[i] <= 0 || treeOffsets[i] >= resourceStream.Length) continue;
+
+                    resourceStream.Position = treeOffsets[i];
+
+                    List<GEM.ObjectNode> nodes = new List<GEM.ObjectNode>();
+                    while(true)
+                    {
+                        buffer = new byte[Marshal.SizeOf(typeof(GEM.ObjectNode))];
+                        resourceStream.Read(buffer, 0, buffer.Length);
+                        GEM.ObjectNode node = BigEndianMarshal.ByteArrayToStructureLittleEndian<GEM.ObjectNode>(buffer);
+                        nodes.Add(node);
+                        if(((GEM.ObjectFlags)node.ob_flags).HasFlag(GEM.ObjectFlags.Lastob)) break;
+                    }
+
+                    List<short> knownNodes = new List<short>();
+                    ResourceObjectRoots[i] =
+                        GEM.ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings, false,
+                                                  Encoding.AtariSTEncoding);
+                }
+            }
+            else if(ResourceHeader.rsh_nobs > 0)
+            {
+                GEM.ObjectNode[] nodes = new GEM.ObjectNode[ResourceHeader.rsh_nobs];
+
+                resourceStream.Position = ResourceHeader.rsh_object;
+                for(short i = 0; i < ResourceHeader.rsh_nobs; i++)
+                {
+                    buffer = new byte[Marshal.SizeOf(typeof(GEM.ObjectNode))];
+                    resourceStream.Read(buffer, 0, buffer.Length);
+                    nodes[i] = BigEndianMarshal.ByteArrayToStructureLittleEndian<GEM.ObjectNode>(buffer);
+                }
+
+                List<short> knownNodes = new List<short>();
+                ResourceObjectRoots    = new GEM.TreeObjectNode[1];
+                // TODO: Correct encoding?
+                ResourceObjectRoots[0] =
+                    GEM.ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings, false,
+                                              Encoding.AtariSTEncoding);
+            }
+
+            if(strings.Count > 0)
+            {
+                strings.Sort();
+                Strings = strings.Distinct();
+            }
         }
 
         /// <summary>

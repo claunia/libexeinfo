@@ -49,9 +49,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AtariST\Enums.cs" />
-    <Compile Include="AtariST\Resources.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="GEM\Enums.cs" />
+    <Compile Include="GEM\Resources.cs" />
+    <Compile Include="GEM\Structs.cs" />
     <Compile Include="IExecutable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MZ\Consts.cs" />

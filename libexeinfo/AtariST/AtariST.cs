@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Claunia.Encoding;
 
 namespace libexeinfo
 {
@@ -37,6 +38,10 @@ namespace libexeinfo
     /// </summary>
     public partial class AtariST : IExecutable
     {
+        public GEM.GemResourceHeader ResourceHeader;
+        public GEM.TreeObjectNode[]  ResourceObjectRoots;
+        public Stream                resourceStream;
+
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.AtariST" /> class.
         /// </summary>
@@ -45,30 +50,30 @@ namespace libexeinfo
         {
             BaseStream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-            string pathDir = Path.GetDirectoryName(path);
-            string filename = Path.GetFileNameWithoutExtension(path);
-            string testPath = Path.Combine(pathDir, filename);
+            string pathDir          = Path.GetDirectoryName(path);
+            string filename         = Path.GetFileNameWithoutExtension(path);
+            string testPath         = Path.Combine(pathDir, filename);
             string resourceFilePath = null;
 
-            if(File.Exists(testPath         + ".rsc"))
-                resourceFilePath = testPath + ".rsc";
-            else if(File.Exists(testPath         + ".rsC"))
+            if(File.Exists(testPath         + ".rsc")) resourceFilePath = testPath + ".rsc";
+            else if(File.Exists(testPath    + ".rsC"))
                 resourceFilePath = testPath + ".rsC";
-            else if(File.Exists(testPath         + ".rSc"))
+            else if(File.Exists(testPath    + ".rSc"))
                 resourceFilePath = testPath + ".rSc";
-            else if(File.Exists(testPath         + ".rSC"))
+            else if(File.Exists(testPath    + ".rSC"))
                 resourceFilePath = testPath + ".rSC";
-            else if(File.Exists(testPath         + ".Rsc"))
+            else if(File.Exists(testPath    + ".Rsc"))
                 resourceFilePath = testPath + ".Rsc";
-            else if(File.Exists(testPath         + ".RsC"))
+            else if(File.Exists(testPath    + ".RsC"))
                 resourceFilePath = testPath + ".RsC";
-            else if(File.Exists(testPath         + ".RSc"))
+            else if(File.Exists(testPath    + ".RSc"))
                 resourceFilePath = testPath + ".RSc";
-            else if(File.Exists(testPath         + ".RSC"))
+            else if(File.Exists(testPath    + ".RSC"))
                 resourceFilePath = testPath + ".RSC";
 
-            if(resourceFilePath != null) resourceStream = File.Open(resourceFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            
+            if(resourceFilePath != null)
+                resourceStream = File.Open(resourceFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
             Initialize();
         }
 
@@ -104,9 +109,6 @@ namespace libexeinfo
         public OperatingSystem           RequiredOperatingSystem =>
             new OperatingSystem {Name = Header.mint == MINT_SIGNATURE ? "MiNT" : "Atari TOS"};
         public IEnumerable<string> Strings { get; private set; }
-        public Stream resourceStream;
-        public AtariResourceHeader ResourceHeader;
-        public TreeObjectNode[] ResourceObjectRoots;
 
         void Initialize()
         {
@@ -121,25 +123,26 @@ namespace libexeinfo
             Recognized = Header.signature == SIGNATURE;
 
             if(!Recognized) return;
-            
+
             Type = "Atari ST executable";
 
             if(resourceStream == null) return;
-            
-            buffer       = new byte[Marshal.SizeOf(typeof(AtariResourceHeader))];
+
+            buffer                  = new byte[Marshal.SizeOf(typeof(GEM.GemResourceHeader))];
             resourceStream.Position = 0;
             resourceStream.Read(buffer, 0, buffer.Length);
-            ResourceHeader = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariResourceHeader>(buffer);
+            ResourceHeader = BigEndianMarshal.ByteArrayToStructureBigEndian<GEM.GemResourceHeader>(buffer);
 
-            if(ResourceHeader.rsh_vrsn != 0 && ResourceHeader.rsh_vrsn != 1 && ResourceHeader.rsh_vrsn != 4 && ResourceHeader.rsh_vrsn != 5) return;
+            if(ResourceHeader.rsh_vrsn != 0 && ResourceHeader.rsh_vrsn != 1 && ResourceHeader.rsh_vrsn != 4 &&
+               ResourceHeader.rsh_vrsn != 5) return;
 
             List<string> strings = new List<string>();
-            
+
             if(ResourceHeader.rsh_ntree > 0)
             {
                 resourceStream.Position = ResourceHeader.rsh_trindex;
-                int[] treeOffsets = new int[ResourceHeader.rsh_ntree];
-                byte[] tmp = new byte[4];
+                int[]  treeOffsets      = new int[ResourceHeader.rsh_ntree];
+                byte[] tmp              = new byte[4];
 
                 for(int i = 0; i < ResourceHeader.rsh_ntree; i++)
                 {
@@ -147,43 +150,47 @@ namespace libexeinfo
                     treeOffsets[i] = BitConverter.ToInt32(tmp.Reverse().ToArray(), 0);
                 }
 
-                ResourceObjectRoots = new TreeObjectNode[ResourceHeader.rsh_ntree];
-                
+                ResourceObjectRoots = new GEM.TreeObjectNode[ResourceHeader.rsh_ntree];
+
                 for(int i = 0; i < ResourceHeader.rsh_ntree; i++)
                 {
                     if(treeOffsets[i] <= 0 || treeOffsets[i] >= resourceStream.Length) continue;
-                    
+
                     resourceStream.Position = treeOffsets[i];
 
-                    List<ObjectNode> nodes = new List<ObjectNode>();
+                    List<GEM.ObjectNode> nodes = new List<GEM.ObjectNode>();
                     while(true)
                     {
-                        buffer = new byte[Marshal.SizeOf(typeof(ObjectNode))];
+                        buffer = new byte[Marshal.SizeOf(typeof(GEM.ObjectNode))];
                         resourceStream.Read(buffer, 0, buffer.Length);
-                        ObjectNode node = BigEndianMarshal.ByteArrayToStructureBigEndian<ObjectNode>(buffer);
+                        GEM.ObjectNode node = BigEndianMarshal.ByteArrayToStructureBigEndian<GEM.ObjectNode>(buffer);
                         nodes.Add(node);
-                        if(((ObjectFlags)node.ob_flags).HasFlag(ObjectFlags.Lastob)) break;
+                        if(((GEM.ObjectFlags)node.ob_flags).HasFlag(GEM.ObjectFlags.Lastob)) break;
                     }
 
                     List<short> knownNodes = new List<short>();
-                    ResourceObjectRoots[i]     = ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings);
+                    ResourceObjectRoots[i] =
+                        GEM.ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings, true,
+                                                  Encoding.AtariSTEncoding);
                 }
             }
             else if(ResourceHeader.rsh_nobs > 0)
             {
-                ObjectNode[] nodes = new ObjectNode[ResourceHeader.rsh_nobs];
+                GEM.ObjectNode[] nodes = new GEM.ObjectNode[ResourceHeader.rsh_nobs];
 
                 resourceStream.Position = ResourceHeader.rsh_object;
                 for(short i = 0; i < ResourceHeader.rsh_nobs; i++)
                 {
-                    buffer = new byte[Marshal.SizeOf(typeof(ObjectNode))];
+                    buffer = new byte[Marshal.SizeOf(typeof(GEM.ObjectNode))];
                     resourceStream.Read(buffer, 0, buffer.Length);
-                    nodes[i] = BigEndianMarshal.ByteArrayToStructureBigEndian<ObjectNode>(buffer);
+                    nodes[i] = BigEndianMarshal.ByteArrayToStructureBigEndian<GEM.ObjectNode>(buffer);
                 }
-                
+
                 List<short> knownNodes = new List<short>();
-                ResourceObjectRoots = new TreeObjectNode[1];
-                ResourceObjectRoots[0]    = ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings);
+                ResourceObjectRoots    = new GEM.TreeObjectNode[1];
+                ResourceObjectRoots[0] =
+                    GEM.ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings, true,
+                                              Encoding.AtariSTEncoding);
             }
 
             if(strings.Count > 0)

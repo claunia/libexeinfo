@@ -1,5 +1,5 @@
 ﻿//
-// AtariST.cs
+// Resources.cs
 //
 // Author:
 //       Natalia Portillo <claunia@claunia.com>
@@ -27,15 +27,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using Claunia.Encoding;
+using System.Text;
 
 namespace libexeinfo
 {
-    public partial class AtariST : IExecutable
+    public static partial class GEM
     {
-        static TreeObjectNode ProcessResourceObject(IList<ObjectNode> nodes, ref List<short> knownNodes,
-                                                    short             nodeNumber, Stream     resourceStream,
-                                                    List<string>      strings)
+        internal static TreeObjectNode ProcessResourceObject(IList<ObjectNode> nodes, ref List<short> knownNodes,
+                                                             short             nodeNumber, Stream     resourceStream,
+                                                             List<string>      strings, bool          bigEndian,
+                                                             Encoding          encoding)
         {
             TreeObjectNode node = new TreeObjectNode
             {
@@ -62,7 +63,9 @@ namespace libexeinfo
                     resourceStream.Position = node.data;
                     buffer                  = new byte[Marshal.SizeOf(typeof(TedInfo))];
                     resourceStream.Read(buffer, 0, buffer.Length);
-                    TedInfo ted = BigEndianMarshal.ByteArrayToStructureBigEndian<TedInfo>(buffer);
+                    TedInfo ted = bigEndian
+                                      ? BigEndianMarshal.ByteArrayToStructureBigEndian<TedInfo>(buffer)
+                                      : BigEndianMarshal.ByteArrayToStructureLittleEndian<TedInfo>(buffer);
 
                     node.TedInfo = new TextBlock
                     {
@@ -83,7 +86,7 @@ namespace libexeinfo
                         tmpStr                  = new byte[ted.te_txtlen - 1];
                         resourceStream.Position = ted.te_ptext;
                         resourceStream.Read(tmpStr, 0, ted.te_txtlen - 1);
-                        node.TedInfo.Text = Encoding.AtariSTEncoding.GetString(tmpStr);
+                        node.TedInfo.Text = encoding.GetString(tmpStr);
                         strings.Add(node.TedInfo.Text.Trim());
                     }
 
@@ -92,7 +95,7 @@ namespace libexeinfo
                         tmpStr                  = new byte[ted.te_txtlen - 1];
                         resourceStream.Position = ted.te_pvalid;
                         resourceStream.Read(tmpStr, 0, ted.te_txtlen - 1);
-                        node.TedInfo.Validation = Encoding.AtariSTEncoding.GetString(tmpStr);
+                        node.TedInfo.Validation = encoding.GetString(tmpStr);
                         strings.Add(node.TedInfo.Validation.Trim());
                     }
 
@@ -101,7 +104,7 @@ namespace libexeinfo
                         tmpStr                  = new byte[ted.te_tmplen - 1];
                         resourceStream.Position = ted.te_ptmplt;
                         resourceStream.Read(tmpStr, 0, ted.te_tmplen - 1);
-                        node.TedInfo.Template = Encoding.AtariSTEncoding.GetString(tmpStr);
+                        node.TedInfo.Template = encoding.GetString(tmpStr);
                         strings.Add(node.TedInfo.Template.Trim());
                     }
 
@@ -113,7 +116,9 @@ namespace libexeinfo
                     resourceStream.Position = node.data;
                     buffer                  = new byte[Marshal.SizeOf(typeof(BitBlock))];
                     resourceStream.Read(buffer, 0, buffer.Length);
-                    BitBlock bitBlock = BigEndianMarshal.ByteArrayToStructureBigEndian<BitBlock>(buffer);
+                    BitBlock bitBlock = bigEndian
+                                            ? BigEndianMarshal.ByteArrayToStructureBigEndian<BitBlock>(buffer)
+                                            : BigEndianMarshal.ByteArrayToStructureLittleEndian<BitBlock>(buffer);
 
                     node.BitBlock = new BitmapBlock
                     {
@@ -137,7 +142,9 @@ namespace libexeinfo
                     resourceStream.Position = node.data;
                     buffer                  = new byte[Marshal.SizeOf(typeof(UserBlock))];
                     resourceStream.Read(buffer, 0, buffer.Length);
-                    node.UserBlock = BigEndianMarshal.ByteArrayToStructureBigEndian<UserBlock>(buffer);
+                    node.UserBlock = bigEndian
+                                         ? BigEndianMarshal.ByteArrayToStructureBigEndian<UserBlock>(buffer)
+                                         : BigEndianMarshal.ByteArrayToStructureLittleEndian<UserBlock>(buffer);
                     break;
                 case ObjectTypes.G_ICON:
                     if(node.data <= 0 || node.data >= resourceStream.Length) break;
@@ -145,7 +152,9 @@ namespace libexeinfo
                     resourceStream.Position = node.data;
                     buffer                  = new byte[Marshal.SizeOf(typeof(IconBlock))];
                     resourceStream.Read(buffer, 0, buffer.Length);
-                    IconBlock iconBlock = BigEndianMarshal.ByteArrayToStructureBigEndian<IconBlock>(buffer);
+                    IconBlock iconBlock = bigEndian
+                                              ? BigEndianMarshal.ByteArrayToStructureBigEndian<IconBlock>(buffer)
+                                              : BigEndianMarshal.ByteArrayToStructureLittleEndian<IconBlock>(buffer);
 
                     node.IconBlock = new Icon
                     {
@@ -153,16 +162,15 @@ namespace libexeinfo
                         Height          = iconBlock.ib_hicon,
                         X               = iconBlock.ib_xicon,
                         Y               = iconBlock.ib_yicon,
-                        ForegroundColor = (ObjectColors)((iconBlock.ib_char >> 12) & 0x000F),
-                        BackgroundColor = (ObjectColors)((iconBlock.ib_char >> 8)  & 0x000F),
-                        Character       =
-                            Encoding.AtariSTEncoding.GetString(new[] {(byte)(iconBlock.ib_char & 0xFF)})[0],
-                        CharX      = iconBlock.ib_xchar,
-                        CharY      = iconBlock.ib_ychar,
-                        TextX      = iconBlock.ib_xtext,
-                        TextY      = iconBlock.ib_ytext,
-                        TextWidth  = iconBlock.ib_wtext,
-                        TextHeight = iconBlock.ib_htext
+                        ForegroundColor = (ObjectColors)((iconBlock.ib_char >> 12)           & 0x000F),
+                        BackgroundColor = (ObjectColors)((iconBlock.ib_char >> 8)            & 0x000F),
+                        Character       = encoding.GetString(new[] {(byte)(iconBlock.ib_char & 0xFF)})[0],
+                        CharX           = iconBlock.ib_xchar,
+                        CharY           = iconBlock.ib_ychar,
+                        TextX           = iconBlock.ib_xtext,
+                        TextY           = iconBlock.ib_ytext,
+                        TextWidth       = iconBlock.ib_wtext,
+                        TextHeight      = iconBlock.ib_htext
                     };
 
                     if(iconBlock.ib_ptext > 0 && iconBlock.ib_ptext < resourceStream.Length)
@@ -178,7 +186,7 @@ namespace libexeinfo
                             chars.Add((byte)character);
                         }
 
-                        node.IconBlock.Text = Encoding.AtariSTEncoding.GetString(chars.ToArray());
+                        node.IconBlock.Text = encoding.GetString(chars.ToArray());
                         strings.Add(node.IconBlock.Text.Trim());
                     }
 
@@ -216,7 +224,7 @@ namespace libexeinfo
                         chars.Add((byte)character);
                     }
 
-                    node.String = Encoding.AtariSTEncoding.GetString(chars.ToArray());
+                    node.String = encoding.GetString(chars.ToArray());
                     strings.Add(node.String.Trim());
                     break;
             }
@@ -224,12 +232,12 @@ namespace libexeinfo
             knownNodes.Add(nodeNumber);
 
             if(nodes[nodeNumber].ob_head > 0 && !knownNodes.Contains(nodes[nodeNumber].ob_head))
-                node.child = ProcessResourceObject(nodes, ref knownNodes, nodes[nodeNumber].ob_head, resourceStream,
-                                                   strings);
+                node.child = ProcessResourceObject(nodes,   ref knownNodes, nodes[nodeNumber].ob_head, resourceStream,
+                                                   strings, bigEndian,      encoding);
 
             if(nodes[nodeNumber].ob_next > 0 && !knownNodes.Contains(nodes[nodeNumber].ob_next))
-                node.sibling =
-                    ProcessResourceObject(nodes, ref knownNodes, nodes[nodeNumber].ob_next, resourceStream, strings);
+                node.sibling = ProcessResourceObject(nodes,   ref knownNodes, nodes[nodeNumber].ob_next, resourceStream,
+                                                     strings, bigEndian,      encoding);
 
             return node;
         }
