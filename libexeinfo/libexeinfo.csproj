@@ -86,6 +86,7 @@
     <Compile Include="COFF\Info.cs" />
     <Compile Include="COFF\COFF.cs" />
     <Compile Include="COFF\MachineTypes.cs" />
+    <Compile Include="StringHandlers.cs" />
     <Compile Include="Structs.cs" />
     <Compile Include="Swapping.cs" />
     <Compile Include="PE\Subsystems.cs" />
