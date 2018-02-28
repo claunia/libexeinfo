@@ -81,31 +81,32 @@ namespace libexeinfo
 
                     byte[] tmpStr;
 
-                    if(ted.te_ptext > 0 && ted.te_ptext < resourceStream.Length && ted.te_txtlen > 1)
+                    if(ted.te_ptext > 0 && ted.te_ptext < resourceStream.Length && ted.te_txtlen > 0)
                     {
-                        tmpStr                  = new byte[ted.te_txtlen - 1];
+                        tmpStr                  = new byte[ted.te_txtlen];
                         resourceStream.Position = ted.te_ptext;
-                        resourceStream.Read(tmpStr, 0, ted.te_txtlen - 1);
-                        node.TedInfo.Text = encoding.GetString(tmpStr);
-                        strings.Add(node.TedInfo.Text.Trim());
+                        resourceStream.Read(tmpStr, 0, ted.te_txtlen);
+                        node.TedInfo.Text = StringHandlers.CToString(tmpStr, encoding);
+                        if(!string.IsNullOrWhiteSpace(node.TedInfo.Text)) strings.Add(node.TedInfo.Text.Trim());
                     }
 
-                    if(ted.te_pvalid > 0 && ted.te_pvalid < resourceStream.Length && ted.te_txtlen > 1)
+                    if(ted.te_pvalid > 0 && ted.te_pvalid < resourceStream.Length && ted.te_txtlen > 0)
                     {
-                        tmpStr                  = new byte[ted.te_txtlen - 1];
+                        tmpStr                  = new byte[ted.te_txtlen];
                         resourceStream.Position = ted.te_pvalid;
-                        resourceStream.Read(tmpStr, 0, ted.te_txtlen - 1);
-                        node.TedInfo.Validation = encoding.GetString(tmpStr);
-                        strings.Add(node.TedInfo.Validation.Trim());
+                        resourceStream.Read(tmpStr, 0, ted.te_txtlen);
+                        node.TedInfo.Validation = StringHandlers.CToString(tmpStr, encoding);
+                        if(!string.IsNullOrWhiteSpace(node.TedInfo.Validation))
+                            strings.Add(node.TedInfo.Validation.Trim());
                     }
 
-                    if(ted.te_ptmplt > 0 && ted.te_ptmplt < resourceStream.Length && ted.te_tmplen > 1)
+                    if(ted.te_ptmplt > 0 && ted.te_ptmplt < resourceStream.Length && ted.te_tmplen > 0)
                     {
-                        tmpStr                  = new byte[ted.te_tmplen - 1];
+                        tmpStr                  = new byte[ted.te_tmplen];
                         resourceStream.Position = ted.te_ptmplt;
-                        resourceStream.Read(tmpStr, 0, ted.te_tmplen - 1);
-                        node.TedInfo.Template = encoding.GetString(tmpStr);
-                        strings.Add(node.TedInfo.Template.Trim());
+                        resourceStream.Read(tmpStr, 0, ted.te_tmplen);
+                        node.TedInfo.Template = StringHandlers.CToString(tmpStr, encoding);
+                        if(!string.IsNullOrWhiteSpace(node.TedInfo.Template)) strings.Add(node.TedInfo.Template.Trim());
                     }
 
                     break;
@@ -134,6 +135,19 @@ namespace libexeinfo
                     node.BitBlock.Data      = new byte[bitBlock.bi_wb * bitBlock.bi_hl];
                     resourceStream.Position = bitBlock.bi_pdata;
                     resourceStream.Read(node.BitBlock.Data, 0, node.BitBlock.Data.Length);
+
+                    // Because the image is stored as words, they get reversed on PC GEM (Little-endian)
+                    if(!bigEndian)
+                    {
+                        byte[] data = new byte[node.BitBlock.Data.Length];
+                        for(int i = 0; i < data.Length; i += 2)
+                        {
+                            data[i] = node.BitBlock.Data[i + 1];
+                            data[i                         + 1] = node.BitBlock.Data[i];
+                        }
+
+                        node.BitBlock.Data = data;
+                    }
 
                     break;
                 case ObjectTypes.G_USERDEF:
@@ -186,8 +200,8 @@ namespace libexeinfo
                             chars.Add((byte)character);
                         }
 
-                        node.IconBlock.Text = encoding.GetString(chars.ToArray());
-                        strings.Add(node.IconBlock.Text.Trim());
+                        node.IconBlock.Text = StringHandlers.CToString(chars.ToArray(), encoding);
+                        if(!string.IsNullOrWhiteSpace(node.IconBlock.Text)) strings.Add(node.IconBlock.Text.Trim());
                     }
 
                     if(iconBlock.ib_pdata > 0 && iconBlock.ib_pdata < resourceStream.Length)
@@ -195,6 +209,19 @@ namespace libexeinfo
                         resourceStream.Position = iconBlock.ib_pdata;
                         node.IconBlock.Data     = new byte[node.IconBlock.Width * node.IconBlock.Height / 8];
                         resourceStream.Read(node.IconBlock.Data, 0, node.IconBlock.Data.Length);
+
+                        // Because the image is stored as words, they get reversed on PC GEM (Little-endian)
+                        if(!bigEndian)
+                        {
+                            byte[] data = new byte[node.IconBlock.Data.Length];
+                            for(int i = 0; i < data.Length; i += 2)
+                            {
+                                data[i] = node.IconBlock.Data[i + 1];
+                                data[i                          + 1] = node.IconBlock.Data[i];
+                            }
+
+                            node.IconBlock.Data = data;
+                        }
                     }
 
                     if(iconBlock.ib_pmask > 0 && iconBlock.ib_pmask < resourceStream.Length)
@@ -202,6 +229,19 @@ namespace libexeinfo
                         resourceStream.Position = iconBlock.ib_pmask;
                         node.IconBlock.Mask     = new byte[node.IconBlock.Width * node.IconBlock.Height / 8];
                         resourceStream.Read(node.IconBlock.Mask, 0, node.IconBlock.Mask.Length);
+
+                        // Because the mask is stored as words, they get reversed on PC GEM (Little-endian)
+                        if(!bigEndian)
+                        {
+                            byte[] mask = new byte[node.IconBlock.Mask.Length];
+                            for(int i = 0; i < mask.Length; i += 2)
+                            {
+                                mask[i] = node.IconBlock.Mask[i + 1];
+                                mask[i                          + 1] = node.IconBlock.Mask[i];
+                            }
+
+                            node.IconBlock.Mask = mask;
+                        }
                     }
 
                     break;
@@ -224,8 +264,8 @@ namespace libexeinfo
                         chars.Add((byte)character);
                     }
 
-                    node.String = encoding.GetString(chars.ToArray());
-                    strings.Add(node.String.Trim());
+                    node.String = StringHandlers.CToString(chars.ToArray(), encoding);
+                    if(!string.IsNullOrWhiteSpace(node.String)) strings.Add(node.String.Trim());
                     break;
             }
 
