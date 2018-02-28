@@ -17,4 +17,7 @@
     <ProjectReference Include="..\libexeinfo\libexeinfo.csproj">
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="GEM\" />
+  </ItemGroup>
 </Project>

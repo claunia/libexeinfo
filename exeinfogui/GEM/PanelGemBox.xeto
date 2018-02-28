@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Panel xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackLayout Orientation="Vertical" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top">
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblFlags">Flags</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtFlags" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblState">State</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtState" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblCoordinates">Coordinates</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtCoordinates" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblSize">Size</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtSize" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblThickness">Border thickness</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtThickness" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblTransparency">Transparency</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtTransparency" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblFill">Fill</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtFill" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblBorderColor">Border color</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtBorderColor" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblInsideColor">Inside color</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtInsideColor" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblTextColor">Text color</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtTextColor" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblCharacter">Character</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtCharacter" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+    </StackLayout>
+</Panel>

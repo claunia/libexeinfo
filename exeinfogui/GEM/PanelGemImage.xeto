@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Panel xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Width="500" Height="300">
+    <StackLayout Orientation="Vertical" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top">
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblFlags">Flags</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtFlags" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblState">State</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtState" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblCoordinates">Coordinates</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtCoordinates" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblSize">Size</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtSize" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblColor">Color</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtColor" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayoutItem Expand="True" HorizontalAlignment="Center">
+            <ImageView ID="imgImage"/>
+        </StackLayoutItem>
+    </StackLayout>
+</Panel>

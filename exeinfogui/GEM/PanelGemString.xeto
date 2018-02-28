@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Panel xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackLayout Orientation="Vertical">
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+                <StackLayout Orientation="Vertical">
+                    <StackLayoutItem HorizontalAlignment="Right" Expand="True">
+                        <Label ID="lblFlags">Flags</Label>
+                    </StackLayoutItem>
+                    <StackLayoutItem HorizontalAlignment="Right" Expand="True">
+                        <Label ID="lblState">State</Label>
+                    </StackLayoutItem>
+                    <StackLayoutItem HorizontalAlignment="Right" Expand="True">
+                        <Label ID="lblCoordinates">Coordinates</Label>
+                    </StackLayoutItem>
+                    <StackLayoutItem HorizontalAlignment="Right" Expand="True">
+                        <Label ID="lblSize">Size</Label>
+                    </StackLayoutItem>
+                </StackLayout>
+            </StackLayoutItem>
+            <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+                <StackLayout Orientation="Vertical">
+                    <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
+                        <TextBox ID="txtFlags" ReadOnly="True"/>
+                    </StackLayoutItem>
+                    <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
+                        <TextBox ID="txtState" ReadOnly="True"/>
+                    </StackLayoutItem>
+                    <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
+                        <TextBox ID="txtCoordinates" ReadOnly="True"/>
+                    </StackLayoutItem>
+                    <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
+                        <TextBox ID="txtSize" ReadOnly="True"/>
+                    </StackLayoutItem>
+                </StackLayout>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+            <StackLayout Orientation="Vertical" ID="stkString">
+                <StackLayoutItem HorizontalAlignment="Center">
+                    <Label ID="lblString">String</Label>
+                </StackLayoutItem>
+                <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+                    <TextArea ID="txtString" ReadOnly="True"/>
+                </StackLayoutItem>
+            </StackLayout>
+        </StackLayoutItem>
+    </StackLayout>
+</Panel>

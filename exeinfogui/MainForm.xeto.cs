@@ -25,8 +25,8 @@
 // THE SOFTWARE.
 
 using System;
-using System.IO;
 using System.Linq;
+using exeinfogui.GEM;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
 using libexeinfo;
@@ -35,18 +35,25 @@ namespace exeinfogui
 {
     public class MainForm : Form
     {
-        ComboBox cmbArch;
-        Label    lblSubsystem;
-        TextBox  txtFile;
-        TextArea txtInformation;
-        TextBox  txtOs;
-        TextBox  txtSubsystem;
-        TextBox  txtType;
-        TabControl tabMain;
+        ComboBox        cmbArch;
+        Label           lblSubsystem;
+        TabGemResources tabGemResources;
+        TabControl      tabMain;
+        TabPageStrings  tabStrings;
+        TextBox         txtFile;
+        TextArea        txtInformation;
+        TextBox         txtOs;
+        TextBox         txtSubsystem;
+        TextBox         txtType;
 
         public MainForm()
         {
             XamlReader.Load(this);
+
+            tabStrings      = new TabPageStrings {Visible  = false};
+            tabGemResources = new TabGemResources {Visible = false};
+            tabMain.Pages.Add(tabStrings);
+            tabMain.Pages.Add(tabGemResources);
         }
 
         protected void OnBtnLoadClick(object sender, EventArgs e)
@@ -55,8 +62,10 @@ namespace exeinfogui
             txtType.Text        = "";
             txtInformation.Text = "";
             cmbArch.Items.Clear();
-            lblSubsystem.Visible = false;
-            txtSubsystem.Visible = false;
+            lblSubsystem.Visible    = false;
+            txtSubsystem.Visible    = false;
+            tabStrings.Visible      = false;
+            tabGemResources.Visible = false;
 
             OpenFileDialog dlgOpen = new OpenFileDialog {Title = "Choose executable file", MultiSelect = false};
 
@@ -72,7 +81,15 @@ namespace exeinfogui
             IExecutable peExe         = new PE(dlgOpen.FileName);
             IExecutable recognizedExe = null;
 
-            if(mzExe.Recognized) recognizedExe = mzExe;
+            if(mzExe.Recognized)
+            {
+                recognizedExe = mzExe;
+                if(((MZ)mzExe).ResourceObjectRoots != null && ((MZ)mzExe).ResourceObjectRoots.Any())
+                {
+                    tabGemResources.Update(((MZ)mzExe).ResourceObjectRoots);
+                    tabGemResources.Visible = true;
+                }
+            }
 
             if(neExe.Recognized) recognizedExe = neExe;
             else if(lxExe.Recognized)
@@ -80,7 +97,14 @@ namespace exeinfogui
             else if(peExe.Recognized)
                 recognizedExe = peExe;
             else if(stExe.Recognized)
+            {
                 recognizedExe = stExe;
+                if(((AtariST)stExe).ResourceObjectRoots != null && ((AtariST)stExe).ResourceObjectRoots.Any())
+                {
+                    tabGemResources.Update(((AtariST)stExe).ResourceObjectRoots);
+                    tabGemResources.Visible = true;
+                }
+            }
             else if(coffExe.Recognized)
                 recognizedExe = coffExe;
             else
@@ -109,8 +133,8 @@ namespace exeinfogui
 
             if(recognizedExe.Strings != null && recognizedExe.Strings.Any())
             {
-                TabPageStrings tabStrings = new TabPageStrings(recognizedExe.Strings);
-                tabMain.Pages.Add(tabStrings);
+                tabStrings.Update(recognizedExe.Strings);
+                tabStrings.Visible = true;
             }
         }
 
