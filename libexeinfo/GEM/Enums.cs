@@ -40,14 +40,34 @@ namespace libexeinfo
             Cyan         = 5,
             Yellow       = 6,
             Magenta      = 7,
-            White2       = 8,
-            Black2       = 9,
+            LightGray    = 8,
+            Gray         = 9,
             LightRed     = 10,
             LightGreen   = 11,
             LightBlue    = 12,
             LightCyan    = 13,
             LightYellow  = 14,
             LightMagenta = 15
+        }
+
+        public enum ObjectColorsRgb : uint
+        {
+            White        = 0x00FFFFFF,
+            Black        = 0x00000000,
+            Red          = 0x00FF0000,
+            Green        = 0x0000FF00,
+            Blue         = 0x000000FF,
+            Cyan         = 0x0000FFFF,
+            Yellow       = 0x00FFFF00,
+            Magenta      = 0x00FF00FF,
+            LightGray    = 0x00555555,
+            Gray         = 0x00333333,
+            LightRed     = 0x00FF3333,
+            LightGreen   = 0x0033FF33,
+            LightBlue    = 0x003333FF,
+            LightCyan    = 0x0033FFFF,
+            LightYellow  = 0x00FFFF33,
+            LightMagenta = 0x00FF33FF
         }
 
         public enum ObjectFillPattern : byte
