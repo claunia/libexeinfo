@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Claunia.Encoding;
+using System.Text;
 
 namespace libexeinfo
 {
@@ -120,7 +120,15 @@ namespace libexeinfo
             Recognized = false;
             if(BaseStream == null) return;
 
-            byte[] buffer = new byte[Marshal.SizeOf(typeof(MZHeader))];
+            byte[]   buffer = new byte[Marshal.SizeOf(typeof(MZHeader))];
+            Encoding encoding;
+
+            try { encoding = Encoding.GetEncoding("ibm850"); }
+            catch
+            {
+                try { encoding   = Encoding.GetEncoding("ibm850"); }
+                catch { encoding = Encoding.ASCII; }
+            }
 
             BaseStream.Position = 0;
             BaseStream.Read(buffer, 0, buffer.Length);
@@ -178,8 +186,7 @@ namespace libexeinfo
 
                     List<short> knownNodes = new List<short>();
                     ResourceObjectRoots[i] =
-                        GEM.ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings, false,
-                                                  Encoding.AtariSTEncoding);
+                        GEM.ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings, false, encoding);
                 }
             }
             else if(ResourceHeader.rsh_nobs > 0)
@@ -198,8 +205,7 @@ namespace libexeinfo
                 ResourceObjectRoots    = new GEM.TreeObjectNode[1];
                 // TODO: Correct encoding?
                 ResourceObjectRoots[0] =
-                    GEM.ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings, false,
-                                              Encoding.AtariSTEncoding);
+                    GEM.ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings, false, encoding);
             }
 
             if(strings.Count > 0)
