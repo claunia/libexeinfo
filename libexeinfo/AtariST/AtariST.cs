@@ -40,7 +40,7 @@ namespace libexeinfo
     {
         public GEM.ColorIcon[]          GemColorIcons;
         public GEM.GemResourceExtension ResourceExtension;
-        public GEM.GemResourceHeader    ResourceHeader;
+        public GEM.MagiCResourceHeader  ResourceHeader;
         public GEM.TreeObjectNode[]     ResourceObjectRoots;
         public Stream                   ResourceStream;
 
@@ -133,10 +133,20 @@ namespace libexeinfo
             buffer                  = new byte[Marshal.SizeOf(typeof(GEM.GemResourceHeader))];
             ResourceStream.Position = 0;
             ResourceStream.Read(buffer, 0, buffer.Length);
-            ResourceHeader = BigEndianMarshal.ByteArrayToStructureBigEndian<GEM.GemResourceHeader>(buffer);
+            GEM.GemResourceHeader gemResourceHeader =
+                BigEndianMarshal.ByteArrayToStructureBigEndian<GEM.GemResourceHeader>(buffer);
 
-            if(ResourceHeader.rsh_vrsn != 0 && ResourceHeader.rsh_vrsn != 1 && ResourceHeader.rsh_vrsn != 4 &&
-               ResourceHeader.rsh_vrsn != 5) return;
+            if(gemResourceHeader.rsh_vrsn != 0 && gemResourceHeader.rsh_vrsn != 1 && gemResourceHeader.rsh_vrsn != 3 &&
+               gemResourceHeader.rsh_vrsn != 4 && gemResourceHeader.rsh_vrsn != 5) return;
+
+            if(gemResourceHeader.rsh_vrsn == 3)
+            {
+                buffer                  = new byte[Marshal.SizeOf(typeof(GEM.MagiCResourceHeader))];
+                ResourceStream.Position = 0;
+                ResourceStream.Read(buffer, 0, buffer.Length);
+                ResourceHeader = BigEndianMarshal.ByteArrayToStructureBigEndian<GEM.MagiCResourceHeader>(buffer);
+            }
+            else ResourceHeader = GEM.GemToMagiC(gemResourceHeader);
 
             if((ResourceHeader.rsh_vrsn & 4) == 4)
             {

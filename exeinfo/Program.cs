@@ -201,7 +201,7 @@ namespace exeinfo
             if(!recognized) Console.WriteLine("Executable format not recognized");
         }
 
-        static void PrintGemResources(GEM.GemResourceHeader    resourceHeader, IReadOnlyList<GEM.TreeObjectNode> roots,
+        static void PrintGemResources(GEM.MagiCResourceHeader  resourceHeader, IReadOnlyList<GEM.TreeObjectNode> roots,
                                       GEM.GemResourceExtension resourceExtension,
                                       GEM.ColorIcon[]          colorIcons)
         {

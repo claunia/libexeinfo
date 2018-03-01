@@ -83,7 +83,7 @@ namespace libexeinfo
         }
 
         [Flags]
-        public enum ObjectFlags : short
+        public enum ObjectFlags : ushort
         {
             /// <summary>
             ///     Indicates that the user can select the object
@@ -123,7 +123,53 @@ namespace libexeinfo
             /// <summary>
             ///     Indicates that the value in <see cref="ObjectNode.ob_spec" /> is a pointer to the actual value.
             /// </summary>
-            Indirect = 0x0100
+            Indirect = 0x0100,
+            /// <summary>
+            ///     Under MultiTOS this object creates a three-dimensional object.
+            /// </summary>
+            Fl3Dind = 0x0200,
+            /// <summary>
+            ///     Pressing the [Esc] key corresponds to the selection of the object with this flag.
+            /// </summary>
+            EscCancel = 0x0200,
+            /// <summary>
+            ///     In 3D operation this object will be treated as an AES background object.
+            /// </summary>
+            Fl3DBak = 0x0400,
+            /// <summary>
+            ///     A button with this flag uses a bitmap instead of text.
+            /// </summary>
+            BitButton = 0x0400,
+            /// <summary>
+            ///     In 3D operation this object will be treated as an activator.
+            /// </summary>
+            Fl3DAct = 0x0600,
+            /// <summary>
+            ///     In MultiTOS and from MagiC 5.10 this flag indicates submenus.
+            /// </summary>
+            SubMenu = 0x0800,
+            /// <summary>
+            ///     Pressing the [PAGEUP] key corresponds to the selection of the first object with this flag in the dialog. Pressing
+            ///     the [PAGEDOWN] key corresponds to the selection of the last object with this flag.
+            /// </summary>
+            Scroller = 0x0800,
+            /// <summary>
+            ///     An object with this flag will be drawn with a 3D border.
+            /// </summary>
+            Flag3D = 0x1000,
+            /// <summary>
+            ///     The color of the object is not a color index of the VDI, but an entry in a table with colors for designated
+            ///     categories.
+            /// </summary>
+            UseColorCat = 0x2000,
+            /// <summary>
+            ///     Sunken 3D background
+            /// </summary>
+            Fl3DBak2 = 0x4000,
+            /// <summary>
+            ///     Not implemented
+            /// </summary>
+            SubMenu2 = 0x8000
         }
 
         public enum ObjectFont : short
@@ -140,7 +186,7 @@ namespace libexeinfo
         }
 
         [Flags]
-        public enum ObjectStates : short
+        public enum ObjectStates : ushort
         {
             /// <summary>
             ///     Indicates that the object is highlighted by being drawn with reversed colors
@@ -165,7 +211,25 @@ namespace libexeinfo
             /// <summary>
             ///     Indicates that the object (usually a box) is drawn with a drop shadow
             /// </summary>
-            Shadowed = 0x0020
+            Shadowed = 0x0020,
+            /// <summary>
+            ///     In PC-GEM ignores icon background. As of MagiC 3 controls the underscoring of character strings.
+            /// </summary>
+            Whitebak = 0x0040,
+            /// <summary>
+            ///     Indicates that the object is to be drawn with a 3D effect.
+            /// </summary>
+            Draw3D = 0x0080,
+            /// <summary>
+            ///     An object with this status will be surrounded by a dashed line.
+            /// </summary>
+            Highlighted = 0x0100,
+            /// <summary>
+            ///     Setting this state undoes the line by <see cref="Highlighted" />
+            /// </summary>
+            Unhighlighted = 0x0200,
+            Underline     = 0x0F00,
+            Xstate        = 0xF000
         }
 
         public enum ObjectTypes : short
@@ -190,7 +254,8 @@ namespace libexeinfo
             /// </summary>
             G_IMAGE = 23,
             /// <summary>
-            ///     A programmed defined object. Its <see cref="ObjectNode.ob_spec" /> is a pointer to a <see cref="ApplicationBlock" />
+            ///     A programmed defined object. Its <see cref="ObjectNode.ob_spec" /> is a pointer to a
+            ///     <see cref="ApplicationBlock" />
             ///     structure.
             /// </summary>
             G_USERDEF = 24,
@@ -238,10 +303,36 @@ namespace libexeinfo
             G_TITLE = 32,
             /// <summary>
             ///     An object that describes a color icon. Its <see cref="ObjectNode.ob_spec" /> is a pointer to an
-            ///     <see cref="ColorIconBlock" />
-            ///     structure.
+            ///     <see cref="ColorIconBlock" /> structure.
             /// </summary>
-            G_CICON = 33
+            G_CICON = 33,
+            /// <summary>
+            ///     An object that describes a cycle button (a button which alters its text cyclically when clicked on).
+            ///     Its <see cref="ObjectNode.ob_spec" /> is a pointer to a <see cref="SwInfoBlock" /> structure.
+            /// </summary>
+            G_SWBUTTON = 34,
+            /// <summary>
+            ///     An object that describes a popup menu. Its <see cref="ObjectNode.ob_spec" /> is a pointer to a
+            ///     <see cref="PopInfoBlock" /> structure.
+            /// </summary>
+            G_POPUP = 35,
+            /// <summary>
+            ///     This object is user internally by MagiC to depict window titles.
+            /// </summary>
+            G_WINTITLE = 36,
+            /// <summary>
+            ///     As of MagiC 5.20 an editable object implemented in a shared library. Its <see cref="ObjectNode.ob_spec" /> is a
+            ///     pointer to the object.
+            /// </summary>
+            G_EDIT = 37,
+            /// <summary>
+            ///     Similar to <see cref="G_STRING" />, but any keyboard shortcut present is split off and output ranged right.
+            /// </summary>
+            G_SHORTCUT = 38,
+            /// <summary>
+            ///     Scrolling list
+            /// </summary>
+            G_SLIST = 39
         }
 
         /// <summary>

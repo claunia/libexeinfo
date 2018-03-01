@@ -157,8 +157,10 @@ namespace libexeinfo
                     buffer                  = new byte[Marshal.SizeOf(typeof(ApplicationBlock))];
                     resourceStream.Read(buffer, 0, buffer.Length);
                     node.ApplicationBlock = bigEndian
-                                         ? BigEndianMarshal.ByteArrayToStructureBigEndian<ApplicationBlock>(buffer)
-                                         : BigEndianMarshal.ByteArrayToStructureLittleEndian<ApplicationBlock>(buffer);
+                                                ? BigEndianMarshal
+                                                   .ByteArrayToStructureBigEndian<ApplicationBlock>(buffer)
+                                                : BigEndianMarshal
+                                                   .ByteArrayToStructureLittleEndian<ApplicationBlock>(buffer);
                     break;
                 case ObjectTypes.G_ICON:
                     if(node.data <= 0 || node.data >= resourceStream.Length) break;
@@ -178,6 +180,7 @@ namespace libexeinfo
                 case ObjectTypes.G_BUTTON:
                 case ObjectTypes.G_STRING:
                 case ObjectTypes.G_TITLE:
+                case ObjectTypes.G_SHORTCUT:
                     if(node.data <= 0 || node.data >= resourceStream.Length) break;
 
                     resourceStream.Position = node.data;
@@ -491,6 +494,31 @@ namespace libexeinfo
             }
 
             return colorIcons;
+        }
+
+        public static MagiCResourceHeader GemToMagiC(GemResourceHeader header)
+        {
+            return new MagiCResourceHeader
+            {
+                rsh_vrsn    = header.rsh_vrsn,
+                rsh_object  = header.rsh_object,
+                rsh_tedinfo = header.rsh_tedinfo,
+                rsh_iconblk = header.rsh_iconblk,
+                rsh_bitblk  = header.rsh_bitblk,
+                rsh_frstr   = header.rsh_frstr,
+                rsh_string  = header.rsh_string,
+                rsh_imdata  = header.rsh_imdata,
+                rsh_frimg   = header.rsh_frimg,
+                rsh_trindex = header.rsh_trindex,
+                rsh_nobs    = header.rsh_nobs,
+                rsh_ntree   = header.rsh_ntree,
+                rsh_nted    = header.rsh_nted,
+                rsh_nib     = header.rsh_nib,
+                rsh_nbb     = header.rsh_nbb,
+                rsh_nstring = header.rsh_nstring,
+                rsh_nimages = header.rsh_nimages,
+                rsh_rssize  = header.rsh_rssize
+            };
         }
     }
 }

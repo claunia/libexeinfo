@@ -111,6 +111,88 @@ namespace libexeinfo
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct MagiCResourceHeader
+        {
+            /// <summary>
+            ///     Must be version 3
+            /// </summary>
+            public short rsh_vrsn;
+            /// <summary>
+            ///     Not used
+            /// </summary>
+            public short rsh_extvrsn;
+            /// <summary>
+            ///     Contains an offset from the beginning of the file to the OBJECT structures.
+            /// </summary>
+            public int rsh_object;
+            /// <summary>
+            ///     Contains an offset from the beginning of the file to the TEDINFO structures.
+            /// </summary>
+            public int rsh_tedinfo;
+            /// <summary>
+            ///     Contains an offset from the beginning of the file to the ICONBLK structures.
+            /// </summary>
+            public int rsh_iconblk;
+            /// <summary>
+            ///     Contains an offset from the beginning of the file to the BITBLK structures.
+            /// </summary>
+            public int rsh_bitblk;
+            /// <summary>
+            ///     Contains an offset from the beginning of the file to the string pointer table.
+            /// </summary>
+            public int rsh_frstr;
+            /// <summary>
+            ///     Contains an offset from the beginning of the file to the string data.
+            /// </summary>
+            public int rsh_string;
+            /// <summary>
+            ///     Contains an offset from the beginning of the file to the image data.
+            /// </summary>
+            public int rsh_imdata;
+            /// <summary>
+            ///     Contains an offset from the beginning of the file to the image pointer table.
+            /// </summary>
+            public int rsh_frimg;
+            /// <summary>
+            ///     Contains an offset from the beginning of the file to the tree pointer table.
+            /// </summary>
+            public int rsh_trindex;
+            /// <summary>
+            ///     Number of OBJECTs in the file.
+            /// </summary>
+            public int rsh_nobs;
+            /// <summary>
+            ///     Number of object trees in the file.
+            /// </summary>
+            public int rsh_ntree;
+            /// <summary>
+            ///     Number of TEDINFOs in the file.
+            /// </summary>
+            public int rsh_nted;
+            /// <summary>
+            ///     Number of ICONBLKs in the file.
+            /// </summary>
+            public int rsh_nib;
+            /// <summary>
+            ///     Number of BITBLKs in the file.
+            /// </summary>
+            public int rsh_nbb;
+            /// <summary>
+            ///     Number of free strings in the file.
+            /// </summary>
+            public int rsh_nstring;
+            /// <summary>
+            ///     Number of free images in the file.
+            /// </summary>
+            public int rsh_nimages;
+            /// <summary>
+            ///     Size of the resource file (in bytes). Note that this is the size of the old format resource file. If the newer
+            ///     format file is being used then this value can be used as an offset to the extension array.
+            /// </summary>
+            public int rsh_rssize;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct GemResourceExtension
         {
             /// <summary>
@@ -191,20 +273,20 @@ namespace libexeinfo
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public class TreeObjectNode
         {
-            public BitmapBlock    BitBlock;
-            public TreeObjectNode child;
-            public ColorIcon      ColorIcon;
-            public int            data;
-            public ObjectFlags    flags;
-            public short          height;
-            public Icon           IconBlock;
-            public TreeObjectNode sibling;
-            public ObjectStates   state;
-            public string         String;
+            public ApplicationBlock ApplicationBlock;
+            public BitmapBlock      BitBlock;
+            public TreeObjectNode   child;
+            public ColorIcon        ColorIcon;
+            public int              data;
+            public ObjectFlags      flags;
+            public short            height;
+            public Icon             IconBlock;
+            public TreeObjectNode   sibling;
+            public ObjectStates     state;
+            public string           String;
 
             public TextBlock   TedInfo;
             public ObjectTypes type;
-            public ApplicationBlock   ApplicationBlock;
             public short       width;
             public short       x;
             public short       y;
@@ -432,7 +514,8 @@ namespace libexeinfo
 
         /// <summary>
         ///     The APPLBLK structure is used to locate and call an application-defined routine that will draw and/or change an
-        ///     object. The object type G_USERDEF points with its <see cref="ObjectNode.ob_spec" /> pointer to an USERBLK structure.
+        ///     object. The object type G_USERDEF points with its <see cref="ObjectNode.ob_spec" /> pointer to an USERBLK
+        ///     structure.
         /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct ApplicationBlock
@@ -442,7 +525,7 @@ namespace libexeinfo
             /// </summary>
             public int ab_code;
             /// <summary>
-            ///     A pointer to a <see cref="ParameterBlock"/>
+            ///     A pointer to a <see cref="ParameterBlock" />
             /// </summary>
             public int ab_parm;
         }
@@ -502,12 +585,14 @@ namespace libexeinfo
             /// </summary>
             public short pb_hc;
             /// <summary>
-            ///     A long value, identical to <see cref="ApplicationBlock.ab_parm" />, that is passed to the application when it is time for
+            ///     A long value, identical to <see cref="ApplicationBlock.ab_parm" />, that is passed to the application when it is
+            ///     time for
             ///     the application to draw or change the object. Low word.
             /// </summary>
             public short pb_parm_low;
             /// <summary>
-            ///     A long value, identical to <see cref="ApplicationBlock.ab_parm" />, that is passed to the application when it is time for
+            ///     A long value, identical to <see cref="ApplicationBlock.ab_parm" />, that is passed to the application when it is
+            ///     time for
             ///     the application to draw or change the object. High word.
             /// </summary>
             public short pb_parm_high;
@@ -544,6 +629,36 @@ namespace libexeinfo
             ///     Pointer to next icon
             /// </summary>
             public int next_res;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct PopInfoBlock
+        {
+            /// <summary>
+            ///     Points to the start of an object tree that corresponds to the popup menu
+            /// </summary>
+            public int tree;
+            /// <summary>
+            ///     Current object of
+            /// </summary>
+            public short obnum;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct SwInfoBlock
+        {
+            /// <summary>
+            ///     Points to the string
+            /// </summary>
+            public int str;
+            /// <summary>
+            ///     Index of the current character string
+            /// </summary>
+            public short num;
+            /// <summary>
+            ///     Maximum permitted number
+            /// </summary>
+            public short maxnum;
         }
     }
 }
