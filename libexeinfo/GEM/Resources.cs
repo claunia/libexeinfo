@@ -154,11 +154,11 @@ namespace libexeinfo
                     if(node.data <= 0 || node.data >= resourceStream.Length) break;
 
                     resourceStream.Position = node.data;
-                    buffer                  = new byte[Marshal.SizeOf(typeof(UserBlock))];
+                    buffer                  = new byte[Marshal.SizeOf(typeof(ApplicationBlock))];
                     resourceStream.Read(buffer, 0, buffer.Length);
-                    node.UserBlock = bigEndian
-                                         ? BigEndianMarshal.ByteArrayToStructureBigEndian<UserBlock>(buffer)
-                                         : BigEndianMarshal.ByteArrayToStructureLittleEndian<UserBlock>(buffer);
+                    node.ApplicationBlock = bigEndian
+                                         ? BigEndianMarshal.ByteArrayToStructureBigEndian<ApplicationBlock>(buffer)
+                                         : BigEndianMarshal.ByteArrayToStructureLittleEndian<ApplicationBlock>(buffer);
                     break;
                 case ObjectTypes.G_ICON:
                     if(node.data <= 0 || node.data >= resourceStream.Length) break;

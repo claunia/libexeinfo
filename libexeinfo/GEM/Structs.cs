@@ -204,7 +204,7 @@ namespace libexeinfo
 
             public TextBlock   TedInfo;
             public ObjectTypes type;
-            public UserBlock   UserBlock;
+            public ApplicationBlock   ApplicationBlock;
             public short       width;
             public short       x;
             public short       y;
@@ -431,20 +431,20 @@ namespace libexeinfo
         }
 
         /// <summary>
-        ///     The USERBLK structure is used to locate and call an application-defined routine that will draw and/or change an
-        ///     object. The object type G_UERDEF points with its <see cref="ObjectNode.ob_spec" /> pointer to an USERBLK structure.
+        ///     The APPLBLK structure is used to locate and call an application-defined routine that will draw and/or change an
+        ///     object. The object type G_USERDEF points with its <see cref="ObjectNode.ob_spec" /> pointer to an USERBLK structure.
         /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct UserBlock
+        public struct ApplicationBlock
         {
             /// <summary>
             ///     A pointer to the routine for drawing and/or changing the object
             /// </summary>
-            public int ub_code;
+            public int ab_code;
             /// <summary>
-            ///     A long value (optionally provided by the application) passed as a parameter when calling the routine
+            ///     A pointer to a <see cref="ParameterBlock"/>
             /// </summary>
-            public int ub_parm;
+            public int ab_parm;
         }
 
         /// <summary>
@@ -502,12 +502,12 @@ namespace libexeinfo
             /// </summary>
             public short pb_hc;
             /// <summary>
-            ///     A long value, identical to <see cref="UserBlock.ub_parm" />, that is passed to the application when it is time for
+            ///     A long value, identical to <see cref="ApplicationBlock.ab_parm" />, that is passed to the application when it is time for
             ///     the application to draw or change the object. Low word.
             /// </summary>
             public short pb_parm_low;
             /// <summary>
-            ///     A long value, identical to <see cref="UserBlock.ub_parm" />, that is passed to the application when it is time for
+            ///     A long value, identical to <see cref="ApplicationBlock.ab_parm" />, that is passed to the application when it is time for
             ///     the application to draw or change the object. High word.
             /// </summary>
             public short pb_parm_high;

@@ -190,7 +190,7 @@ namespace libexeinfo
             /// </summary>
             G_IMAGE = 23,
             /// <summary>
-            ///     A programmed defined object. Its <see cref="ObjectNode.ob_spec" /> is a pointer to a <see cref="UserBlock" />
+            ///     A programmed defined object. Its <see cref="ObjectNode.ob_spec" /> is a pointer to a <see cref="ApplicationBlock" />
             ///     structure.
             /// </summary>
             G_USERDEF = 24,
