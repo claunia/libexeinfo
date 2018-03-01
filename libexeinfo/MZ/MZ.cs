@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
+using Claunia.Encoding;
 
 namespace libexeinfo
 {
@@ -122,15 +122,7 @@ namespace libexeinfo
             Recognized = false;
             if(BaseStream == null) return;
 
-            byte[]   buffer = new byte[Marshal.SizeOf(typeof(MZHeader))];
-            Encoding encoding;
-
-            try { encoding = Encoding.GetEncoding("ibm850"); }
-            catch
-            {
-                try { encoding   = Encoding.GetEncoding("ibm850"); }
-                catch { encoding = Encoding.ASCII; }
-            }
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(MZHeader))];
 
             BaseStream.Position = 0;
             BaseStream.Read(buffer, 0, buffer.Length);
@@ -171,7 +163,8 @@ namespace libexeinfo
                 ResourceStream.Read(buffer, 0, buffer.Length);
                 ResourceExtension = BigEndianMarshal.ByteArrayToStructureLittleEndian<GEM.GemResourceExtension>(buffer);
 
-                GemColorIcons = GEM.GetColorIcons(ResourceStream, ResourceExtension.color_ic, false, encoding);
+                GemColorIcons =
+                    GEM.GetColorIcons(ResourceStream, ResourceExtension.color_ic, false, Encoding.GemEncoding);
             }
 
             List<string> strings = new List<string>();
@@ -208,7 +201,8 @@ namespace libexeinfo
 
                     List<short> knownNodes = new List<short>();
                     ResourceObjectRoots[i] =
-                        GEM.ProcessResourceObject(nodes, ref knownNodes, 0, ResourceStream, strings, false, encoding);
+                        GEM.ProcessResourceObject(nodes, ref knownNodes, 0, ResourceStream, strings, false,
+                                                  Encoding.GemEncoding);
                 }
             }
             else if(ResourceHeader.rsh_nobs > 0)
@@ -227,7 +221,8 @@ namespace libexeinfo
                 ResourceObjectRoots    = new GEM.TreeObjectNode[1];
                 // TODO: Correct encoding?
                 ResourceObjectRoots[0] =
-                    GEM.ProcessResourceObject(nodes, ref knownNodes, 0, ResourceStream, strings, false, encoding);
+                    GEM.ProcessResourceObject(nodes, ref knownNodes, 0, ResourceStream, strings, false,
+                                              Encoding.GemEncoding);
             }
 
             if(strings.Count > 0)
