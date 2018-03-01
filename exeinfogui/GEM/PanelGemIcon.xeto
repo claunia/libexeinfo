@@ -83,7 +83,7 @@
         </StackLayout>
         <StackLayout Orientation="Horizontal">
             <StackLayoutItem>
-                <Label ID="lblText">Txxt</Label>
+                <Label ID="lblText">Text</Label>
             </StackLayoutItem>
             <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
                 <TextBox ID="txtText" ReadOnly="True"/>
