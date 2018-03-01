@@ -24,8 +24,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -40,7 +42,7 @@ namespace libexeinfo
         {
             TreeObjectNode node = new TreeObjectNode
             {
-                type   = (ObjectTypes)nodes[nodeNumber].ob_type,
+                type   = (ObjectTypes)(nodes[nodeNumber].ob_type & 0xff),
                 flags  = (ObjectFlags)nodes[nodeNumber].ob_flags,
                 state  = (ObjectStates)nodes[nodeNumber].ob_state,
                 data   = nodes[nodeNumber].ob_spec,
@@ -50,8 +52,7 @@ namespace libexeinfo
                 height = nodes[nodeNumber].ob_height
             };
 
-            byte[]     buffer;
-            List<byte> chars;
+            byte[] buffer;
             switch(node.type)
             {
                 case ObjectTypes.G_TEXT:
@@ -110,7 +111,6 @@ namespace libexeinfo
                     }
 
                     break;
-                // TODO: This is indeed a CUT from a bigger image, need to cut it out
                 case ObjectTypes.G_IMAGE:
                     if(node.data <= 0 || node.data >= resourceStream.Length) break;
 
@@ -166,87 +166,14 @@ namespace libexeinfo
                     resourceStream.Position = node.data;
                     buffer                  = new byte[Marshal.SizeOf(typeof(IconBlock))];
                     resourceStream.Read(buffer, 0, buffer.Length);
-                    IconBlock iconBlock = bigEndian
-                                              ? BigEndianMarshal.ByteArrayToStructureBigEndian<IconBlock>(buffer)
-                                              : BigEndianMarshal.ByteArrayToStructureLittleEndian<IconBlock>(buffer);
 
-                    node.IconBlock = new Icon
-                    {
-                        Width           = iconBlock.ib_wicon,
-                        Height          = iconBlock.ib_hicon,
-                        X               = iconBlock.ib_xicon,
-                        Y               = iconBlock.ib_yicon,
-                        ForegroundColor = (ObjectColors)((iconBlock.ib_char >> 12)           & 0x000F),
-                        BackgroundColor = (ObjectColors)((iconBlock.ib_char >> 8)            & 0x000F),
-                        Character       = encoding.GetString(new[] {(byte)(iconBlock.ib_char & 0xFF)})[0],
-                        CharX           = iconBlock.ib_xchar,
-                        CharY           = iconBlock.ib_ychar,
-                        TextX           = iconBlock.ib_xtext,
-                        TextY           = iconBlock.ib_ytext,
-                        TextWidth       = iconBlock.ib_wtext,
-                        TextHeight      = iconBlock.ib_htext
-                    };
+                    node.IconBlock = GetIconBlock(resourceStream, buffer, bigEndian, encoding);
 
-                    if(iconBlock.ib_ptext > 0 && iconBlock.ib_ptext < resourceStream.Length)
-                    {
-                        resourceStream.Position = iconBlock.ib_ptext;
-                        chars                   = new List<byte>();
-                        while(true)
-                        {
-                            int character = resourceStream.ReadByte();
-
-                            if(character <= 0) break;
-
-                            chars.Add((byte)character);
-                        }
-
-                        node.IconBlock.Text = StringHandlers.CToString(chars.ToArray(), encoding);
-                        if(!string.IsNullOrWhiteSpace(node.IconBlock.Text)) strings.Add(node.IconBlock.Text.Trim());
-                    }
-
-                    if(iconBlock.ib_pdata > 0 && iconBlock.ib_pdata < resourceStream.Length)
-                    {
-                        resourceStream.Position = iconBlock.ib_pdata;
-                        node.IconBlock.Data     = new byte[node.IconBlock.Width * node.IconBlock.Height / 8];
-                        resourceStream.Read(node.IconBlock.Data, 0, node.IconBlock.Data.Length);
-
-                        // Because the image is stored as words, they get reversed on PC GEM (Little-endian)
-                        if(!bigEndian)
-                        {
-                            byte[] data = new byte[node.IconBlock.Data.Length];
-                            for(int i = 0; i < data.Length; i += 2)
-                            {
-                                data[i] = node.IconBlock.Data[i + 1];
-                                data[i                          + 1] = node.IconBlock.Data[i];
-                            }
-
-                            node.IconBlock.Data = data;
-                        }
-                    }
-
-                    if(iconBlock.ib_pmask > 0 && iconBlock.ib_pmask < resourceStream.Length)
-                    {
-                        resourceStream.Position = iconBlock.ib_pmask;
-                        node.IconBlock.Mask     = new byte[node.IconBlock.Width * node.IconBlock.Height / 8];
-                        resourceStream.Read(node.IconBlock.Mask, 0, node.IconBlock.Mask.Length);
-
-                        // Because the mask is stored as words, they get reversed on PC GEM (Little-endian)
-                        if(!bigEndian)
-                        {
-                            byte[] mask = new byte[node.IconBlock.Mask.Length];
-                            for(int i = 0; i < mask.Length; i += 2)
-                            {
-                                mask[i] = node.IconBlock.Mask[i + 1];
-                                mask[i                          + 1] = node.IconBlock.Mask[i];
-                            }
-
-                            node.IconBlock.Mask = mask;
-                        }
-                    }
+                    if(!string.IsNullOrWhiteSpace(node.IconBlock.Text)) strings.Add(node.IconBlock.Text.Trim());
 
                     break;
                 case ObjectTypes.G_CICON:
-                    //Console.WriteLine("ColorIconBlock pointer {0}", node.data);
+                    // Do nothing, it is done separately...
                     break;
                 case ObjectTypes.G_BUTTON:
                 case ObjectTypes.G_STRING:
@@ -254,7 +181,7 @@ namespace libexeinfo
                     if(node.data <= 0 || node.data >= resourceStream.Length) break;
 
                     resourceStream.Position = node.data;
-                    chars                   = new List<byte>();
+                    List<byte> chars        = new List<byte>();
                     while(true)
                     {
                         int character = resourceStream.ReadByte();
@@ -280,6 +207,290 @@ namespace libexeinfo
                                                      strings, bigEndian,      encoding);
 
             return node;
+        }
+
+        static Icon GetIconBlock(Stream resourceStream, byte[] buffer, bool bigEndian, Encoding encoding)
+        {
+            long oldPosition = resourceStream.Position;
+
+            IconBlock iconBlock = bigEndian
+                                      ? BigEndianMarshal.ByteArrayToStructureBigEndian<IconBlock>(buffer)
+                                      : BigEndianMarshal.ByteArrayToStructureLittleEndian<IconBlock>(buffer);
+
+            Icon icon = new Icon
+            {
+                Width           = iconBlock.ib_wicon,
+                Height          = iconBlock.ib_hicon,
+                X               = iconBlock.ib_xicon,
+                Y               = iconBlock.ib_yicon,
+                ForegroundColor = (ObjectColors)((iconBlock.ib_char >> 12)           & 0x000F),
+                BackgroundColor = (ObjectColors)((iconBlock.ib_char >> 8)            & 0x000F),
+                Character       = encoding.GetString(new[] {(byte)(iconBlock.ib_char & 0xFF)})[0],
+                CharX           = iconBlock.ib_xchar,
+                CharY           = iconBlock.ib_ychar,
+                TextX           = iconBlock.ib_xtext,
+                TextY           = iconBlock.ib_ytext,
+                TextWidth       = iconBlock.ib_wtext,
+                TextHeight      = iconBlock.ib_htext
+            };
+
+            if(iconBlock.ib_ptext > 0 && iconBlock.ib_ptext < resourceStream.Length)
+            {
+                resourceStream.Position = iconBlock.ib_ptext;
+                List<byte> chars        = new List<byte>();
+                while(true)
+                {
+                    int character = resourceStream.ReadByte();
+
+                    if(character <= 0) break;
+
+                    chars.Add((byte)character);
+                }
+
+                icon.Text = StringHandlers.CToString(chars.ToArray(), encoding);
+            }
+
+            if(iconBlock.ib_pdata > 0 && iconBlock.ib_pdata < resourceStream.Length)
+            {
+                resourceStream.Position = iconBlock.ib_pdata;
+                icon.Data               = new byte[icon.Width * icon.Height / 8];
+                resourceStream.Read(icon.Data, 0, icon.Data.Length);
+
+                // Because the image is stored as words, they get reversed on PC GEM (Little-endian)
+                if(!bigEndian)
+                {
+                    byte[] data = new byte[icon.Data.Length];
+                    for(int i = 0; i < data.Length; i += 2)
+                    {
+                        data[i] = icon.Data[i + 1];
+                        data[i                + 1] = icon.Data[i];
+                    }
+
+                    icon.Data = data;
+                }
+            }
+
+            if(iconBlock.ib_pmask > 0 && iconBlock.ib_pmask < resourceStream.Length)
+            {
+                resourceStream.Position = iconBlock.ib_pmask;
+                icon.Mask               = new byte[icon.Width * icon.Height / 8];
+                resourceStream.Read(icon.Mask, 0, icon.Mask.Length);
+
+                // Because the mask is stored as words, they get reversed on PC GEM (Little-endian)
+                if(!bigEndian)
+                {
+                    byte[] mask = new byte[icon.Mask.Length];
+                    for(int i = 0; i < mask.Length; i += 2)
+                    {
+                        mask[i] = icon.Mask[i + 1];
+                        mask[i                + 1] = icon.Mask[i];
+                    }
+
+                    icon.Mask = mask;
+                }
+            }
+
+            resourceStream.Position = oldPosition;
+            return icon;
+        }
+
+        public static ColorIcon[] GetColorIcons(Stream resourceStream, int colorIc, bool bigEndian, Encoding encoding)
+        {
+            byte[] buffer;
+
+            if(colorIc == -1 || colorIc >= resourceStream.Length) return null;
+
+            resourceStream.Position = colorIc;
+
+            int cicons = 0;
+
+            while(true)
+            {
+                buffer = new byte[4];
+                resourceStream.Read(buffer, 0, buffer.Length);
+
+                if(BitConverter.ToInt32(buffer, 0) == -1) break;
+
+                cicons++;
+            }
+
+            ColorIcon[] colorIcons = new ColorIcon[cicons];
+
+            for(int i = 0; i < cicons; i++)
+            {
+                buffer = new byte[Marshal.SizeOf(typeof(IconBlock))];
+                resourceStream.Read(buffer, 0, buffer.Length);
+                IconBlock iconBlock = BigEndianMarshal.ByteArrayToStructureBigEndian<IconBlock>(buffer);
+                int       isize     = iconBlock.ib_wicon * iconBlock.ib_hicon / 8;
+
+                buffer                  =  new byte[4];
+                resourceStream.Position -= 2;
+                resourceStream.Read(buffer, 0, buffer.Length);
+                int numRez = BitConverter.ToInt32(buffer.Reverse().ToArray(), 0);
+
+                colorIcons[i] = new ColorIcon
+                {
+                    Color      = new ColorIconPlane[numRez],
+                    Monochrome = new Icon
+                    {
+                        Width           = iconBlock.ib_wicon,
+                        Height          = iconBlock.ib_hicon,
+                        X               = iconBlock.ib_xicon,
+                        Y               = iconBlock.ib_yicon,
+                        ForegroundColor = (ObjectColors)((iconBlock.ib_char >> 12)           & 0x000F),
+                        BackgroundColor = (ObjectColors)((iconBlock.ib_char >> 8)            & 0x000F),
+                        Character       = encoding.GetString(new[] {(byte)(iconBlock.ib_char & 0xFF)})[0],
+                        CharX           = iconBlock.ib_xchar,
+                        CharY           = iconBlock.ib_ychar,
+                        TextX           = iconBlock.ib_xtext,
+                        TextY           = iconBlock.ib_ytext,
+                        TextWidth       = iconBlock.ib_wtext,
+                        TextHeight      = iconBlock.ib_htext,
+                        Data            = new byte[isize],
+                        Mask            = new byte[isize]
+                    }
+                };
+
+                resourceStream.Read(colorIcons[i].Monochrome.Data, 0, isize);
+
+                // Because the image is stored as words, they get reversed on PC GEM (Little-endian)
+                if(!bigEndian)
+                {
+                    byte[] data = new byte[colorIcons[i].Monochrome.Data.Length];
+                    for(int d = 0; d < data.Length; d += 2)
+                    {
+                        data[d] = colorIcons[d].Monochrome.Data[d + 1];
+                        data[d                                    + 1] = colorIcons[d].Monochrome.Data[d];
+                    }
+
+                    colorIcons[i].Monochrome.Data = data;
+                }
+
+                resourceStream.Read(colorIcons[i].Monochrome.Mask, 0, isize);
+
+                // Because the mask is stored as words, they get reversed on PC GEM (Little-endian)
+                if(!bigEndian)
+                {
+                    byte[] mask = new byte[colorIcons[i].Monochrome.Mask.Length];
+                    for(int m = 0; m < mask.Length; m += 2)
+                    {
+                        mask[m] = colorIcons[m].Monochrome.Mask[m + 1];
+                        mask[m                                    + 1] = colorIcons[m].Monochrome.Mask[m];
+                    }
+
+                    colorIcons[i].Monochrome.Mask = mask;
+                }
+
+                if(iconBlock.ib_ptext > 0 && iconBlock.ib_ptext < resourceStream.Length)
+                {
+                    long oldPosition        = resourceStream.Position;
+                    resourceStream.Position = iconBlock.ib_ptext;
+                    List<byte> chars        = new List<byte>();
+                    while(true)
+                    {
+                        int character = resourceStream.ReadByte();
+
+                        if(character <= 0) break;
+
+                        chars.Add((byte)character);
+                    }
+
+                    colorIcons[i].Monochrome.Text = StringHandlers.CToString(chars.ToArray(), encoding);
+                    resourceStream.Position       = oldPosition + 12;
+                }
+                else
+                {
+                    byte[] ptext = new byte[12];
+                    resourceStream.Read(ptext, 0, 12);
+                    colorIcons[i].Monochrome.Text = StringHandlers.CToString(ptext, encoding);
+                }
+
+                colorIcons[i].Color = new ColorIconPlane[numRez];
+
+                for(int r = 0; r < numRez; r++)
+                {
+                    byte[] data;
+                    byte[] mask;
+
+                    buffer = new byte[Marshal.SizeOf(typeof(ColorIconBlock))];
+                    resourceStream.Read(buffer, 0, buffer.Length);
+                    ColorIconBlock cib = BigEndianMarshal.ByteArrayToStructureBigEndian<ColorIconBlock>(buffer);
+
+                    colorIcons[i].Color[r] = new ColorIconPlane
+                    {
+                        Planes = cib.num_planes,
+                        Data   = new byte[isize * cib.num_planes],
+                        Mask   = new byte[isize]
+                    };
+
+                    resourceStream.Read(colorIcons[i].Color[r].Data, 0, isize * cib.num_planes);
+
+                    // Because the image is stored as words, they get reversed on PC GEM (Little-endian)
+                    if(!bigEndian)
+                    {
+                        data = new byte[colorIcons[i].Color[r].Data.Length];
+                        for(int d = 0; d < data.Length; d += 2)
+                        {
+                            data[d] = colorIcons[d].Color[r].Data[d + 1];
+                            data[d                                  + 1] = colorIcons[d].Color[r].Data[d];
+                        }
+
+                        colorIcons[i].Color[r].Data = data;
+                    }
+
+                    resourceStream.Read(colorIcons[i].Color[r].Mask, 0, isize);
+
+                    // Because the mask is stored as words, they get reversed on PC GEM (Little-endian)
+                    if(!bigEndian)
+                    {
+                        mask = new byte[colorIcons[i].Color[r].Mask.Length];
+                        for(int m = 0; m < mask.Length; m += 2)
+                        {
+                            mask[m] = colorIcons[m].Color[r].Mask[m + 1];
+                            mask[m                                  + 1] = colorIcons[m].Color[r].Mask[m];
+                        }
+
+                        colorIcons[i].Color[r].Mask = mask;
+                    }
+
+                    if(cib.sel_data == 0) continue;
+
+                    colorIcons[i].Color[r].SelectedData = new byte[isize * cib.num_planes];
+                    colorIcons[i].Color[r].SelectedMask = new byte[isize];
+
+                    resourceStream.Read(colorIcons[i].Color[r].SelectedData, 0, isize * cib.num_planes);
+
+                    // Because the image is stored as words, they get reversed on PC GEM (Little-endian)
+                    if(!bigEndian)
+                    {
+                        data = new byte[colorIcons[i].Color[r].SelectedData.Length];
+                        for(int d = 0; d < data.Length; d += 2)
+                        {
+                            data[d] = colorIcons[d].Color[r].SelectedData[d + 1];
+                            data[d                                          + 1] =
+                                colorIcons[d].Color[r].SelectedData[d];
+                        }
+
+                        colorIcons[i].Color[r].SelectedData = data;
+                    }
+
+                    resourceStream.Read(colorIcons[i].Color[r].SelectedMask, 0, isize);
+
+                    // Because the mask is stored as words, they get reversed on PC GEM (Little-endian)
+                    if(bigEndian) continue;
+
+                    mask = new byte[colorIcons[i].Color[r].SelectedMask.Length];
+                    for(int m = 0; m < mask.Length; m += 2)
+                    {
+                        mask[m] = colorIcons[m].Color[r].SelectedMask[m + 1];
+                        mask[m                                          + 1] = colorIcons[m].Color[r].SelectedMask[m];
+                    }
+
+                    colorIcons[i].Color[r].SelectedMask = mask;
+                }
+            }
+
+            return colorIcons;
         }
     }
 }

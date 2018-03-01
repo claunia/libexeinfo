@@ -86,7 +86,7 @@ namespace exeinfogui
                 recognizedExe = mzExe;
                 if(((MZ)mzExe).ResourceObjectRoots != null && ((MZ)mzExe).ResourceObjectRoots.Any())
                 {
-                    tabGemResources.Update(((MZ)mzExe).ResourceObjectRoots);
+                    tabGemResources.Update(((MZ)mzExe).ResourceObjectRoots, ((MZ)mzExe).GemColorIcons);
                     tabGemResources.Visible = true;
                 }
             }
@@ -101,7 +101,7 @@ namespace exeinfogui
                 recognizedExe = stExe;
                 if(((AtariST)stExe).ResourceObjectRoots != null && ((AtariST)stExe).ResourceObjectRoots.Any())
                 {
-                    tabGemResources.Update(((AtariST)stExe).ResourceObjectRoots);
+                    tabGemResources.Update(((AtariST)stExe).ResourceObjectRoots, ((AtariST)stExe).GemColorIcons);
                     tabGemResources.Visible = true;
                 }
             }

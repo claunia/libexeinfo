@@ -53,6 +53,7 @@
     <Compile Include="GEM\Enums.cs" />
     <Compile Include="GEM\Resources.cs" />
     <Compile Include="GEM\Structs.cs" />
+    <Compile Include="GEM\Vdi.cs" />
     <Compile Include="IExecutable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MZ\Consts.cs" />

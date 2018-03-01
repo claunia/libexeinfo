@@ -154,11 +154,12 @@ namespace exeinfo
             {
                 recognized = true;
                 Console.Write(mzExe.Information);
-                if(((MZ)mzExe).resourceStream          != null || ((MZ)mzExe).ResourceHeader.rsh_vrsn != 0 &&
+                if(((MZ)mzExe).ResourceStream          != null || ((MZ)mzExe).ResourceHeader.rsh_vrsn != 0 &&
                    ((MZ)mzExe).ResourceHeader.rsh_vrsn != 1                                                &&
                    ((MZ)mzExe).ResourceHeader.rsh_vrsn != 4                                                &&
                    ((MZ)mzExe).ResourceHeader.rsh_vrsn != 5)
-                    PrintGemResources(((MZ)mzExe).ResourceHeader, ((MZ)mzExe).ResourceObjectRoots);
+                    PrintGemResources(((MZ)mzExe).ResourceHeader,    ((MZ)mzExe).ResourceObjectRoots,
+                                      ((MZ)mzExe).ResourceExtension, ((MZ)mzExe).GemColorIcons);
 
                 if(mzExe.Strings != null && mzExe.Strings.Any())
                 {
@@ -171,11 +172,12 @@ namespace exeinfo
             {
                 recognized = true;
                 Console.Write(stExe.Information);
-                if(((AtariST)stExe).resourceStream          != null || ((AtariST)stExe).ResourceHeader.rsh_vrsn != 0 &&
+                if(((AtariST)stExe).ResourceStream          != null || ((AtariST)stExe).ResourceHeader.rsh_vrsn != 0 &&
                    ((AtariST)stExe).ResourceHeader.rsh_vrsn != 1                                                     &&
                    ((AtariST)stExe).ResourceHeader.rsh_vrsn != 4                                                     &&
                    ((AtariST)stExe).ResourceHeader.rsh_vrsn != 5)
-                    PrintGemResources(((AtariST)stExe).ResourceHeader, ((AtariST)stExe).ResourceObjectRoots);
+                    PrintGemResources(((AtariST)stExe).ResourceHeader,    ((AtariST)stExe).ResourceObjectRoots,
+                                      ((AtariST)stExe).ResourceExtension, ((AtariST)stExe).GemColorIcons);
 
                 if(stExe.Strings != null && stExe.Strings.Any())
                 {
@@ -199,7 +201,9 @@ namespace exeinfo
             if(!recognized) Console.WriteLine("Executable format not recognized");
         }
 
-        static void PrintGemResources(GEM.GemResourceHeader resourceHeader, IReadOnlyList<GEM.TreeObjectNode> roots)
+        static void PrintGemResources(GEM.GemResourceHeader    resourceHeader, IReadOnlyList<GEM.TreeObjectNode> roots,
+                                      GEM.GemResourceExtension resourceExtension,
+                                      GEM.ColorIcon[]          colorIcons)
         {
             Console.WriteLine("\t\tGEM Resources:");
             Console.WriteLine("\t\t\t{0} OBJECTs start at {1}",  resourceHeader.rsh_nobs, resourceHeader.rsh_object);
@@ -215,17 +219,24 @@ namespace exeinfo
             Console.WriteLine("\t\t\tString data starts at {0}",           resourceHeader.rsh_string);
             Console.WriteLine("\t\t\tImage data starts at {0}",            resourceHeader.rsh_imdata);
             Console.WriteLine("\t\t\tStandard resource data is {0} bytes", resourceHeader.rsh_rssize);
+            if(resourceHeader.rsh_vrsn >= 4)
+            {
+                Console.WriteLine("\t\t\tColor icon table starts at {0}", resourceExtension.color_ic);
+                Console.WriteLine("\t\t\tThere are {0}more extensions",
+                                  resourceExtension.end_extensions == 0 ? "no " : "");
+                Console.WriteLine("\t\t\tExtended resource data is {0} bytes", resourceExtension.filesize);
+            }
 
             if(roots == null || roots.Count <= 0) return;
 
             for(int i = 0; i < roots.Count; i++)
             {
                 Console.WriteLine("\t\t\tObject tree {0}:", i);
-                PrintGemResourceTree(roots[i], 4);
+                PrintGemResourceTree(roots[i], 4, colorIcons);
             }
         }
 
-        static void PrintGemResourceTree(GEM.TreeObjectNode node, int level)
+        static void PrintGemResourceTree(GEM.TreeObjectNode node, int level, GEM.ColorIcon[] colorIcons)
         {
             for(int i = 0; i < level; i++) Console.Write("\t");
 
@@ -235,7 +246,7 @@ namespace exeinfo
             {
                 case GEM.ObjectTypes.G_BOX:
                 case GEM.ObjectTypes.G_IBOX:
-                    Console.WriteLine("{0} ({1} {2}) {3} border, {4} text, {5} interior, {6} fill, {7} mode, coordinates ({8},{9}) size {10}x{11}",
+                    Console.WriteLine("{0} ({1} {2}) {3} border, {4} text, {5} interior, {6} fill, {7} mode," + " coordinates ({8},{9}) size {10}x{11}",
                                       node.type, node.flags, node.state,
                                       (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.BorderColorMask) >> 12),
                                       (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.TextColorMask)   >> 8),
@@ -262,13 +273,13 @@ namespace exeinfo
                         })[0];
 
                     Console.WriteLine(
-                                      "{0} ({1} {2}) {3} border, {4} text, {5} interior, {6} fill, {7} mode, {8}, '{9}' character, coordinates ({10},{11}) size {12}x{13}",
-                                      node.type, node.flags, node.state,
-                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.BorderColorMask) >> 12),
-                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.TextColorMask)   >> 8),
-                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.InsideColorMask) >> 8),
-                                      (GEM.ObjectFillPattern)((node.data & 0xFFFF & GEM.FillPatternMask) >> 4),
-                                      (node.data                         & 0xFFFF & GEM.TransparentColor) != 0
+                                      "{0} ({1} {2}) {3} border, {4} text, {5} interior, {6} fill, {7} mode, {8}," +
+                                      " '{9}' character, coordinates ({10},{11}) size {12}x{13}", node.type, node.flags,
+                                      node.state, (GEM.ObjectColors)((node.data & 0xFFFF & GEM.BorderColorMask) >> 12),
+                                      (GEM.ObjectColors)((node.data             & 0xFFFF & GEM.TextColorMask)   >> 8),
+                                      (GEM.ObjectColors)((node.data             & 0xFFFF & GEM.InsideColorMask) >> 8),
+                                      (GEM.ObjectFillPattern)((node.data        & 0xFFFF & GEM.FillPatternMask) >> 4),
+                                      (node.data                                & 0xFFFF & GEM.TransparentColor) != 0
                                           ? "transparent"
                                           : "replace",
                                       thickStr, character, node.x, node.y, node.width, node.height);
@@ -292,7 +303,7 @@ namespace exeinfo
                     else
                         thickStr = "no thickness";
 
-                    Console.WriteLine("{0} ({1} {2}), coordinates ({3},{4}) size {5}x{6}, font {7}, {8}-justified, {9}," + " {10} border, {11} text, {12} interior, {13} fill, {14} mode, text: \"{15}\"," + " validation: \"{16}\", template: \"{17}\"",
+                    Console.WriteLine("{0} ({1} {2}), coordinates ({3},{4}) size {5}x{6}, font {7}, {8}-justified," + " {9}, {10} border, {11} text, {12} interior, {13} fill, {14} mode," + " text: \"{15}\", validation: \"{16}\", template: \"{17}\"",
                                       node.type, node.flags, node.state, node.x, node.y, node.width, node.height,
                                       node.TedInfo.Font, node.TedInfo.Justification, thickStr, node.TedInfo.BorderColor,
                                       node.TedInfo.TextColor, node.TedInfo.InsideColor, node.TedInfo.Fill,
@@ -323,15 +334,42 @@ namespace exeinfo
                                       node.IconBlock.TextY, node.IconBlock.TextWidth, node.IconBlock.TextHeight);
 
                     break;
+                case GEM.ObjectTypes.G_CICON:
+                    if(colorIcons                       == null || colorIcons.Length < node.data ||
+                       colorIcons[node.data]            == null ||
+                       colorIcons[node.data].Monochrome == null)
+                    {
+                        Console.WriteLine("{0} ({1} {2}) with index {3} NOT FOUND", node.type, node.flags, node.state,
+                                          node.data);
+                        break;
+                    }
+
+                    Console.WriteLine(
+                                      "{0} ({1} {2}), coordinates ({3},{4}) size {5}x{6}, {7} foreground,"            +
+                                      " {8} background, char '{9}' at ({10},{11}), {12} bytes data, text \"{13}\" at" +
+                                      " ({14},{15}) within a box {16}x{17} pixels, with {18} different planes",
+                                      node.type, node.flags, node.state, colorIcons[node.data].Monochrome.X,
+                                      colorIcons[node.data].Monochrome.Y, colorIcons[node.data].Monochrome.Width,
+                                      colorIcons[node.data].Monochrome.Height,
+                                      colorIcons[node.data].Monochrome.ForegroundColor,
+                                      colorIcons[node.data].Monochrome.BackgroundColor,
+                                      colorIcons[node.data].Monochrome.Character,
+                                      colorIcons[node.data].Monochrome.CharX, colorIcons[node.data].Monochrome.CharY,
+                                      colorIcons[node.data].Monochrome.Data?.Length,
+                                      colorIcons[node.data].Monochrome.Text, colorIcons[node.data].Monochrome.TextX,
+                                      colorIcons[node.data].Monochrome.TextY,
+                                      colorIcons[node.data].Monochrome.TextWidth,
+                                      colorIcons[node.data].Monochrome.TextHeight, colorIcons[node.data].Color.Length);
+                    break;
                 default:
                     Console.WriteLine("{0} ({1} {2}) data = {3}, coordinates ({4},{5}) size {6}x{7}", node.type,
                                       node.flags, node.state, node.data, node.x, node.y, node.width, node.height);
                     break;
             }
 
-            if(node.child != null) PrintGemResourceTree(node.child, level + 1);
+            if(node.child != null) PrintGemResourceTree(node.child, level + 1, colorIcons);
 
-            if(node.sibling != null) PrintGemResourceTree(node.sibling, level);
+            if(node.sibling != null) PrintGemResourceTree(node.sibling, level, colorIcons);
         }
     }
 }

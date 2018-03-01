@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Panel xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Width="500" Height="500">
+    <StackLayout Orientation="Vertical" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top">
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblFlags">Flags</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtFlags" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblState">State</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtState" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblCoordinates">Coordinates</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtCoordinates" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblSize">Size</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtSize" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblCharacter">Character</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtCharater" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblCharCoordinates">Character coordinates</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtCharCoordinates" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblFgColor">Character foreground color</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtFgColor" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblBgColor">Character background color</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtBgColor" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblTextCoordinates">Text coordinates</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtTextCoordinates" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblTextBoxSize">Text box size</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtTextBoxSize" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblText">Text</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtText" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayoutItem HorizontalAlignment="Center">
+            <Label ID="lblMonochrome">Monochrome icon</Label>
+        </StackLayoutItem>
+        <StackLayoutItem HorizontalAlignment="Center">
+            <ImageView ID="imgIcon"/>
+        </StackLayoutItem>
+        <StackLayoutItem HorizontalAlignment="Center">
+            <Label ID="lblColor">Color icons</Label>
+        </StackLayoutItem>
+        <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+            <StackLayout Orientation="Horizontal">
+                <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+                    <GridView ID="treePlanes"/>
+                </StackLayoutItem>
+                <StackLayoutItem HorizontalAlignment="Center" VerticalAlignment="Top" Expand="True">
+                    <StackLayout Orientation="Vertical">
+                        <StackLayoutItem HorizontalAlignment="Center">
+                            <Label ID="lblColorIcon">Normal</Label>
+                        </StackLayoutItem>
+                        <StackLayoutItem HorizontalAlignment="Center">
+                            <ImageView ID="imgColorIcon"/>
+                        </StackLayoutItem>
+                        <StackLayoutItem HorizontalAlignment="Center">
+                            <Label ID="lblSelectedIcon">Selected</Label>
+                        </StackLayoutItem>
+                        <StackLayoutItem HorizontalAlignment="Center">
+                            <ImageView ID="imgSelectedIcon"/>
+                        </StackLayoutItem>
+                    </StackLayout>
+                </StackLayoutItem>
+            </StackLayout>
+        </StackLayoutItem>
+    </StackLayout>
+</Panel>

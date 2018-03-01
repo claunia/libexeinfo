@@ -167,6 +167,7 @@ namespace libexeinfo
         {
             public BitmapBlock    BitBlock;
             public TreeObjectNode child;
+            public ColorIcon      ColorIcon;
             public int            data;
             public ObjectFlags    flags;
             public short          height;
@@ -226,6 +227,21 @@ namespace libexeinfo
             public int          Width;
             public short        X;
             public short        Y;
+        }
+
+        public class ColorIconPlane
+        {
+            public byte[] Data;
+            public byte[] Mask;
+            public short  Planes;
+            public byte[] SelectedData;
+            public byte[] SelectedMask;
+        }
+
+        public class ColorIcon
+        {
+            public ColorIconPlane[] Color;
+            public Icon             Monochrome;
         }
 
         /// <summary>
@@ -476,7 +492,7 @@ namespace libexeinfo
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct ColorIcon
+        public struct ColorIconBlock
         {
             /// <summary>
             ///     Number of planes in the following data
@@ -502,19 +518,6 @@ namespace libexeinfo
             ///     Pointer to next icon
             /// </summary>
             public int next_res;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct ColorIconBlock
-        {
-            /// <summary>
-            ///     Default monochrome icon
-            /// </summary>
-            IconBlock monoblk;
-            /// <summary>
-            ///     List of color icons for diferent resolutions
-            /// </summary>
-            ColorIcon[] mainlist;
         }
     }
 }

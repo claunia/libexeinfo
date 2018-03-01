@@ -38,13 +38,15 @@ namespace libexeinfo
     /// </summary>
     public partial class MZ : IExecutable
     {
+        public GEM.ColorIcon[] GemColorIcons;
         /// <summary>
         ///     Header for this executable
         /// </summary>
-        internal MZHeader              Header;
-        public   GEM.GemResourceHeader ResourceHeader;
-        public   GEM.TreeObjectNode[]  ResourceObjectRoots;
-        public   Stream                resourceStream;
+        internal MZHeader                 Header;
+        public   GEM.GemResourceExtension ResourceExtension;
+        public   GEM.GemResourceHeader    ResourceHeader;
+        public   GEM.TreeObjectNode[]     ResourceObjectRoots;
+        public   Stream                   ResourceStream;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.MZ" /> class.
@@ -76,7 +78,7 @@ namespace libexeinfo
                 resourceFilePath = testPath + ".RSC";
 
             if(resourceFilePath != null)
-                resourceStream = File.Open(resourceFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                ResourceStream = File.Open(resourceFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
             Initialize();
         }
@@ -142,27 +144,37 @@ namespace libexeinfo
 
             Type = "DOS Executable (MZ)";
 
-            if(resourceStream == null) return;
+            if(ResourceStream == null) return;
 
             buffer                  = new byte[Marshal.SizeOf(typeof(GEM.GemResourceHeader))];
-            resourceStream.Position = 0;
-            resourceStream.Read(buffer, 0, buffer.Length);
+            ResourceStream.Position = 0;
+            ResourceStream.Read(buffer, 0, buffer.Length);
             ResourceHeader = BigEndianMarshal.ByteArrayToStructureLittleEndian<GEM.GemResourceHeader>(buffer);
 
             if(ResourceHeader.rsh_vrsn != 0 && ResourceHeader.rsh_vrsn != 1 && ResourceHeader.rsh_vrsn != 4 &&
                ResourceHeader.rsh_vrsn != 5) return;
 
+            if((ResourceHeader.rsh_vrsn & 4) == 4)
+            {
+                buffer                  = new byte[Marshal.SizeOf(typeof(GEM.GemResourceExtension))];
+                ResourceStream.Position = ResourceHeader.rsh_rssize;
+                ResourceStream.Read(buffer, 0, buffer.Length);
+                ResourceExtension = BigEndianMarshal.ByteArrayToStructureLittleEndian<GEM.GemResourceExtension>(buffer);
+
+                GemColorIcons = GEM.GetColorIcons(ResourceStream, ResourceExtension.color_ic, false, encoding);
+            }
+
             List<string> strings = new List<string>();
 
             if(ResourceHeader.rsh_ntree > 0)
             {
-                resourceStream.Position = ResourceHeader.rsh_trindex;
+                ResourceStream.Position = ResourceHeader.rsh_trindex;
                 int[]  treeOffsets      = new int[ResourceHeader.rsh_ntree];
                 byte[] tmp              = new byte[4];
 
                 for(int i = 0; i < ResourceHeader.rsh_ntree; i++)
                 {
-                    resourceStream.Read(tmp, 0, 4);
+                    ResourceStream.Read(tmp, 0, 4);
                     treeOffsets[i] = BitConverter.ToInt32(tmp, 0);
                 }
 
@@ -170,15 +182,15 @@ namespace libexeinfo
 
                 for(int i = 0; i < ResourceHeader.rsh_ntree; i++)
                 {
-                    if(treeOffsets[i] <= 0 || treeOffsets[i] >= resourceStream.Length) continue;
+                    if(treeOffsets[i] <= 0 || treeOffsets[i] >= ResourceStream.Length) continue;
 
-                    resourceStream.Position = treeOffsets[i];
+                    ResourceStream.Position = treeOffsets[i];
 
                     List<GEM.ObjectNode> nodes = new List<GEM.ObjectNode>();
                     while(true)
                     {
                         buffer = new byte[Marshal.SizeOf(typeof(GEM.ObjectNode))];
-                        resourceStream.Read(buffer, 0, buffer.Length);
+                        ResourceStream.Read(buffer, 0, buffer.Length);
                         GEM.ObjectNode node = BigEndianMarshal.ByteArrayToStructureLittleEndian<GEM.ObjectNode>(buffer);
                         nodes.Add(node);
                         if(((GEM.ObjectFlags)node.ob_flags).HasFlag(GEM.ObjectFlags.Lastob)) break;
@@ -186,18 +198,18 @@ namespace libexeinfo
 
                     List<short> knownNodes = new List<short>();
                     ResourceObjectRoots[i] =
-                        GEM.ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings, false, encoding);
+                        GEM.ProcessResourceObject(nodes, ref knownNodes, 0, ResourceStream, strings, false, encoding);
                 }
             }
             else if(ResourceHeader.rsh_nobs > 0)
             {
                 GEM.ObjectNode[] nodes = new GEM.ObjectNode[ResourceHeader.rsh_nobs];
 
-                resourceStream.Position = ResourceHeader.rsh_object;
+                ResourceStream.Position = ResourceHeader.rsh_object;
                 for(short i = 0; i < ResourceHeader.rsh_nobs; i++)
                 {
                     buffer = new byte[Marshal.SizeOf(typeof(GEM.ObjectNode))];
-                    resourceStream.Read(buffer, 0, buffer.Length);
+                    ResourceStream.Read(buffer, 0, buffer.Length);
                     nodes[i] = BigEndianMarshal.ByteArrayToStructureLittleEndian<GEM.ObjectNode>(buffer);
                 }
 
@@ -205,7 +217,7 @@ namespace libexeinfo
                 ResourceObjectRoots    = new GEM.TreeObjectNode[1];
                 // TODO: Correct encoding?
                 ResourceObjectRoots[0] =
-                    GEM.ProcessResourceObject(nodes, ref knownNodes, 0, resourceStream, strings, false, encoding);
+                    GEM.ProcessResourceObject(nodes, ref knownNodes, 0, ResourceStream, strings, false, encoding);
             }
 
             if(strings.Count > 0)

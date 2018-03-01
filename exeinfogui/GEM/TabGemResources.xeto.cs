@@ -6,15 +6,17 @@ namespace exeinfogui.GEM
 {
     public class TabGemResources : TabPage
     {
-        PanelGemBox            panelBox;
-        PanelGemGeneric        panelGeneric;
-        PanelGemIcon           panelIcon;
-        PanelGemImage          panelImage;
-        PanelGemString         panelString;
-        PanelGemText           panelText;
-        Panel                  pnlResource;
-        TreeGridItemCollection treeData;
-        TreeGridView           treeResources;
+        libexeinfo.GEM.ColorIcon[] colorIcons;
+        PanelGemBox                panelBox;
+        PanelGemColorIcon          panelColorIcon;
+        PanelGemGeneric            panelGeneric;
+        PanelGemIcon               panelIcon;
+        PanelGemImage              panelImage;
+        PanelGemString             panelString;
+        PanelGemText               panelText;
+        Panel                      pnlResource;
+        TreeGridItemCollection     treeData;
+        TreeGridView               treeResources;
 
         public TabGemResources()
         {
@@ -25,15 +27,16 @@ namespace exeinfogui.GEM
             treeResources.AllowMultipleSelection =  false;
             treeResources.SelectionChanged       += TreeResourcesOnSelectionChanged;
 
-            panelGeneric = new PanelGemGeneric();
-            panelString  = new PanelGemString();
-            panelText    = new PanelGemText();
-            panelBox     = new PanelGemBox();
-            panelImage   = new PanelGemImage();
-            panelIcon    = new PanelGemIcon();
+            panelGeneric   = new PanelGemGeneric();
+            panelString    = new PanelGemString();
+            panelText      = new PanelGemText();
+            panelBox       = new PanelGemBox();
+            panelImage     = new PanelGemImage();
+            panelIcon      = new PanelGemIcon();
+            panelColorIcon = new PanelGemColorIcon();
         }
 
-        public void Update(libexeinfo.GEM.TreeObjectNode[] roots)
+        public void Update(libexeinfo.GEM.TreeObjectNode[] roots, libexeinfo.GEM.ColorIcon[] cicons)
         {
             treeData = new TreeGridItemCollection();
 
@@ -47,6 +50,7 @@ namespace exeinfogui.GEM
             }
 
             treeResources.DataStore = treeData;
+            colorIcons              = cicons;
         }
 
         void TreeResourcesOnSelectionChanged(object sender, EventArgs eventArgs)
@@ -86,8 +90,14 @@ namespace exeinfogui.GEM
                     panelIcon.Update(node);
                     pnlResource.Content = panelIcon;
                     break;
-                /*                case libexeinfo.GEM.ObjectTypes.G_USERDEF: break;
-                                case libexeinfo.GEM.ObjectTypes.G_CICON: break;*/
+                /*                case libexeinfo.GEM.ObjectTypes.G_USERDEF: break;*/
+                case libexeinfo.GEM.ObjectTypes.G_CICON:
+                    if(colorIcons == null || node.data >= colorIcons.Length || colorIcons[node.data] == null)
+                        goto default;
+
+                    panelColorIcon.Update(node, colorIcons[node.data]);
+                    pnlResource.Content = panelColorIcon;
+                    break;
                 default:
                     panelGeneric.Update(node);
                     pnlResource.Content = panelGeneric;
