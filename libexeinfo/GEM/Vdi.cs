@@ -131,28 +131,47 @@ namespace libexeinfo
             int[] pixels  = PlaneToRasterIndexed(data, width, height, planes);
             int[] palette = null;
 
-            switch(planes)
+            if(planes <= 8)
             {
-                case 1:
-                    palette = Palette1;
-                    break;
-                case 2:
-                    palette = Palette2;
-                    break;
-                case 3:
-                    palette = Palette3;
-                    break;
-                case 4:
-                    palette = Palette4;
-                    break;
-                case 8:
-                    palette = Palette8;
-                    break;
-                // What to do with other pixel formats?
-                default: return null;
-            }
+                switch(planes)
+                {
+                    case 1:
+                        palette = Palette1;
+                        break;
+                    case 2:
+                        palette = Palette2;
+                        break;
+                    case 3:
+                        palette = Palette3;
+                        break;
+                    case 4:
+                        palette = Palette4;
+                        break;
+                    case 8:
+                        palette = Palette8;
+                        break;
+                    // What to do with other pixel formats?
+                    default: return null;
+                }
 
-            for(int i = 0; i < pixels.Length; i++) pixels[i] = palette[pixels[i]];
+                for(int i = 0; i < pixels.Length; i++) pixels[i] = palette[pixels[i]];
+            }
+            // This is the Falcon030 pixel format: RRRRRGGG GGGBBBBB
+            else if(planes == 16)
+            {
+                int[] pixels2 = new int[pixels.Length];
+                for(int i = 0; i < pixels.Length; i++)
+                {
+                    // Red, from 5 to 8 bit
+                    pixels2[i] = (((pixels[i] >> 11) * 0xFF) / 0x1F) << 16;
+                    // Green, from 6 to 8 bit
+                    pixels2[i] = ((((pixels[i] >> 5) & 0x3F) * 0xFF) / 0x3F) << 8;
+                    // Blue, from 5 to 8 bit
+                    pixels2[i] += ((pixels[i] & 0x1F) * 0xFF) / 0x1F;
+                }
+
+                pixels = pixels2;
+            }
 
             return pixels;
         }
