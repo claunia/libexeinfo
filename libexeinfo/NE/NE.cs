@@ -216,19 +216,86 @@ namespace libexeinfo
             if(Header.imported_names_offset >= Header.resource_table_offset &&
                Header.imported_names_offset <= resourceUpperLimit) resourceUpperLimit = Header.imported_names_offset;
 
-            if(Header.resource_table_offset < resourceUpperLimit && Header.resource_table_offset != 0 &&
-               (Header.target_os            == TargetOS.Windows || Header.target_os              == TargetOS.Win32))
-            {
-                Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset,
-                                         resourceUpperLimit);
+            if(Header.resource_table_offset < resourceUpperLimit && Header.resource_table_offset != 0)
+                if(Header.target_os         == TargetOS.Windows || Header.target_os              == TargetOS.Win32)
+                {
+                    Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset,
+                                             resourceUpperLimit);
 
-                for(int t = 0; t < Resources.types.Length; t++)
-                    Resources.types[t].resources = Resources.types[t].resources.OrderBy(r => r.name).ToArray();
+                    for(int t = 0; t < Resources.types.Length; t++)
+                        Resources.types[t].resources = Resources.types[t].resources.OrderBy(r => r.name).ToArray();
 
-                Resources.types = Resources.types.OrderBy(t => t.name).ToArray();
+                    Resources.types = Resources.types.OrderBy(t => t.name).ToArray();
 
-                Versions = GetVersions().ToArray();
-            }
+                    Versions = GetVersions().ToArray();
+                }
+                else if(Header.target_os == TargetOS.OS2 && segments != null && Header.resource_entries > 0)
+                {
+                    BaseStream.Position = BaseExecutable.Header.new_offset + Header.resource_table_offset;
+                    buffer              = new byte[Header.resource_entries * 4];
+                    BaseStream.Read(buffer, 0, buffer.Length);
+                    Os2ResourceTableEntry[] entries = new Os2ResourceTableEntry[Header.resource_entries];
+                    for(int i = 0; i < entries.Length; i++)
+                    {
+                        entries[i].etype = BitConverter.ToUInt16(buffer, i * 4 + 0);
+                        entries[i].ename = BitConverter.ToUInt16(buffer, i * 4 + 2);
+                    }
+
+                    SegmentEntry[] resourceSegments = new SegmentEntry[Header.resource_entries];
+                    Array.Copy(segments, Header.segment_count - Header.resource_entries, resourceSegments, 0,
+                               Header.resource_entries);
+                    SegmentEntry[] realSegments = new SegmentEntry[Header.segment_count - Header.resource_entries];
+                    Array.Copy(segments, 0, realSegments, 0, realSegments.Length);
+                    segments = realSegments;
+
+                    SortedDictionary<ushort, List<Resource>> os2resources =
+                        new SortedDictionary<ushort, List<Resource>>();
+
+                    for(int i = 0; i < entries.Length; i++)
+                    {
+                        os2resources.TryGetValue(entries[i].etype, out List<Resource> thisResourceType);
+
+                        if(thisResourceType == null) thisResourceType = new List<Resource>();
+
+                        Resource thisResource = new Resource
+                        {
+                            id         = entries[i].ename,
+                            name       = $"{entries[i].ename}",
+                            flags      = (ResourceFlags)resourceSegments[i].dwFlags,
+                            dataOffset = (uint)(resourceSegments[i].dwLogicalSectorOffset * 16),
+                            length     = resourceSegments[i].dwSegmentLength
+                        };
+
+                        if(thisResource.length == 0)
+                            thisResource.length = 65536;
+                        if(thisResource.dataOffset == 0)
+                            thisResource.dataOffset = 65536;
+                        if((resourceSegments[i].dwFlags & (ushort)SegmentFlags.Huge) == (ushort)SegmentFlags.Huge)
+                            thisResource.length *= 16;
+                        thisResource.data       =  new byte[thisResource.length];
+                        BaseStream.Position     =  thisResource.dataOffset;
+                        BaseStream.Read(thisResource.data, 0, thisResource.data.Length);
+
+                        thisResourceType.Add(thisResource);
+                        os2resources.Remove(entries[i].etype);
+                        os2resources.Add(entries[i].etype, thisResourceType);
+                    }
+
+                    if(os2resources.Count > 0)
+                    {
+                        Resources       = new ResourceTable();
+                        int counter     = 0;
+                        Resources.types = new ResourceType[os2resources.Count];
+                        foreach(KeyValuePair<ushort, List<Resource>> kvp in os2resources)
+                        {
+                            Resources.types[counter].count     = (ushort)kvp.Value.Count;
+                            Resources.types[counter].id        = kvp.Key;
+                            Resources.types[counter].name      = ResourceIdToNameOs2(kvp.Key);
+                            Resources.types[counter].resources = kvp.Value.OrderBy(r => r.id).ToArray();
+                            counter++;
+                        }
+                    }
+                }
 
             resourceUpperLimit = ushort.MaxValue;
 

@@ -98,8 +98,8 @@ namespace libexeinfo
         /// </summary>
         public struct Resource
         {
-            public ushort        dataOffset;
-            public ushort        length;
+            public uint          dataOffset;
+            public uint          length;
             public ResourceFlags flags;
             public ushort        id;
             public uint          reserved;
@@ -175,6 +175,13 @@ namespace libexeinfo
             ///     Minimum allocation size of the segment, in bytes. Total size of the segment. Zero means 64KiB
             /// </summary>
             public ushort dwMinimumAllocation;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Os2ResourceTableEntry
+        {
+            public ushort etype;
+            public ushort ename;
         }
     }
 }

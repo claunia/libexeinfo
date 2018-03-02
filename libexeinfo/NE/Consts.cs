@@ -41,6 +41,12 @@ namespace libexeinfo
         /// </summary>
         const string STRING_FILE_INFO = "StringFileInfo";
 
+        const ushort SEGMENT_TYPE_MASK    = 0x07;
+        const ushort SEGMENT_FLAGS_MASK   = 0x3F8;
+        const ushort SEGMENT_DISCARD_MASK = 0xF000;
+        const ushort SEGMENT_IOPRVL_MASK  = 0xC00;
+        const ushort KNOWN_RSRC_FLAGS     = 0x1070;
+
         /// <summary>
         ///     Gets the name of a resource type according to its identifier
         /// </summary>
@@ -80,10 +86,38 @@ namespace libexeinfo
             }
         }
 
-        const ushort SEGMENT_TYPE_MASK = 0x07;
-        const ushort SEGMENT_FLAGS_MASK = 0x3F8;
-        const ushort SEGMENT_DISCARD_MASK = 0xF000;
-        const ushort SEGMENT_IOPRVL_MASK = 0xC00;
-        const ushort KNOWN_RSRC_FLAGS = 0x1070;
+        /// <summary>
+        ///     Gets the name of a resource type according to its identifier
+        /// </summary>
+        /// <returns>The resource type name.</returns>
+        /// <param name="id">Resource type identifier.</param>
+        public static string ResourceIdToNameOs2(ushort id)
+        {
+            switch(id)
+            {
+                case (int)Os2ResourceTypes.RT_POINTER:      return "RT_POINTER";
+                case (int)Os2ResourceTypes.RT_BITMAP:       return "RT_BITMAP";
+                case (int)Os2ResourceTypes.RT_MENU:         return "RT_MENU";
+                case (int)Os2ResourceTypes.RT_DIALOG:       return "RT_DIALOG";
+                case (int)Os2ResourceTypes.RT_STRING:       return "RT_STRING";
+                case (int)Os2ResourceTypes.RT_FONTDIR:      return "RT_FONTDIR";
+                case (int)Os2ResourceTypes.RT_FONT:         return "RT_FONT";
+                case (int)Os2ResourceTypes.RT_ACCELTABLE:   return "RT_ACCELTABLE";
+                case (int)Os2ResourceTypes.RT_RCDATA:       return "RT_RCDATA";
+                case (int)Os2ResourceTypes.RT_MESSAGE:      return "RT_MESSAGE";
+                case (int)Os2ResourceTypes.RT_DLGINCLUDE:   return "RT_DLGINCLUDE";
+                case (int)Os2ResourceTypes.RT_VKEYTBL:      return "RT_VKEYTBL";
+                case (int)Os2ResourceTypes.RT_KEYTBL:       return "RT_KEYTBL";
+                case (int)Os2ResourceTypes.RT_CHARTBL:      return "RT_CHARTBL";
+                case (int)Os2ResourceTypes.RT_DISPLAYINFO:  return "RT_DISPLAYINFO";
+                case (int)Os2ResourceTypes.RT_FKASHORT:     return "RT_FKASHORT";
+                case (int)Os2ResourceTypes.RT_FKALONG:      return "RT_FKALONG";
+                case (int)Os2ResourceTypes.RT_HELPTABLE:    return "RT_HELPTABLE";
+                case (int)Os2ResourceTypes.RT_HELPSUBTABLE: return "RT_HELPSUBTABLE";
+                case (int)Os2ResourceTypes.RT_FDDIR:        return "RT_FDDIR";
+                case (int)Os2ResourceTypes.RT_FD:           return "RT_FD";
+                default:                                    return $"{id}";
+            }
+        }
     }
 }

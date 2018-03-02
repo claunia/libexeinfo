@@ -56,6 +56,55 @@ namespace libexeinfo
         }
 
         /// <summary>
+        ///     Resource types.
+        /// </summary>
+        public enum Os2ResourceTypes : ushort
+        {
+            /// <summary>mouse pointer shape</summary>
+            RT_POINTER = 1,
+            /// <summary>bitmap</summary>
+            RT_BITMAP = 2,
+            /// <summary>menu template</summary>
+            RT_MENU = 3,
+            /// <summary>dialog template</summary>
+            RT_DIALOG = 4,
+            /// <summary>string tables</summary>
+            RT_STRING = 5,
+            /// <summary>font directory</summary>
+            RT_FONTDIR = 6,
+            /// <summary>font</summary>
+            RT_FONT = 7,
+            /// <summary>accelerator tables</summary>
+            RT_ACCELTABLE = 8,
+            /// <summary>binary data</summary>
+            RT_RCDATA = 9,
+            /// <summary>error msg     tables</summary>
+            RT_MESSAGE = 10,
+            /// <summary>dialog include file name</summary>
+            RT_DLGINCLUDE = 11,
+            /// <summary>key to vkey tables</summary>
+            RT_VKEYTBL = 12,
+            /// <summary>key to UGL tables</summary>
+            RT_KEYTBL = 13,
+            /// <summary>glyph to character tables</summary>
+            RT_CHARTBL = 14,
+            /// <summary>screen display information</summary>
+            RT_DISPLAYINFO = 15,
+            /// <summary>function key area short form</summary>
+            RT_FKASHORT = 16,
+            /// <summary>function key area long form</summary>
+            RT_FKALONG = 17,
+            /// <summary>Help table for IPFC</summary>
+            RT_HELPTABLE = 18,
+            /// <summary>Help subtable for IPFC</summary>
+            RT_HELPSUBTABLE = 19,
+            /// <summary>DBCS uniq/font driver directory</summary>
+            RT_FDDIR = 20,
+            /// <summary>DBCS uniq/font driver</summary>
+            RT_FD = 21
+        }
+
+        /// <summary>
         ///     Program flags.
         /// </summary>
         [Flags]
@@ -78,9 +127,9 @@ namespace libexeinfo
         [Flags]
         public enum ResourceFlags : ushort
         {
-            Moveable = 0x10,
-            Pure     = 0x20,
-            Preload  = 0x40,
+            Moveable    = 0x10,
+            Pure        = 0x20,
+            Preload     = 0x40,
             Discardable = 0x1000
         }
 
@@ -116,6 +165,57 @@ namespace libexeinfo
             RT_VERSION      = 16,
             RT_VXD          = 20,
             RT_NEW          = 0x2000
+        }
+
+        [Flags]
+        public enum SegmentFlags : ushort
+        {
+            /// <summary>
+            ///     Segment data is iterated
+            /// </summary>
+            Iterated = 0x08,
+            /// <summary>
+            ///     Segment is not fixed
+            /// </summary>
+            Moveable = 0x10,
+            /// <summary>
+            ///     Segment can be shared
+            /// </summary>
+            Shared = 0x20,
+            /// <summary>
+            ///     Segment will be preloaded; read-only if this is a data segment
+            /// </summary>
+            Preload = 0x40,
+            /// <summary>
+            ///     Code segment is execute only; data segment is read-only
+            /// </summary>
+            Eronly = 0x80,
+            /// <summary>
+            ///     Segment has relocation records
+            /// </summary>
+            Relocinfo = 0x100,
+            /// <summary>
+            ///     Segment is conforming
+            /// </summary>
+            Conform = 0x200,
+            /// <summary>
+            ///     Discardable
+            /// </summary>
+            Discardable = 0x1000,
+            /// <summary>
+            ///     32-bit code segment
+            /// </summary>
+            Code32 = 0x2000,
+            /// <summary>
+            ///     Length of segment and minimum allocation size are in units of segment sector size
+            /// </summary>
+            Huge = 0x4000
+        }
+
+        public enum SegmentType : ushort
+        {
+            Code = 0,
+            Data = 1
         }
 
         /// <summary>
@@ -216,49 +316,6 @@ namespace libexeinfo
             VFT_STATIC_LIB = 0x00000007,
             VFT_UNKNOWN    = 0x00000000,
             VFT_VXD        = 0x00000005
-        }
-
-        [Flags]
-        public enum SegmentFlags : ushort
-        {
-            /// <summary>
-            /// Segment data is iterated
-            /// </summary>
-            Iterated = 0x08,
-            /// <summary>
-            /// Segment is not fixed
-            /// </summary>
-            Moveable = 0x10,
-            /// <summary>
-            /// Segment can be shared
-            /// </summary>
-            Shared = 0x20,
-            /// <summary>
-            /// Segment will be preloaded; read-only if this is a data segment
-            /// </summary>
-            Preload = 0x40,
-            /// <summary>
-            /// Code segment is execute only; data segment is read-only
-            /// </summary>
-            Eronly = 0x80,
-            /// <summary>
-            /// Segment has relocation records
-            /// </summary>
-            Relocinfo = 0x100,
-            /// <summary>
-            /// Segment is conforming
-            /// </summary>
-            Conform = 0x200,
-            /// <summary>
-            /// Length of segment and minimum allocation size are in units of segment sector size
-            /// </summary>
-            Huge = 0x4000
-        }
-
-        public enum SegmentType : ushort
-        {
-            Code = 0,
-            Data = 1
         }
     }
 }
