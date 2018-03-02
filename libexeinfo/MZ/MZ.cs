@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 using Claunia.Encoding;
 
 namespace libexeinfo
@@ -114,7 +115,7 @@ namespace libexeinfo
         public bool                      Recognized              { get; private set; }
         public string                    Type                    { get; private set; }
         public IEnumerable<Architecture> Architectures           => new[] {Architecture.I86};
-        public OperatingSystem           RequiredOperatingSystem => new OperatingSystem {Name = "DOS"};
+        public OperatingSystem           RequiredOperatingSystem { get; private set; }
         public IEnumerable<string>       Strings                 { get; private set; }
 
         void Initialize()
@@ -135,6 +136,7 @@ namespace libexeinfo
             if(!Recognized) return;
 
             Type = "DOS Executable (MZ)";
+            RequiredOperatingSystem = new OperatingSystem {Name = "DOS"};
 
             if(ResourceStream == null) return;
 
@@ -146,6 +148,8 @@ namespace libexeinfo
 
             if(gemResourceHeader.rsh_vrsn != 0 && gemResourceHeader.rsh_vrsn != 1 && gemResourceHeader.rsh_vrsn != 3 &&
                gemResourceHeader.rsh_vrsn != 4 && gemResourceHeader.rsh_vrsn != 5) return;
+
+            RequiredOperatingSystem = new OperatingSystem {Name = "PC-GEM"};
 
             if(gemResourceHeader.rsh_vrsn == 3)
             {
