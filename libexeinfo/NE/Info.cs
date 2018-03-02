@@ -41,9 +41,10 @@ namespace libexeinfo
                 sb.Append(BaseExecutable.Information);
                 sb.AppendLine("New Executable (NE):");
                 if(!string.IsNullOrEmpty(ModuleName)) sb.AppendFormat("\tModule name: {0}", ModuleName).AppendLine();
-                if(!string.IsNullOrEmpty(ModuleDescription)) sb.AppendFormat("\tModule description: {0}", ModuleDescription).AppendLine();
-                sb.AppendFormat("\tFile's CRC: 0x{0:X8}",    Header.crc).AppendLine();
-                sb.AppendFormat("\tLinker version: {0}.{1}", Header.linker_major, Header.linker_minor).AppendLine();
+                if(!string.IsNullOrEmpty(ModuleDescription))
+                    sb.AppendFormat("\tModule description: {0}", ModuleDescription).AppendLine();
+                sb.AppendFormat("\tFile's CRC: 0x{0:X8}",        Header.crc).AppendLine();
+                sb.AppendFormat("\tLinker version: {0}.{1}",     Header.linker_major, Header.linker_minor).AppendLine();
                 if(Header.program_flags.HasFlag(ProgramFlags.SingleDGroup) &&
                    !Header.program_flags.HasFlag(ProgramFlags.MultipleDGroup))
                     sb.AppendLine("\tApplication uses a single shared DGroup");
@@ -236,8 +237,8 @@ namespace libexeinfo
                           .AppendLine();
                         sb.AppendFormat("\t\t\tFlags: {0}", (SegmentFlags)(segments[i].dwFlags & SEGMENT_FLAGS_MASK))
                           .AppendLine();
-                        sb.AppendFormat("\t\t\tI/O privilege: {0}",
-                                        (segments[i].dwFlags & SEGMENT_IOPRVL_MASK) >> 10).AppendLine();
+                        sb.AppendFormat("\t\t\tI/O privilege: {0}", (segments[i].dwFlags & SEGMENT_IOPRVL_MASK) >> 10)
+                          .AppendLine();
                         sb.AppendFormat("\t\t\tDiscard priority: {0}",
                                         (segments[i].dwFlags & SEGMENT_DISCARD_MASK) >> 12).AppendLine();
                     }
@@ -252,17 +253,37 @@ namespace libexeinfo
                 if(ResidentNames != null)
                 {
                     sb.AppendLine("\tResident names:");
-                    foreach(NE.ResidentName name in ResidentNames)
+                    foreach(ResidentName name in ResidentNames)
                         sb.AppendFormat("\t\t{0} at index {1}", name.name, name.entryTableIndex).AppendLine();
                 }
 
                 if(NonResidentNames != null)
                 {
                     sb.AppendLine("\tNon-resident names:");
-                    foreach(NE.ResidentName name in NonResidentNames)
+                    foreach(ResidentName name in NonResidentNames)
                         sb.AppendFormat("\t\t{0} at index {1}", name.name, name.entryTableIndex).AppendLine();
                 }
-                
+
+                if(Resources.types != null)
+                {
+                    sb.AppendLine("\tResources:");
+                    for(int i = 0; i < Resources.types.Length; i++)
+                    {
+                        sb.AppendFormat("\t\tType {0} has {1} items:", Resources.types[i].name,
+                                        Resources.types[i].resources.Length).AppendLine();
+                        for(int j = 0; j < Resources.types[i].resources.Length; j++)
+                        {
+                            bool intId = int.TryParse(Resources.types[i].resources[j].name, out _);
+                            sb.AppendFormat("\t\t\t{0}: {1}, starts at {2}, {3} bytes, flags: {4}",
+                                            intId ? "ID" : "Name", Resources.types[i].resources[j].name,
+                                            Resources.types[i].resources[j].dataOffset,
+                                            Resources.types[i].resources[j].data.Length,
+                                            (ResourceFlags)((ushort)Resources.types[i].resources[j].flags &
+                                                            KNOWN_RSRC_FLAGS)).AppendLine();
+                        }
+                    }
+                }
+
                 return sb.ToString();
             }
         }

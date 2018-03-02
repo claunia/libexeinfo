@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Claunia.Encoding;
 
@@ -220,6 +221,12 @@ namespace libexeinfo
             {
                 Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset,
                                          resourceUpperLimit);
+
+                for(int t = 0; t < Resources.types.Length; t++) 
+                    Resources.types[t].resources = Resources.types[t].resources.OrderBy(r => r.name).ToArray();
+
+                Resources.types = Resources.types.OrderBy(t => t.name).ToArray();
+
                 Versions = GetVersions().ToArray();
             }
 
