@@ -28,7 +28,9 @@ namespace libexeinfo
 {
     public partial class AtariST
     {
-        const ushort SIGNATURE = 0x601A;
-        const uint MINT_SIGNATURE = 0x4D694E54;
+        const ushort SIGNATURE      = 0x601A;
+        const uint   MINT_SIGNATURE = 0x4D694E54;
+        const ushort PF_FLAGS_MASK  = 0xFFCF;
+        const ushort PF_SHARE_MASK  = 0x30;
     }
 }

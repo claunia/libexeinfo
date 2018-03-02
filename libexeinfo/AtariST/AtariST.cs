@@ -43,6 +43,7 @@ namespace libexeinfo
         public GEM.MagiCResourceHeader  ResourceHeader;
         public GEM.TreeObjectNode[]     ResourceObjectRoots;
         public Stream                   ResourceStream;
+        SymbolEntry[]                   symbols;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.AtariST" /> class.
@@ -123,10 +124,26 @@ namespace libexeinfo
             BaseStream.Read(buffer, 0, buffer.Length);
             Header     = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariHeader>(buffer);
             Recognized = Header.signature == SIGNATURE;
+            List<string> strings = new List<string>();
 
             if(!Recognized) return;
 
             Type = "Atari ST executable";
+
+            if(Header.symb_len != 0)
+            {
+                BaseStream.Position = 0x1C + Header.text_len + Header.data_len;
+                buffer              = new byte[Marshal.SizeOf(typeof(SymbolEntry))];
+                symbols             = new SymbolEntry[Header.symb_len / Marshal.SizeOf(typeof(SymbolEntry))];
+                for(int i = 0; i < symbols.Length; i++)
+                {
+                    BaseStream.Read(buffer, 0, buffer.Length);
+                    symbols[i]      = new SymbolEntry();
+                    symbols[i]      = BigEndianMarshal.ByteArrayToStructureBigEndian<SymbolEntry>(buffer);
+                    symbols[i].type = (SymbolType)Swapping.Swap((ushort)symbols[i].type);
+                    strings.Add(StringHandlers.CToString(symbols[i].name, Encoding.AtariSTEncoding));
+                }
+            }
 
             if(ResourceStream == null) return;
 
@@ -158,8 +175,6 @@ namespace libexeinfo
                 GemColorIcons = GEM.GetColorIcons(ResourceStream, ResourceExtension.color_ic, true,
                                                   Encoding.AtariSTEncoding);
             }
-
-            List<string> strings = new List<string>();
 
             if(ResourceHeader.rsh_ntree > 0)
             {

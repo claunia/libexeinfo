@@ -49,6 +49,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AtariST\Enums.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="GEM\Enums.cs" />
     <Compile Include="GEM\Resources.cs" />

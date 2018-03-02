@@ -42,5 +42,14 @@ namespace libexeinfo
             public uint   flags;
             public ushort absflags;
         }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct SymbolEntry
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+            public byte[]     name;
+            public SymbolType type;
+            public uint value;
+        }
     }
 }

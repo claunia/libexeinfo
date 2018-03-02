@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System.Text;
+using Encoding = Claunia.Encoding.Encoding;
 
 namespace libexeinfo
 {
@@ -34,21 +35,37 @@ namespace libexeinfo
         ///     Gets a string with human readable information for the Atari ST executable represented by this instance
         /// </summary>
         /// <value>Human readable information for this instance.</value>
-        public string Information => GetInfo(Header);
+        public string Information => GetInfo(Header, symbols);
 
         /// <summary>
         ///     Gets a string with human readable information for a given Atari ST header
         /// </summary>
         /// <returns>Human readable information for given Atari ST header.</returns>
         /// <param name="header">Atari ST executable header.</param>
-        static string GetInfo(AtariHeader header)
+        static string GetInfo(AtariHeader header, SymbolEntry[] symbols)
         {
+            PrgFlags   flags   = (PrgFlags)(header.flags    & PF_FLAGS_MASK);
+            PrgSharing sharing = (PrgSharing)((header.flags & PF_SHARE_MASK) >> 4);
+
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Atari ST executable:");
+            if(header.mint == MINT_SIGNATURE) sb.AppendLine("\tMiNT executable.");
             sb.AppendFormat("\t{0} bytes in text segment", header.text_len).AppendLine();
             sb.AppendFormat("\t{0} bytes in data segment", header.data_len).AppendLine();
             sb.AppendFormat("\t{0} bytes in BSS segment",  header.bss_len).AppendLine();
             sb.AppendFormat("\t{0} bytes in symbol table", header.symb_len).AppendLine();
+            sb.AppendFormat("\tFlags: {0}",                flags).AppendLine();
+            sb.AppendFormat("\tProcess sharing: {0}",      sharing).AppendLine();
+            sb.AppendFormat("\t{0} fixups",                header.absflags == 0 ? "Has" : "Doesn't have").AppendLine();
+            if(symbols                                                     == null || symbols.Length <= 0)
+                return sb.ToString();
+
+            sb.AppendLine("\tSymbol table:");
+            for(int i = 0; i < symbols.Length; i++)
+                sb.AppendFormat("\t\tSymbol {0}: \"{1}\", type {2}, value {3}", i,
+                                StringHandlers.CToString(symbols[i].name, Encoding.AtariSTEncoding), symbols[i].type,
+                                symbols[i].value).AppendLine();
+
             return sb.ToString();
         }
     }
