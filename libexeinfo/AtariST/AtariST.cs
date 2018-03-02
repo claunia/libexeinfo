@@ -109,9 +109,8 @@ namespace libexeinfo
         public bool                      Recognized              { get; private set; }
         public string                    Type                    { get; private set; }
         public IEnumerable<Architecture> Architectures           => new[] {Architecture.M68K};
-        public OperatingSystem           RequiredOperatingSystem =>
-            new OperatingSystem {Name = Header.mint == MINT_SIGNATURE ? "MiNT" : "Atari TOS"};
-        public IEnumerable<string> Strings { get; private set; }
+        public OperatingSystem           RequiredOperatingSystem { get; private set; }
+        public IEnumerable<string>       Strings                 { get; private set; }
 
         void Initialize()
         {
@@ -122,8 +121,8 @@ namespace libexeinfo
             byte[] buffer       = new byte[Marshal.SizeOf(typeof(AtariHeader))];
             BaseStream.Position = 0;
             BaseStream.Read(buffer, 0, buffer.Length);
-            Header     = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariHeader>(buffer);
-            Recognized = Header.signature == SIGNATURE;
+            Header               = BigEndianMarshal.ByteArrayToStructureBigEndian<AtariHeader>(buffer);
+            Recognized           = Header.signature == SIGNATURE;
             List<string> strings = new List<string>();
 
             if(!Recognized) return;
@@ -145,6 +144,8 @@ namespace libexeinfo
                 }
             }
 
+            RequiredOperatingSystem = new OperatingSystem {Name = Header.mint == MINT_SIGNATURE ? "MiNT" : "Atari TOS"};
+
             if(ResourceStream == null) return;
 
             buffer                  = new byte[Marshal.SizeOf(typeof(GEM.GemResourceHeader))];
@@ -161,7 +162,9 @@ namespace libexeinfo
                 buffer                  = new byte[Marshal.SizeOf(typeof(GEM.MagiCResourceHeader))];
                 ResourceStream.Position = 0;
                 ResourceStream.Read(buffer, 0, buffer.Length);
-                ResourceHeader = BigEndianMarshal.ByteArrayToStructureBigEndian<GEM.MagiCResourceHeader>(buffer);
+                ResourceHeader =
+                    BigEndianMarshal.ByteArrayToStructureBigEndian<GEM.MagiCResourceHeader>(buffer);
+                RequiredOperatingSystem = new OperatingSystem {Name = "MagiC"};
             }
             else ResourceHeader = GEM.GemToMagiC(gemResourceHeader);
 

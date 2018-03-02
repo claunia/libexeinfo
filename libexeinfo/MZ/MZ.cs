@@ -29,7 +29,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security;
 using Claunia.Encoding;
 
 namespace libexeinfo
@@ -135,7 +134,7 @@ namespace libexeinfo
 
             if(!Recognized) return;
 
-            Type = "DOS Executable (MZ)";
+            Type                    = "DOS Executable (MZ)";
             RequiredOperatingSystem = new OperatingSystem {Name = "DOS"};
 
             if(ResourceStream == null) return;
@@ -156,7 +155,9 @@ namespace libexeinfo
                 buffer                  = new byte[Marshal.SizeOf(typeof(GEM.MagiCResourceHeader))];
                 ResourceStream.Position = 0;
                 ResourceStream.Read(buffer, 0, buffer.Length);
-                ResourceHeader = BigEndianMarshal.ByteArrayToStructureLittleEndian<GEM.MagiCResourceHeader>(buffer);
+                ResourceHeader =
+                    BigEndianMarshal.ByteArrayToStructureLittleEndian<GEM.MagiCResourceHeader>(buffer);
+                RequiredOperatingSystem = new OperatingSystem {Name = "MagiC"};
             }
             else ResourceHeader = GEM.GemToMagiC(gemResourceHeader);
 
