@@ -145,13 +145,36 @@ namespace libexeinfo
         public struct ResidentName
         {
             /// <summary>
-            /// Text of string
+            ///     Text of string
             /// </summary>
             public string name;
             /// <summary>
-            /// Index in the entry table this string refers to
+            ///     Index in the entry table this string refers to
             /// </summary>
             public ushort entryTableIndex;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SegmentEntry
+        {
+            /// <summary>
+            ///     Logical-sector offset to the contents of the segment data, relative to the beginning of the file.
+            ///     Zero means no file data.
+            /// </summary>
+            public ushort dwLogicalSectorOffset;
+            /// <summary>
+            ///     Length of the segment in the file, in bytes. Zero means 64KiB
+            /// </summary>
+            public ushort dwSegmentLength;
+            /// <summary>
+            ///     Flag word, <see cref="SegmentResourceFlags" />, <see cref="SEGMENT_TYPE_MASK" />, <see cref="SEGMENT_FLAGS_MASK" />
+            ///     , <see cref="SEGMENT_DISCARD_MASK" />
+            /// </summary>
+            public ushort dwFlags;
+            /// <summary>
+            ///     Minimum allocation size of the segment, in bytes. Total size of the segment. Zero means 64KiB
+            /// </summary>
+            public ushort dwMinimumAllocation;
         }
     }
 }

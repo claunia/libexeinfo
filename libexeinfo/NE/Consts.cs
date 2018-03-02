@@ -79,5 +79,10 @@ namespace libexeinfo
                 default:                                 return $"{id & 0x7FFF}";
             }
         }
+
+        const ushort SEGMENT_TYPE_MASK = 0x07;
+        const ushort SEGMENT_FLAGS_MASK = 0x3F8;
+        const ushort SEGMENT_DISCARD_MASK = 0xF000;
+        const ushort SEGMENT_IOPRVL_MASK = 0xC00;
     }
 }

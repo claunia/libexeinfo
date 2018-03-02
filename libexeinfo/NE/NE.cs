@@ -45,6 +45,7 @@ namespace libexeinfo
         public Version[]     Versions;
         public ResidentName[] ResidentNames;
         public ResidentName[] NonResidentNames;
+        SegmentEntry[] segments;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.NE" /> class.
@@ -178,6 +179,20 @@ namespace libexeinfo
             }
 
             RequiredOperatingSystem = reqOs;
+
+            if(Header.segment_count                                             > 0 &&
+               Header.segment_table_offset                                      > 0 &&
+               (Header.segment_table_offset + BaseExecutable.Header.new_offset) < BaseStream.Length)
+            {
+                BaseStream.Position = Header.segment_table_offset + BaseExecutable.Header.new_offset;
+                segments = new SegmentEntry[Header.segment_count];
+                for(int i = 0; i < segments.Length; i++)
+                {
+                    buffer = new byte[Marshal.SizeOf(typeof(SegmentEntry))];
+                    BaseStream.Read(buffer, 0, buffer.Length);
+                    segments[i] = BigEndianMarshal.ByteArrayToStructureLittleEndian<SegmentEntry>(buffer);
+                }
+            }            
 
             // Some executable indicates 0 entries, some indicate a table start and no limit, will need to explore till next item
             ushort resourceUpperLimit = ushort.MaxValue;

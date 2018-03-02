@@ -216,5 +216,48 @@ namespace libexeinfo
             VFT_UNKNOWN    = 0x00000000,
             VFT_VXD        = 0x00000005
         }
+
+        [Flags]
+        public enum SegmentFlags : ushort
+        {
+            /// <summary>
+            /// Segment data is iterated
+            /// </summary>
+            Iterated = 0x08,
+            /// <summary>
+            /// Segment is not fixed
+            /// </summary>
+            Moveable = 0x10,
+            /// <summary>
+            /// Segment can be shared
+            /// </summary>
+            Shared = 0x20,
+            /// <summary>
+            /// Segment will be preloaded; read-only if this is a data segment
+            /// </summary>
+            Preload = 0x40,
+            /// <summary>
+            /// Code segment is execute only; data segment is read-only
+            /// </summary>
+            Eronly = 0x80,
+            /// <summary>
+            /// Segment has relocation records
+            /// </summary>
+            Relocinfo = 0x100,
+            /// <summary>
+            /// Segment is conforming
+            /// </summary>
+            Conform = 0x200,
+            /// <summary>
+            /// Length of segment and minimum allocation size are in units of segment sector size
+            /// </summary>
+            Huge = 0x4000
+        }
+
+        public enum SegmentType : ushort
+        {
+            Code = 0,
+            Data = 1
+        }
     }
 }
