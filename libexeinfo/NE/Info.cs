@@ -243,6 +243,26 @@ namespace libexeinfo
                     }
                 }
 
+                if(ImportedNames != null)
+                {
+                    sb.AppendLine("\tImported names:");
+                    foreach(string name in ImportedNames) sb.AppendFormat("\t\t{0}", name).AppendLine();
+                }
+
+                if(ResidentNames != null)
+                {
+                    sb.AppendLine("\tResident names:");
+                    foreach(NE.ResidentName name in ResidentNames)
+                        sb.AppendFormat("\t\t{0} at index {1}", name.name, name.entryTableIndex).AppendLine();
+                }
+
+                if(NonResidentNames != null)
+                {
+                    sb.AppendLine("\tNon-resident names:");
+                    foreach(NE.ResidentName name in NonResidentNames)
+                        sb.AppendFormat("\t\t{0} at index {1}", name.name, name.entryTableIndex).AppendLine();
+                }
+                
                 return sb.ToString();
             }
         }

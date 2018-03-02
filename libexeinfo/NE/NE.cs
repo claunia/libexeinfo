@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using Claunia.Encoding;
 
 namespace libexeinfo
 {
@@ -48,6 +49,7 @@ namespace libexeinfo
         SegmentEntry[] segments;
         string ModuleName;
         string ModuleDescription;
+        string[] ImportedNames;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.NE" /> class.
@@ -220,7 +222,45 @@ namespace libexeinfo
                                          resourceUpperLimit);
                 Versions = GetVersions().ToArray();
             }
-            
+
+            resourceUpperLimit = ushort.MaxValue;
+
+            if(Header.entry_table_offset      >= Header.module_reference_offset &&
+               Header.entry_table_offset      <= resourceUpperLimit) resourceUpperLimit = Header.entry_table_offset;
+            if(Header.segment_table_offset    >= Header.module_reference_offset &&
+               Header.segment_table_offset    <= resourceUpperLimit) resourceUpperLimit = Header.segment_table_offset;
+            if(Header.resource_table_offset >= Header.module_reference_offset &&
+               Header.resource_table_offset <= resourceUpperLimit)
+                resourceUpperLimit = Header.resource_table_offset;
+            if(Header.nonresident_names_offset >= Header.module_reference_offset &&
+               Header.nonresident_names_offset <= resourceUpperLimit)
+                resourceUpperLimit = (ushort)Header.nonresident_names_offset;
+            if(Header.imported_names_offset >= Header.module_reference_offset &&
+               Header.imported_names_offset <= resourceUpperLimit) resourceUpperLimit = Header.imported_names_offset;
+
+            if(Header.module_reference_offset < resourceUpperLimit && Header.module_reference_offset != 0 && Header.reference_count > 0)
+            {
+                short[] referenceOffsets = new short[Header.reference_count];
+                                             buffer = new byte[2];
+                BaseStream.Position = Header.module_reference_offset + BaseExecutable.Header.new_offset;
+                for(int i = 0; i < Header.reference_count; i++)
+                {
+                    BaseStream.Read(buffer, 0, 2);
+                    referenceOffsets[i] = BitConverter.ToInt16(buffer, 0);
+                }
+                
+                ImportedNames = new string[Header.reference_count];
+                for(int i = 0; i < Header.reference_count; i++)
+                {
+                    BaseStream.Position = Header.imported_names_offset + BaseExecutable.Header.new_offset +
+                                          referenceOffsets[i];
+                    int len = BaseStream.ReadByte();
+                    buffer = new byte[len];
+                    BaseStream.Read(buffer, 0, len);
+                    ImportedNames[i] = Encoding.ASCII.GetString(buffer);
+                }
+            }
+
             resourceUpperLimit = ushort.MaxValue;
 
             if(Header.entry_table_offset      >= Header.resident_names_offset &&
@@ -236,7 +276,7 @@ namespace libexeinfo
             if(Header.imported_names_offset >= Header.resident_names_offset &&
                Header.imported_names_offset <= resourceUpperLimit) resourceUpperLimit = Header.imported_names_offset;
 
-            if(Header.resource_table_offset < resourceUpperLimit && Header.resource_table_offset != 0)
+            if(Header.resident_names_offset < resourceUpperLimit && Header.resident_names_offset != 0)
             {
                 ResidentNames = GetResidentStrings(BaseStream,                   BaseExecutable.Header.new_offset,
                                                    Header.resident_names_offset, resourceUpperLimit);
