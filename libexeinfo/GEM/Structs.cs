@@ -376,9 +376,9 @@ namespace libexeinfo
             /// </summary>
             public short te_font;
             /// <summary>
-            ///     Reserved for future use
+            ///     On SpeedGDOS it specifies the id for the font to use
             /// </summary>
-            public short te_resvd1;
+            public short te_fontid;
             /// <summary>
             ///     A word identifying the type of text justification desired. 0 = left, 1 = right, 2 = center
             /// </summary>
@@ -388,9 +388,9 @@ namespace libexeinfo
             /// </summary>
             public short te_color;
             /// <summary>
-            ///     Reserved for future use
+            ///     On SpeedGDOS it specifies the size for the font to use
             /// </summary>
-            public short te_resvd2;
+            public short te_fontsize;
             /// <summary>
             ///     A word containing the thickness in pixels of the border of the text box. 0 for none, positive for inside, negative
             ///     for outside

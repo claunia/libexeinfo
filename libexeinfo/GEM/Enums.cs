@@ -174,6 +174,9 @@ namespace libexeinfo
 
         public enum ObjectFont : short
         {
+            GdosProportional = 0,
+            GdosMonospaced = 1,
+            GdosBitmap = 2,
             System = 3,
             Small  = 5
         }
