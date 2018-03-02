@@ -80,7 +80,8 @@ namespace libexeinfo
         {
             Moveable = 0x10,
             Pure     = 0x20,
-            Preload  = 0x40
+            Preload  = 0x40,
+            Discardable = 0x1000
         }
 
         /// <summary>
