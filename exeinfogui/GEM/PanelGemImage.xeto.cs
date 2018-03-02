@@ -67,7 +67,7 @@ namespace exeinfogui.GEM
 
             byte[] data = new byte[node.BitBlock.Data.Length];
             int    pos  = 0;
-            int    w    = node.BitBlock.Width / 8;
+            int    w    = (int)(node.BitBlock.Width / 8);
             // This flips the image.
             while(pos < data.Length)
             {
@@ -91,7 +91,7 @@ namespace exeinfogui.GEM
                 for(int i = 0; i              < 8; i++)
                     pixels.Add((b & (1 << i)) != 0 ? color : background);
 
-            return new Bitmap(node.BitBlock.Width, node.BitBlock.Height, PixelFormat.Format32bppRgb, pixels);
+            return new Bitmap((int)node.BitBlock.Width, (int)node.BitBlock.Height, PixelFormat.Format32bppRgb, pixels);
         }
     }
 }

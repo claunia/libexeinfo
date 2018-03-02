@@ -125,7 +125,7 @@ namespace libexeinfo
                     {
                         Color  = (ObjectColors)bitBlock.bi_color,
                         Height = bitBlock.bi_hl,
-                        Width  = bitBlock.bi_wb * 8,
+                        Width  = (uint)(bitBlock.bi_wb * 8),
                         X      = bitBlock.bi_x,
                         Y      = bitBlock.bi_y
                     };

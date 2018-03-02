@@ -95,8 +95,8 @@ namespace exeinfogui.GEM
             txtText.Text            = colorIcon.Monochrome.Text;
             imgIcon.Image           = GemIcon.GemIconToEto(colorIcon.Monochrome);
             treePlanes.DataStore    = colorIcon.Color;
-            iconWidth               = colorIcon.Monochrome.Width;
-            iconHeight              = colorIcon.Monochrome.Height;
+            iconWidth               = (int)colorIcon.Monochrome.Width;
+            iconHeight              = (int)colorIcon.Monochrome.Height;
             treePlanes.SelectRow(0);
             if(colorIcon.Color != null && colorIcon.Color.Length >= 1 && colorIcon.Color[0] != null)
             {

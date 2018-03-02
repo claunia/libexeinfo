@@ -38,76 +38,76 @@ namespace libexeinfo
             ///     the third bit set (i.e. 0x0004) in the new file format. If file is in the new format, it is appended at the end
             ///     with <see cref="GemResourceExtension" />
             /// </summary>
-            public short rsh_vrsn;
+            public ushort rsh_vrsn;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the OBJECT structures.
             /// </summary>
-            public short rsh_object;
+            public ushort rsh_object;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the TEDINFO structures.
             /// </summary>
-            public short rsh_tedinfo;
+            public ushort rsh_tedinfo;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the ICONBLK structures.
             /// </summary>
-            public short rsh_iconblk;
+            public ushort rsh_iconblk;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the BITBLK structures.
             /// </summary>
-            public short rsh_bitblk;
+            public ushort rsh_bitblk;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the string pointer table.
             /// </summary>
-            public short rsh_frstr;
+            public ushort rsh_frstr;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the string data.
             /// </summary>
-            public short rsh_string;
+            public ushort rsh_string;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the image data.
             /// </summary>
-            public short rsh_imdata;
+            public ushort rsh_imdata;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the image pointer table.
             /// </summary>
-            public short rsh_frimg;
+            public ushort rsh_frimg;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the tree pointer table.
             /// </summary>
-            public short rsh_trindex;
+            public ushort rsh_trindex;
             /// <summary>
             ///     Number of OBJECTs in the file.
             /// </summary>
-            public short rsh_nobs;
+            public ushort rsh_nobs;
             /// <summary>
             ///     Number of object trees in the file.
             /// </summary>
-            public short rsh_ntree;
+            public ushort rsh_ntree;
             /// <summary>
             ///     Number of TEDINFOs in the file.
             /// </summary>
-            public short rsh_nted;
+            public ushort rsh_nted;
             /// <summary>
             ///     Number of ICONBLKs in the file.
             /// </summary>
-            public short rsh_nib;
+            public ushort rsh_nib;
             /// <summary>
             ///     Number of BITBLKs in the file.
             /// </summary>
-            public short rsh_nbb;
+            public ushort rsh_nbb;
             /// <summary>
             ///     Number of free strings in the file.
             /// </summary>
-            public short rsh_nstring;
+            public ushort rsh_nstring;
             /// <summary>
             ///     Number of free images in the file.
             /// </summary>
-            public short rsh_nimages;
+            public ushort rsh_nimages;
             /// <summary>
             ///     Size of the resource file (in bytes). Note that this is the size of the old format resource file. If the newer
             ///     format file is being used then this value can be used as an offset to the extension array.
             /// </summary>
-            public short rsh_rssize;
+            public ushort rsh_rssize;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -116,80 +116,80 @@ namespace libexeinfo
             /// <summary>
             ///     Must be version 3
             /// </summary>
-            public short rsh_vrsn;
+            public ushort rsh_vrsn;
             /// <summary>
             ///     Not used
             /// </summary>
-            public short rsh_extvrsn;
+            public ushort rsh_extvrsn;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the OBJECT structures.
             /// </summary>
-            public int rsh_object;
+            public uint rsh_object;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the TEDINFO structures.
             /// </summary>
-            public int rsh_tedinfo;
+            public uint rsh_tedinfo;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the ICONBLK structures.
             /// </summary>
-            public int rsh_iconblk;
+            public uint rsh_iconblk;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the BITBLK structures.
             /// </summary>
-            public int rsh_bitblk;
+            public uint rsh_bitblk;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the string pointer table.
             /// </summary>
-            public int rsh_frstr;
+            public uint rsh_frstr;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the string data.
             /// </summary>
-            public int rsh_string;
+            public uint rsh_string;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the image data.
             /// </summary>
-            public int rsh_imdata;
+            public uint rsh_imdata;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the image pointer table.
             /// </summary>
-            public int rsh_frimg;
+            public uint rsh_frimg;
             /// <summary>
             ///     Contains an offset from the beginning of the file to the tree pointer table.
             /// </summary>
-            public int rsh_trindex;
+            public uint rsh_trindex;
             /// <summary>
             ///     Number of OBJECTs in the file.
             /// </summary>
-            public int rsh_nobs;
+            public uint rsh_nobs;
             /// <summary>
             ///     Number of object trees in the file.
             /// </summary>
-            public int rsh_ntree;
+            public uint rsh_ntree;
             /// <summary>
             ///     Number of TEDINFOs in the file.
             /// </summary>
-            public int rsh_nted;
+            public uint rsh_nted;
             /// <summary>
             ///     Number of ICONBLKs in the file.
             /// </summary>
-            public int rsh_nib;
+            public uint rsh_nib;
             /// <summary>
             ///     Number of BITBLKs in the file.
             /// </summary>
-            public int rsh_nbb;
+            public uint rsh_nbb;
             /// <summary>
             ///     Number of free strings in the file.
             /// </summary>
-            public int rsh_nstring;
+            public uint rsh_nstring;
             /// <summary>
             ///     Number of free images in the file.
             /// </summary>
-            public int rsh_nimages;
+            public uint rsh_nimages;
             /// <summary>
             ///     Size of the resource file (in bytes). Note that this is the size of the old format resource file. If the newer
             ///     format file is being used then this value can be used as an offset to the extension array.
             /// </summary>
-            public int rsh_rssize;
+            public uint rsh_rssize;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -198,7 +198,7 @@ namespace libexeinfo
             /// <summary>
             ///     Size of the file
             /// </summary>
-            public int filesize;
+            public uint filesize;
             /// <summary>
             ///     Slot for color icons containing an offset to <see cref="ColorIconBlock" /> table. The table is an array of
             ///     <see cref="int" /> offsets in file with -1 meaning table end.
@@ -247,23 +247,23 @@ namespace libexeinfo
             ///     A long value containing object specific data. Depending on the object's type, can be a pointer to any combination
             ///     of word and/or byte values that add up to 32 bits.
             /// </summary>
-            public int ob_spec;
+            public uint ob_spec;
             /// <summary>
             ///     A word containing the X-coordinate of the object relative to its parent or (for the root object) the screen
             /// </summary>
-            public short ob_x;
+            public ushort ob_x;
             /// <summary>
             ///     A word containing the Y-coordinate of the object relative to its parent or (for the root object) the screen
             /// </summary>
-            public short ob_y;
+            public ushort ob_y;
             /// <summary>
             ///     A word containing the width of the object in pixels
             /// </summary>
-            public short ob_width;
+            public ushort ob_width;
             /// <summary>
             ///     A word containing the height of the object in pixels
             /// </summary>
-            public short ob_height;
+            public ushort ob_height;
         }
 
         /// <summary>
@@ -277,9 +277,9 @@ namespace libexeinfo
             public BitmapBlock      BitBlock;
             public TreeObjectNode   child;
             public ColorIcon        ColorIcon;
-            public int              data;
+            public uint              data;
             public ObjectFlags      flags;
-            public short            height;
+            public ushort            height;
             public Icon             IconBlock;
             public TreeObjectNode   sibling;
             public ObjectStates     state;
@@ -287,9 +287,9 @@ namespace libexeinfo
 
             public TextBlock   TedInfo;
             public ObjectTypes type;
-            public short       width;
-            public short       x;
-            public short       y;
+            public ushort       width;
+            public ushort       x;
+            public ushort       y;
         }
 
         public class TextBlock
@@ -302,7 +302,7 @@ namespace libexeinfo
             public string              Template;
             public string              Text;
             public ObjectColors        TextColor;
-            public short               Thickness;
+            public ushort               Thickness;
             public bool                Transparency;
             public string              Validation;
         }
@@ -311,37 +311,37 @@ namespace libexeinfo
         {
             public ObjectColors Color;
             public byte[]       Data;
-            public int          Height;
-            public int          Width;
-            public short        X;
-            public short        Y;
+            public uint          Height;
+            public uint          Width;
+            public ushort        X;
+            public ushort        Y;
         }
 
         public class Icon
         {
             public ObjectColors BackgroundColor;
             public char         Character;
-            public short        CharX;
-            public short        CharY;
+            public ushort        CharX;
+            public ushort        CharY;
             public byte[]       Data;
             public ObjectColors ForegroundColor;
-            public int          Height;
+            public uint          Height;
             public byte[]       Mask;
             public string       Text;
-            public short        TextHeight;
-            public short        TextWidth;
-            public short        TextX;
-            public short        TextY;
-            public int          Width;
-            public short        X;
-            public short        Y;
+            public ushort        TextHeight;
+            public ushort        TextWidth;
+            public ushort        TextX;
+            public ushort        TextY;
+            public uint          Width;
+            public ushort        X;
+            public ushort        Y;
         }
 
         public class ColorIconPlane
         {
             public byte[] Data;
             public byte[] Mask;
-            public short  Planes;
+            public ushort  Planes;
             public byte[] SelectedData;
             public byte[] SelectedMask;
         }
@@ -362,48 +362,48 @@ namespace libexeinfo
             /// <summary>
             ///     A pointer to the actual text. If the first character is '@', the field is blank.
             /// </summary>
-            public int te_ptext;
+            public uint te_ptext;
             /// <summary>
             ///     A pointer to a string template for any data entry. The editable portion is represented by underscores.
             /// </summary>
-            public int te_ptmplt;
+            public uint te_ptmplt;
             /// <summary>
             ///     A pointer to a text string contianing characters tht validate any entered text
             /// </summary>
-            public int te_pvalid;
+            public uint te_pvalid;
             /// <summary>
             ///     A word identifying the font used to draw the text. 3 for system font, 5 for small font.
             /// </summary>
-            public short te_font;
+            public ushort te_font;
             /// <summary>
             ///     On SpeedGDOS it specifies the id for the font to use
             /// </summary>
-            public short te_fontid;
+            public ushort te_fontid;
             /// <summary>
             ///     A word identifying the type of text justification desired. 0 = left, 1 = right, 2 = center
             /// </summary>
-            public short te_just;
+            public ushort te_just;
             /// <summary>
             ///     A word identifying the color and pattern of box-type objects
             /// </summary>
-            public short te_color;
+            public ushort te_color;
             /// <summary>
             ///     On SpeedGDOS it specifies the size for the font to use
             /// </summary>
-            public short te_fontsize;
+            public ushort te_fontsize;
             /// <summary>
             ///     A word containing the thickness in pixels of the border of the text box. 0 for none, positive for inside, negative
             ///     for outside
             /// </summary>
-            public short te_thickness;
+            public ushort te_thickness;
             /// <summary>
             ///     A word containing the length of the string pointed by <see cref="te_ptext" />.
             /// </summary>
-            public short te_txtlen;
+            public ushort te_txtlen;
             /// <summary>
             ///     A word containing the length of the string pointed by <see cref="te_ptmplt" />.
             /// </summary>
-            public short te_tmplen;
+            public ushort te_tmplen;
         }
 
         /// <summary>
@@ -416,64 +416,64 @@ namespace libexeinfo
             /// <summary>
             ///     A pointer to an array of words representing the mask bit image of the icon
             /// </summary>
-            public int ib_pmask;
+            public uint ib_pmask;
             /// <summary>
             ///     A pointer to an array of words representing the data bit image of the icon
             /// </summary>
-            public int ib_pdata;
+            public uint ib_pdata;
             /// <summary>
             ///     A pointer to the icon's text
             /// </summary>
-            public int ib_ptext;
+            public uint ib_ptext;
             /// <summary>
             ///     A word containing a character to be drawn in the icon. The high byte contains the foreground color in the high
             ///     nibble and the background color in the low nibble.
             /// </summary>
-            public short ib_char;
+            public ushort ib_char;
             /// <summary>
             ///     A word containing the X-coordinate of <see cref="ib_char" />
             /// </summary>
-            public short ib_xchar;
+            public ushort ib_xchar;
             /// <summary>
             ///     A word containing the Y-coordinate of <see cref="ib_char" />
             /// </summary>
-            public short ib_ychar;
+            public ushort ib_ychar;
             /// <summary>
             ///     A word containing the X-coordinate of the icon
             /// </summary>
-            public short ib_xicon;
+            public ushort ib_xicon;
             /// <summary>
             ///     A word containing the Y-coordinate of the icon
             /// </summary>
-            public short ib_yicon;
+            public ushort ib_yicon;
             /// <summary>
             ///     A word containing the width of the icon in pixels. Must be divisible by 16.
             /// </summary>
-            public short ib_wicon;
+            public ushort ib_wicon;
             /// <summary>
             ///     A word containing the height of the icon in pixels
             /// </summary>
-            public short ib_hicon;
+            public ushort ib_hicon;
             /// <summary>
             ///     A word containing the X-coordinate of the icon's text
             /// </summary>
-            public short ib_xtext;
+            public ushort ib_xtext;
             /// <summary>
             ///     A word containing the Y-coordinate of the icon's text
             /// </summary>
-            public short ib_ytext;
+            public ushort ib_ytext;
             /// <summary>
             ///     A word containing the width of a rectangle in which the icon's text will be centered
             /// </summary>
-            public short ib_wtext;
+            public ushort ib_wtext;
             /// <summary>
             ///     A word containing the height of the icon's text in pixels
             /// </summary>
-            public short ib_htext;
+            public ushort ib_htext;
             /// <summary>
             ///     Zeros
             /// </summary>
-            public short empty;
+            public ushort empty;
         }
 
         /// <summary>
@@ -485,31 +485,31 @@ namespace libexeinfo
             /// <summary>
             ///     A pointer to an array of words contianing the bit image
             /// </summary>
-            public int bi_pdata;
+            public uint bi_pdata;
             /// <summary>
             ///     A word containing the width of the <see cref="bi_pdata" /> array in bytes
             /// </summary>
-            public short bi_wb;
+            public ushort bi_wb;
             /// <summary>
             ///     A word containing the height of the bit block in scan lines (pixels)
             /// </summary>
-            public short bi_hl;
+            public ushort bi_hl;
             /// <summary>
             ///     A word containing the source X in bit form, relative to the <see cref="bi_pdata" /> array
             /// </summary>
-            public short bi_x;
+            public ushort bi_x;
             /// <summary>
             ///     A word containing the source Y in bit form, relative to the <see cref="bi_pdata" /> array
             /// </summary>
-            public short bi_y;
+            public ushort bi_y;
             /// <summary>
             ///     A word containing the color GEM AES uses when displaying the bit image.
             /// </summary>
-            public short bi_color;
+            public ushort bi_color;
             /// <summary>
             ///     Zeros
             /// </summary>
-            public short empty;
+            public ushort empty;
         }
 
         /// <summary>
@@ -523,11 +523,11 @@ namespace libexeinfo
             /// <summary>
             ///     A pointer to the routine for drawing and/or changing the object
             /// </summary>
-            public int ab_code;
+            public uint ab_code;
             /// <summary>
             ///     A pointer to a <see cref="ParameterBlock" />
             /// </summary>
-            public int ab_parm;
+            public uint ab_parm;
         }
 
         /// <summary>
@@ -539,67 +539,67 @@ namespace libexeinfo
             /// <summary>
             ///     A pointer to the object tree that contains the application defined object
             /// </summary>
-            public int pb_tree;
+            public uint pb_tree;
             /// <summary>
             ///     A word containing the object index of the application defined object
             /// </summary>
-            public short pb_obj;
+            public ushort pb_obj;
             /// <summary>
             ///     A word containing the old state of an object to be changed
             /// </summary>
-            public short pb_prevstate;
+            public ushort pb_prevstate;
             /// <summary>
             ///     A word containing the changed (new) state of an object
             /// </summary>
-            public short pb_currstate;
+            public ushort pb_currstate;
             /// <summary>
             ///     A word containing the X-coordinate of a rectangle defining the location of the object on the physical screen
             /// </summary>
-            public short pb_x;
+            public ushort pb_x;
             /// <summary>
             ///     A word containing the Y-coordinate of a rectangle defining the location of the object on the physical screen
             /// </summary>
-            public short pb_y;
+            public ushort pb_y;
             /// <summary>
             ///     A word containing the width in pixels of a rectanble defining the size of the object on the physical screen
             /// </summary>
-            public short pb_w;
+            public ushort pb_w;
             /// <summary>
             ///     A word containing the height in pixels of a rectanble defining the size of the object on the physical screen
             /// </summary>
-            public short pb_h;
+            public ushort pb_h;
             /// <summary>
             ///     A word containing the X-coordinate of the current clip rectangle on the physical screen
             /// </summary>
-            public short pb_xc;
+            public ushort pb_xc;
             /// <summary>
             ///     A word containing the Y-coordinate of the current clip rectangle on the physical screen
             /// </summary>
-            public short pb_yc;
+            public ushort pb_yc;
             /// <summary>
             ///     A word containing the width in pixels of the current clip rectnagle on the physical screen
             /// </summary>
-            public short pb_wc;
+            public ushort pb_wc;
             /// <summary>
             ///     A word containing the heigth in pixels of the current clip rectnagle on the physical screen
             /// </summary>
-            public short pb_hc;
+            public ushort pb_hc;
             /// <summary>
             ///     A long value, identical to <see cref="ApplicationBlock.ab_parm" />, that is passed to the application when it is
             ///     time for
             ///     the application to draw or change the object. Low word.
             /// </summary>
-            public short pb_parm_low;
+            public ushort pb_parm_low;
             /// <summary>
             ///     A long value, identical to <see cref="ApplicationBlock.ab_parm" />, that is passed to the application when it is
             ///     time for
             ///     the application to draw or change the object. High word.
             /// </summary>
-            public short pb_parm_high;
+            public ushort pb_parm_high;
             /// <summary>
             ///     Zeros
             /// </summary>
-            public short empty;
+            public ushort empty;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -608,27 +608,27 @@ namespace libexeinfo
             /// <summary>
             ///     Number of planes in the following data
             /// </summary>
-            public short num_planes;
+            public ushort num_planes;
             /// <summary>
             ///     Pointer to color bitmap in standard form
             /// </summary>
-            public int col_data;
+            public uint col_data;
             /// <summary>
             ///     Pointer to single plane mask of <see cref="col_data" />
             /// </summary>
-            public int col_mask;
+            public uint col_mask;
             /// <summary>
             ///     Pointer to color bitmap of selected icon
             /// </summary>
-            public int sel_data;
+            public uint sel_data;
             /// <summary>
             ///     Pointer to single plane mask of <see cref="sel_data" />
             /// </summary>
-            public int sel_mask;
+            public uint sel_mask;
             /// <summary>
             ///     Pointer to next icon
             /// </summary>
-            public int next_res;
+            public uint next_res;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -637,11 +637,11 @@ namespace libexeinfo
             /// <summary>
             ///     Points to the start of an object tree that corresponds to the popup menu
             /// </summary>
-            public int tree;
+            public uint tree;
             /// <summary>
             ///     Current object of
             /// </summary>
-            public short obnum;
+            public ushort obnum;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -650,15 +650,15 @@ namespace libexeinfo
             /// <summary>
             ///     Points to the string
             /// </summary>
-            public int str;
+            public uint str;
             /// <summary>
             ///     Index of the current character string
             /// </summary>
-            public short num;
+            public ushort num;
             /// <summary>
             ///     Maximum permitted number
             /// </summary>
-            public short maxnum;
+            public ushort maxnum;
         }
     }
 }

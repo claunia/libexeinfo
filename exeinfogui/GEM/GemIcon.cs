@@ -38,8 +38,8 @@ namespace exeinfogui.GEM
             const uint ALPHAMASK  = 0xFF000000;
             List<int>  pixels     = new List<int>();
 
-            byte[] data = libexeinfo.GEM.FlipPlane(icon.Data, icon.Width);
-            byte[] mask = libexeinfo.GEM.FlipPlane(icon.Mask, icon.Width);
+            byte[] data = libexeinfo.GEM.FlipPlane(icon.Data, (int)icon.Width);
+            byte[] mask = libexeinfo.GEM.FlipPlane(icon.Mask, (int)icon.Width);
 
             for(int pos = 0; pos < data.Length; pos++)
             {
@@ -48,7 +48,7 @@ namespace exeinfogui.GEM
                                      ((mask[pos] & (1 << i)) != 0 ? ALPHAMASK : 0)));
             }
 
-            return new Bitmap(icon.Width, icon.Height, PixelFormat.Format32bppRgba, pixels);
+            return new Bitmap((int)icon.Width, (int)icon.Height, PixelFormat.Format32bppRgba, pixels);
         }
     }
 }
