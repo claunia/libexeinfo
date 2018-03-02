@@ -101,7 +101,7 @@ namespace libexeinfo
             RT_FONT         = 8,
             RT_FONTDIR      = 7,
             RT_GROUP_CURSOR = 12,
-            RT_GROUP_ICON   = 13,
+            RT_GROUP_ICON   = 14,
             RT_HTML         = 23,
             RT_ICON         = 3,
             RT_MANIFEST     = 24,
