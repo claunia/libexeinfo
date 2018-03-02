@@ -40,6 +40,8 @@ namespace libexeinfo
                 StringBuilder sb = new StringBuilder();
                 sb.Append(BaseExecutable.Information);
                 sb.AppendLine("New Executable (NE):");
+                if(!string.IsNullOrEmpty(ModuleName)) sb.AppendFormat("\tModule name: {0}", ModuleName).AppendLine();
+                if(!string.IsNullOrEmpty(ModuleDescription)) sb.AppendFormat("\tModule description: {0}", ModuleDescription).AppendLine();
                 sb.AppendFormat("\tFile's CRC: 0x{0:X8}",    Header.crc).AppendLine();
                 sb.AppendFormat("\tLinker version: {0}.{1}", Header.linker_major, Header.linker_minor).AppendLine();
                 if(Header.program_flags.HasFlag(ProgramFlags.SingleDGroup) &&

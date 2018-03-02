@@ -46,6 +46,8 @@ namespace libexeinfo
         public ResidentName[] ResidentNames;
         public ResidentName[] NonResidentNames;
         SegmentEntry[] segments;
+        string ModuleName;
+        string ModuleDescription;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.NE" /> class.
@@ -235,12 +237,43 @@ namespace libexeinfo
                Header.imported_names_offset <= resourceUpperLimit) resourceUpperLimit = Header.imported_names_offset;
 
             if(Header.resource_table_offset < resourceUpperLimit && Header.resource_table_offset != 0)
+            {
                 ResidentNames = GetResidentStrings(BaseStream,                   BaseExecutable.Header.new_offset,
                                                    Header.resident_names_offset, resourceUpperLimit);
 
+                if(ResidentNames.Length >= 1)
+                {
+                    ModuleName = ResidentNames[0].name;
+
+                    if(ResidentNames.Length > 1)
+                    {
+                        ResidentName[] newResidentNames = new ResidentName[ResidentNames.Length - 1];
+                        Array.Copy(ResidentNames, 1, newResidentNames, 0, ResidentNames.Length - 1);
+                        ResidentNames = newResidentNames;
+                    }
+                    else ResidentNames = null;
+                }
+            }
+
             if(Header.nonresident_table_size > 0)
-                NonResidentNames = GetResidentStrings(BaseStream, Header.nonresident_names_offset,
-                                                      0,          (ushort)(Header.nonresident_names_offset + Header.nonresident_table_size));
+            {
+                NonResidentNames = GetResidentStrings(BaseStream, Header.nonresident_names_offset, 0,
+                                                      (ushort)(Header.nonresident_names_offset +
+                                                               Header.nonresident_table_size));
+
+                if(NonResidentNames.Length >= 1)
+                {
+                    ModuleDescription = NonResidentNames[0].name;
+
+                    if(NonResidentNames.Length > 1)
+                    {
+                        ResidentName[] newNonResidentNames = new ResidentName[NonResidentNames.Length - 1];
+                        Array.Copy(NonResidentNames, 1, newNonResidentNames, 0, NonResidentNames.Length  - 1);
+                        NonResidentNames = newNonResidentNames;
+                    }
+                    else NonResidentNames = null;
+                }
+            }
         }
 
         /// <summary>
