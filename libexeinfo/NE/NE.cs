@@ -95,9 +95,9 @@ namespace libexeinfo
                         ? Architecture.I286
                         : Architecture.I86
             };
-        public OperatingSystem     RequiredOperatingSystem { get; private set; }
-        public IEnumerable<string> Strings { get; private set; }
-        public IEnumerable<Segment> Segments { get; private set; }
+        public OperatingSystem      RequiredOperatingSystem { get; private set; }
+        public IEnumerable<string>  Strings                 { get; private set; }
+        public IEnumerable<Segment> Segments                { get; private set; }
 
         void Initialize()
         {
@@ -119,8 +119,8 @@ namespace libexeinfo
             Marshal.FreeHGlobal(hdrPtr);
             if(Header.signature != SIGNATURE) return;
 
-            Recognized = true;
-            Type       = "New Executable (NE)";
+            Recognized           = true;
+            Type                 = "New Executable (NE)";
             List<string> strings = new List<string>();
 
             OperatingSystem reqOs = new OperatingSystem();
@@ -219,7 +219,8 @@ namespace libexeinfo
                Header.imported_names_offset <= resourceUpperLimit) resourceUpperLimit = Header.imported_names_offset;
 
             if(Header.resource_table_offset < resourceUpperLimit && Header.resource_table_offset != 0)
-                if(Header.target_os         == TargetOS.Windows || Header.target_os              == TargetOS.Win32)
+                if(Header.target_os         == TargetOS.Windows || Header.target_os              == TargetOS.Win32 ||
+                   Header.target_os         == TargetOS.Unknown)
                 {
                     Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset,
                                              resourceUpperLimit);
@@ -232,6 +233,13 @@ namespace libexeinfo
                     Versions = GetVersions().ToArray();
 
                     strings.AddRange(from v in Versions from s in v.StringsByLanguage from k in s.Value select k.Value);
+
+                    foreach(ResourceType rtype in Resources.types)
+                    {
+                        if(rtype.name != "RT_STRING") continue;
+
+                        strings.AddRange(GetWindowsStrings(rtype));
+                    }
                 }
                 else if(Header.target_os == TargetOS.OS2 && segments != null && Header.resource_entries > 0)
                 {
@@ -297,6 +305,13 @@ namespace libexeinfo
                             Resources.types[counter].name      = ResourceIdToNameOs2(kvp.Key);
                             Resources.types[counter].resources = kvp.Value.OrderBy(r => r.id).ToArray();
                             counter++;
+                        }
+
+                        foreach(ResourceType rtype in Resources.types)
+                        {
+                            if(rtype.name != "RT_STRING") continue;
+
+                            strings.AddRange(GetOs2Strings(rtype));
                         }
                     }
                 }
@@ -393,14 +408,11 @@ namespace libexeinfo
                 }
             }
 
-            if(!string.IsNullOrEmpty(ModuleName))
-                strings.Add(ModuleName);
-            if(!string.IsNullOrEmpty(ModuleDescription))
-                strings.Add(ModuleDescription);
+            if(!string.IsNullOrEmpty(ModuleName)) strings.Add(ModuleName);
+            if(!string.IsNullOrEmpty(ModuleDescription)) strings.Add(ModuleDescription);
 
-            if(strings.Count > 0)
-                Strings = strings.Distinct().OrderBy(s => s);
-            
+            if(strings.Count > 0) Strings = strings.Distinct().OrderBy(s => s);
+
             if(segments == null) return;
 
             List<Segment> libsegs = new List<Segment>();
@@ -408,16 +420,15 @@ namespace libexeinfo
             {
                 Segment libseg = new Segment
                 {
-                    Flags = $"{(SegmentFlags)(seg.dwFlags & SEGMENT_FLAGS_MASK)}",
-                    Name  =
-                        ((SegmentType)(seg.dwFlags & SEGMENT_TYPE_MASK)) == SegmentType.Code ? ".text" : ".data",
+                    Flags  = $"{(SegmentFlags)(seg.dwFlags & SEGMENT_FLAGS_MASK)}",
+                    Name   = (SegmentType)(seg.dwFlags     & SEGMENT_TYPE_MASK) == SegmentType.Code ? ".text" : ".data",
                     Offset = seg.dwLogicalSectorOffset * 16,
                     Size   = seg.dwSegmentLength
                 };
 
                 if(Header.target_os == TargetOS.OS2 && (seg.dwFlags & (int)SegmentFlags.Huge) == (int)SegmentFlags.Huge)
                     libseg.Size *= 16;
-                
+
                 libsegs.Add(libseg);
             }
 

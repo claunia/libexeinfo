@@ -39,6 +39,7 @@ namespace exeinfogui.NE
         TreeGridItemCollection treeData;
         TreeGridView           treeResources;
         PanelWin16Version panelWin16Version;
+        PanelNeStrings panelNeStrings;
 
         public TabNeResources()
         {
@@ -52,6 +53,7 @@ namespace exeinfogui.NE
             treeResources.SelectionChanged       += TreeResourcesOnSelectionChanged;
             
             panelWin16Version = new PanelWin16Version();
+            panelNeStrings = new PanelNeStrings();
         }
 
         public void Update(IEnumerable<libexeinfo.NE.ResourceType> resourceTypes, libexeinfo.NE.TargetOS os)
@@ -97,6 +99,10 @@ namespace exeinfogui.NE
                 case "RT_VERSION":
                     pnlResource.Content = panelWin16Version;
                     panelWin16Version.Update(data);
+                    break;
+                case "RT_STRING":
+                    pnlResource.Content = panelNeStrings;
+                    panelNeStrings.Update(data, (libexeinfo.NE.TargetOS)((TreeGridItem)treeResources.SelectedItem).Values[4]);
                     break;
                 default:
                     pnlResource.Content = null;
