@@ -63,5 +63,9 @@ namespace libexeinfo
         ///     List of all strings available in the executable resources, if any
         /// </summary>
         IEnumerable<string> Strings { get; }
+        /// <summary>
+        ///     List of all file segments, if any
+        /// </summary>
+        IEnumerable<Segment> Segments { get; }
     }
 }

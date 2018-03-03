@@ -111,6 +111,7 @@ namespace libexeinfo
         public IEnumerable<Architecture> Architectures           => new[] {Architecture.M68K};
         public OperatingSystem           RequiredOperatingSystem { get; private set; }
         public IEnumerable<string>       Strings                 { get; private set; }
+        public IEnumerable<Segment> Segments { get; private set; }
 
         void Initialize()
         {
@@ -144,6 +145,31 @@ namespace libexeinfo
                 }
             }
 
+            Segments = new []
+            {
+                new Segment
+                {
+                    Name = ".text",
+                    Flags = $"{(PrgFlags)(Header.flags & 0xFFCF)} {(PrgSharing)(Header.flags & PF_SHARE_MASK)}",
+                    Offset = 0x1C,
+                    Size = Header.text_len
+                },
+                new Segment
+                {
+                Name = ".data",
+                Flags  = "",
+                Offset = 0x1C + Header.text_len,
+                Size   = Header.data_len
+                },
+                new Segment
+                {
+                    Name   = ".bss",
+                    Flags  = "",
+                    Offset = 0,
+                    Size   = Header.bss_len
+                }
+            };
+            
             RequiredOperatingSystem = new OperatingSystem {Name = Header.mint == MINT_SIGNATURE ? "MiNT" : "Atari TOS"};
 
             if(ResourceStream == null) return;

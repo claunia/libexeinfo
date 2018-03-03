@@ -83,6 +83,7 @@ namespace libexeinfo
         public IEnumerable<Architecture> Architectures           => new[] {CpuToArchitecture(header.cpu_type)};
         public OperatingSystem           RequiredOperatingSystem { get; private set; }
         public IEnumerable<string> Strings { get; }
+        public IEnumerable<Segment> Segments { get; }
 
         void Initialize()
         {

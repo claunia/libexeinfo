@@ -81,6 +81,7 @@ namespace libexeinfo
             new[] {COFF.MachineTypeToArchitecture(Header.coff.machine)};
         public OperatingSystem RequiredOperatingSystem { get; private set; }
         public IEnumerable<string> Strings { get; }
+        public IEnumerable<Segment> Segments { get; }
 
         void Initialize()
         {

@@ -33,4 +33,24 @@ namespace libexeinfo
         public int    MinorVersion;
         public string Subsystem;
     }
+
+    public struct Segment
+    {
+        /// <summary>
+        /// Standardized segment type name: .text, .data, .rsrc, .bss, etc.
+        /// </summary>
+        public string Name;
+        /// <summary>
+        /// String containing the name of the flags that the executable set accordingly.
+        /// </summary>
+        public string Flags;
+        /// <summary>
+        /// Offset from start of file where the segment starts. 0 if segment is memory only
+        /// </summary>
+        public long Offset;
+        /// <summary>
+        /// Size in bytes of the segment.
+        /// </summary>
+        public long Size;
+    }
 }

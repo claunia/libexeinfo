@@ -97,6 +97,7 @@ namespace libexeinfo
             };
         public OperatingSystem     RequiredOperatingSystem { get; private set; }
         public IEnumerable<string> Strings                 { get; }
+        public IEnumerable<Segment> Segments { get; private set; }
 
         void Initialize()
         {
@@ -388,6 +389,28 @@ namespace libexeinfo
                     else NonResidentNames = null;
                 }
             }
+
+            if(segments == null) return;
+
+            List<Segment> libsegs = new List<Segment>();
+            foreach(SegmentEntry seg in segments)
+            {
+                Segment libseg = new Segment
+                {
+                    Flags = $"{(SegmentFlags)(seg.dwFlags & SEGMENT_FLAGS_MASK)}",
+                    Name  =
+                        ((SegmentType)(seg.dwFlags & SEGMENT_TYPE_MASK)) == SegmentType.Code ? ".text" : ".data",
+                    Offset = seg.dwLogicalSectorOffset * 16,
+                    Size   = seg.dwSegmentLength
+                };
+
+                if(Header.target_os == TargetOS.OS2 && (seg.dwFlags & (int)SegmentFlags.Huge) == (int)SegmentFlags.Huge)
+                    libseg.Size *= 16;
+                
+                libsegs.Add(libseg);
+            }
+
+            Segments = libsegs.OrderBy(s => s.Offset).ToArray();
         }
 
         /// <summary>

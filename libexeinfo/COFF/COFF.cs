@@ -78,6 +78,7 @@ namespace libexeinfo
         public OperatingSystem           RequiredOperatingSystem =>
             new OperatingSystem {Name = "Unknown"}; // TODO: Know
         public IEnumerable<string> Strings { get; }
+        public IEnumerable<Segment> Segments { get; }
 
         void Initialize()
         {

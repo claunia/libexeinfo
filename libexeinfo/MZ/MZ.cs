@@ -116,6 +116,7 @@ namespace libexeinfo
         public IEnumerable<Architecture> Architectures           => new[] {Architecture.I86};
         public OperatingSystem           RequiredOperatingSystem { get; private set; }
         public IEnumerable<string>       Strings                 { get; private set; }
+        public IEnumerable<Segment> Segments { get; }
 
         void Initialize()
         {
