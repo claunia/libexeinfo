@@ -45,13 +45,16 @@ namespace exeinfogui
         TextBox         txtOs;
         TextBox         txtSubsystem;
         TextBox         txtType;
+        TabPageSegments tabSegments;
 
         public MainForm()
         {
             XamlReader.Load(this);
 
+            tabSegments = new TabPageSegments {Visible = false};
             tabStrings      = new TabPageStrings {Visible  = false};
             tabGemResources = new TabGemResources {Visible = false};
+            tabMain.Pages.Add(tabSegments);
             tabMain.Pages.Add(tabStrings);
             tabMain.Pages.Add(tabGemResources);
         }
@@ -135,6 +138,12 @@ namespace exeinfogui
             {
                 tabStrings.Update(recognizedExe.Strings);
                 tabStrings.Visible = true;
+            }
+
+            if(recognizedExe.Segments != null && recognizedExe.Segments.Any())
+            {
+                tabSegments.Update(recognizedExe.Segments);
+                tabSegments.Visible = true;
             }
         }
 

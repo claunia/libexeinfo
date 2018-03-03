@@ -34,7 +34,7 @@ namespace libexeinfo
         public string Subsystem;
     }
 
-    public struct Segment
+    public class Segment
     {
         /// <summary>
         /// Standardized segment type name: .text, .data, .rsrc, .bss, etc.
