@@ -27,6 +27,7 @@
 using System;
 using System.Linq;
 using exeinfogui.GEM;
+using exeinfogui.NE;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
 using libexeinfo;
@@ -46,6 +47,7 @@ namespace exeinfogui
         TextBox         txtSubsystem;
         TextBox         txtType;
         TabPageSegments tabSegments;
+        TabNeResources tabNeResources;
 
         public MainForm()
         {
@@ -54,9 +56,11 @@ namespace exeinfogui
             tabSegments = new TabPageSegments {Visible = false};
             tabStrings      = new TabPageStrings {Visible  = false};
             tabGemResources = new TabGemResources {Visible = false};
+            tabNeResources = new TabNeResources {Visible = false};
             tabMain.Pages.Add(tabSegments);
             tabMain.Pages.Add(tabStrings);
             tabMain.Pages.Add(tabGemResources);
+            tabMain.Pages.Add(tabNeResources);
         }
 
         protected void OnBtnLoadClick(object sender, EventArgs e)
@@ -75,9 +79,13 @@ namespace exeinfogui
             if(dlgOpen.ShowDialog(this) != DialogResult.Ok) return;
 
             txtFile.Text = dlgOpen.FileName;
+            txtInformation.Text = "";
+            txtOs.Text = "";
+            txtSubsystem.Text = "";
+            txtType.Text = "";
 
             IExecutable mzExe         = new MZ(dlgOpen.FileName);
-            IExecutable neExe         = new NE(dlgOpen.FileName);
+            IExecutable neExe         = new libexeinfo.NE(dlgOpen.FileName);
             IExecutable stExe         = new AtariST(dlgOpen.FileName);
             IExecutable lxExe         = new LX(dlgOpen.FileName);
             IExecutable coffExe       = new COFF(dlgOpen.FileName);
@@ -94,7 +102,15 @@ namespace exeinfogui
                 }
             }
 
-            if(neExe.Recognized) recognizedExe = neExe;
+            if(neExe.Recognized)
+            {
+                recognizedExe = neExe;
+                if(((libexeinfo.NE)neExe).Resources.types != null && ((libexeinfo.NE)neExe).Resources.types.Any())
+                {
+                    tabNeResources.Update(((libexeinfo.NE)neExe).Resources.types, ((libexeinfo.NE)neExe).Header.target_os);
+                    tabNeResources.Visible = true;
+                }
+            }
             else if(lxExe.Recognized)
                 recognizedExe = lxExe;
             else if(peExe.Recognized)

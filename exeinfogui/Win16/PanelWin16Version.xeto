@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Panel xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackLayout Orientation="Vertical" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top">
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblFileVersion">File version</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtFileVersion" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblProductVersion">Product version</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtProductVersion" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblFileType">File type</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtFileType" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblFileSubtype">File subtype</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtFileSubtype" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblFileFlags">File flags</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtFileFlags" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblFileOs">File OS</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtFileOs" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblFileDate">File date</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtFileDate" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+            <StackLayout Orientation="Horizontal" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <StackLayoutItem Expand="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <StackLayout Orientation="Vertical">
+                        <StackLayoutItem HorizontalAlignment="Center" VerticalAlignment="Top">
+                            <Label ID="lblLanguages">Language</Label>
+                        </StackLayoutItem>
+                        <StackLayoutItem Expand="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <GridView ID="treeLanguages" ShowHeader="False"/>
+                        </StackLayoutItem>
+                    </StackLayout>
+                </StackLayoutItem>
+                <StackLayoutItem Expand="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <StackLayout Orientation="Vertical">
+                        <StackLayoutItem HorizontalAlignment="Center" VerticalAlignment="Top">
+                            <Label ID="lblStrings">Strings</Label>
+                        </StackLayoutItem>
+                        <StackLayoutItem Expand="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <GridView ID="treeStrings"/>
+                        </StackLayoutItem>
+                    </StackLayout>
+                </StackLayoutItem>
+            </StackLayout>
+        </StackLayoutItem>
+    </StackLayout>
+</Panel>

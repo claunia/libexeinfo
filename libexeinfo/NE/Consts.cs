@@ -45,7 +45,7 @@ namespace libexeinfo
         const ushort SEGMENT_FLAGS_MASK   = 0x3F8;
         const ushort SEGMENT_DISCARD_MASK = 0xF000;
         const ushort SEGMENT_IOPRVL_MASK  = 0xC00;
-        const ushort KNOWN_RSRC_FLAGS     = 0x1070;
+        public const ushort KNOWN_RSRC_FLAGS     = 0x1070;
 
         /// <summary>
         ///     Gets the name of a resource type according to its identifier

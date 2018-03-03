@@ -19,5 +19,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="GEM\" />
+    <Folder Include="NE" />
+    <Folder Include="NE\" />
+    <Folder Include="Win16\" />
   </ItemGroup>
 </Project>
