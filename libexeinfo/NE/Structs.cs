@@ -125,21 +125,21 @@ namespace libexeinfo
         ///     Fixed file version info
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        public class FixedFileInfo
+        public struct FixedFileInfo
         {
-            public uint dwFileDateLS;
-            public uint dwFileDateMS;
-            public uint dwFileFlags;
-            public uint dwFileFlagsMask;
-            public uint dwFileOS;
-            public uint dwFileSubtype;
-            public uint dwFileType;
-            public uint dwFileVersionLS;
-            public uint dwFileVersionMS;
-            public uint dwProductVersionLS;
-            public uint dwProductVersionMS;
             public uint dwSignature;
             public uint dwStrucVersion;
+            public uint dwFileVersionMS;
+            public uint dwFileVersionLS;
+            public uint dwProductVersionMS;
+            public uint dwProductVersionLS;
+            public uint dwFileFlagsMask;
+            public uint dwFileFlags;
+            public uint dwFileOS;
+            public uint dwFileType;
+            public uint dwFileSubtype;
+            public uint dwFileDateMS;
+            public uint dwFileDateLS;
         }
 
         public struct ResidentName
