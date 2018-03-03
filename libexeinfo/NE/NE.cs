@@ -96,7 +96,7 @@ namespace libexeinfo
                         : Architecture.I86
             };
         public OperatingSystem     RequiredOperatingSystem { get; private set; }
-        public IEnumerable<string> Strings                 { get; }
+        public IEnumerable<string> Strings { get; private set; }
         public IEnumerable<Segment> Segments { get; private set; }
 
         void Initialize()
@@ -121,6 +121,7 @@ namespace libexeinfo
 
             Recognized = true;
             Type       = "New Executable (NE)";
+            List<string> strings = new List<string>();
 
             OperatingSystem reqOs = new OperatingSystem();
 
@@ -229,6 +230,8 @@ namespace libexeinfo
                     Resources.types = Resources.types.OrderBy(t => t.name).ToArray();
 
                     Versions = GetVersions().ToArray();
+
+                    strings.AddRange(from v in Versions from s in v.StringsByLanguage from k in s.Value select k.Value);
                 }
                 else if(Header.target_os == TargetOS.OS2 && segments != null && Header.resource_entries > 0)
                 {
@@ -390,6 +393,14 @@ namespace libexeinfo
                 }
             }
 
+            if(!string.IsNullOrEmpty(ModuleName))
+                strings.Add(ModuleName);
+            if(!string.IsNullOrEmpty(ModuleDescription))
+                strings.Add(ModuleDescription);
+
+            if(strings.Count > 0)
+                Strings = strings.Distinct().OrderBy(s => s);
+            
             if(segments == null) return;
 
             List<Segment> libsegs = new List<Segment>();
