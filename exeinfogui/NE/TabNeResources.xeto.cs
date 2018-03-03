@@ -35,11 +35,12 @@ namespace exeinfogui.NE
 {
     public class TabNeResources : TabPage
     {
+        PanelNeAccelerators    panelNeAccelerators;
+        PanelNeStrings         panelNeStrings;
+        PanelWin16Version      panelWin16Version;
         Panel                  pnlResource;
         TreeGridItemCollection treeData;
         TreeGridView           treeResources;
-        PanelWin16Version panelWin16Version;
-        PanelNeStrings panelNeStrings;
 
         public TabNeResources()
         {
@@ -51,9 +52,10 @@ namespace exeinfogui.NE
 
             treeResources.AllowMultipleSelection =  false;
             treeResources.SelectionChanged       += TreeResourcesOnSelectionChanged;
-            
-            panelWin16Version = new PanelWin16Version();
-            panelNeStrings = new PanelNeStrings();
+
+            panelWin16Version   = new PanelWin16Version();
+            panelNeStrings      = new PanelNeStrings();
+            panelNeAccelerators = new PanelNeAccelerators();
         }
 
         public void Update(IEnumerable<libexeinfo.NE.ResourceType> resourceTypes, libexeinfo.NE.TargetOS os)
@@ -93,7 +95,7 @@ namespace exeinfogui.NE
             }
 
             byte[] data = ((libexeinfo.NE.Resource)((TreeGridItem)treeResources.SelectedItem).Values[5]).data;
-            
+
             switch(((TreeGridItem)treeResources.SelectedItem).Values[3])
             {
                 case "RT_VERSION":
@@ -102,7 +104,16 @@ namespace exeinfogui.NE
                     break;
                 case "RT_STRING":
                     pnlResource.Content = panelNeStrings;
-                    panelNeStrings.Update(data, (libexeinfo.NE.TargetOS)((TreeGridItem)treeResources.SelectedItem).Values[4]);
+                    panelNeStrings.Update(data,
+                                          (libexeinfo.NE.TargetOS)((TreeGridItem)treeResources.SelectedItem).Values[4]);
+                    break;
+                case "RT_ACCELERATOR":
+                    pnlResource.Content = panelNeAccelerators;
+                    panelNeAccelerators.Update(data, libexeinfo.NE.TargetOS.Windows);
+                    break;
+                case "RT_ACCELTABLE":
+                    pnlResource.Content = panelNeAccelerators;
+                    panelNeAccelerators.Update(data, libexeinfo.NE.TargetOS.OS2);
                     break;
                 default:
                     pnlResource.Content = null;

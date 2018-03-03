@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Panel xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackLayout Orientation="Vertical">
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+                <StackLayout Orientation="Vertical">
+                    <StackLayoutItem HorizontalAlignment="Right" Expand="True">
+                        <Label ID="lblCodepage">Codepage</Label>
+                    </StackLayoutItem>
+                </StackLayout>
+            </StackLayoutItem>
+            <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+                <StackLayout Orientation="Vertical">
+                    <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
+                        <TextBox ID="txtCodepage" ReadOnly="True"/>
+                    </StackLayoutItem>
+                </StackLayout>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+            <StackLayout Orientation="Vertical" ID="stkString">
+                <StackLayoutItem HorizontalAlignment="Center">
+                    <Label ID="lblAccelerators">Accelerators</Label>
+                </StackLayoutItem>
+                <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+                    <GridView ID="grdAccelerators"/>
+                </StackLayoutItem>
+            </StackLayout>
+        </StackLayoutItem>
+    </StackLayout>
+</Panel>
