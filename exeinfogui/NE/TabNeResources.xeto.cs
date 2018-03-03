@@ -41,6 +41,7 @@ namespace exeinfogui.NE
         Panel                  pnlResource;
         TreeGridItemCollection treeData;
         TreeGridView           treeResources;
+        PanelHexDump panelHexDump;
 
         public TabNeResources()
         {
@@ -56,6 +57,7 @@ namespace exeinfogui.NE
             panelWin16Version   = new PanelWin16Version();
             panelNeStrings      = new PanelNeStrings();
             panelNeAccelerators = new PanelNeAccelerators();
+            panelHexDump=new PanelHexDump();
         }
 
         public void Update(IEnumerable<libexeinfo.NE.ResourceType> resourceTypes, libexeinfo.NE.TargetOS os)
@@ -116,7 +118,8 @@ namespace exeinfogui.NE
                     panelNeAccelerators.Update(data, libexeinfo.NE.TargetOS.OS2);
                     break;
                 default:
-                    pnlResource.Content = null;
+                    pnlResource.Content = panelHexDump;
+                    panelHexDump.Update(data);
                     break;
             }
         }
