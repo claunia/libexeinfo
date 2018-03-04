@@ -201,7 +201,7 @@ namespace libexeinfo
                     sb.AppendLine("\tExecutable is a dynamic library or a driver");
 
                 sb.AppendFormat("\tMinimum code swap area: {0} bytes",      Header.minimum_swap_area).AppendLine();
-                sb.AppendFormat("\tFile alignment shift: {0}",              512 << Header.alignment_shift).AppendLine();
+                sb.AppendFormat("\tFile alignment shift: {0}",              1 << Header.alignment_shift).AppendLine();
                 sb.AppendFormat("\tInitial local heap should be {0} bytes", Header.initial_heap).AppendLine();
                 sb.AppendFormat("\tInitial stack size should be {0} bytes", Header.initial_stack).AppendLine();
                 sb.AppendFormat("\tCS:IP entry point: {0:X4}:{1:X4}", (Header.entry_point & 0xFFFF0000) >> 16,

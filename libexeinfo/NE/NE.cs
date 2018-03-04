@@ -274,7 +274,7 @@ namespace libexeinfo
                             id         = entries[i].ename,
                             name       = $"{entries[i].ename}",
                             flags      = (ResourceFlags)resourceSegments[i].dwFlags,
-                            dataOffset = (uint)(resourceSegments[i].dwLogicalSectorOffset * 16),
+                            dataOffset = (uint)(resourceSegments[i].dwLogicalSectorOffset << Header.alignment_shift),
                             length     = resourceSegments[i].dwSegmentLength
                         };
 
@@ -283,7 +283,7 @@ namespace libexeinfo
                         if(thisResource.dataOffset == 0)
                             thisResource.dataOffset = 65536;
                         if((resourceSegments[i].dwFlags & (ushort)SegmentFlags.Huge) == (ushort)SegmentFlags.Huge)
-                            thisResource.length *= 16;
+                            thisResource.length <<= Header.alignment_shift;
                         thisResource.data       =  new byte[thisResource.length];
                         BaseStream.Position     =  thisResource.dataOffset;
                         BaseStream.Read(thisResource.data, 0, thisResource.data.Length);
@@ -422,12 +422,12 @@ namespace libexeinfo
                 {
                     Flags  = $"{(SegmentFlags)(seg.dwFlags & SEGMENT_FLAGS_MASK)}",
                     Name   = (SegmentType)(seg.dwFlags     & SEGMENT_TYPE_MASK) == SegmentType.Code ? ".text" : ".data",
-                    Offset = seg.dwLogicalSectorOffset * 16,
+                    Offset = seg.dwLogicalSectorOffset << Header.alignment_shift,
                     Size   = seg.dwSegmentLength
                 };
 
                 if(Header.target_os == TargetOS.OS2 && (seg.dwFlags & (int)SegmentFlags.Huge) == (int)SegmentFlags.Huge)
-                    libseg.Size *= 16;
+                    libseg.Size <<= Header.alignment_shift;
 
                 libsegs.Add(libseg);
             }
