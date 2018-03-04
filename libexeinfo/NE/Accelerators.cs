@@ -267,6 +267,8 @@ namespace libexeinfo
                 byte[] accelBytes = new byte[Marshal.SizeOf(typeof(Os2Accelerator))];
                 if(pos + accelBytes.Length > data.Length) break;
 
+                Array.Copy(data, pos, accelBytes, 0, accelBytes.Length);
+
                 table.Accelerators[i] =  BigEndianMarshal.ByteArrayToStructureLittleEndian<Os2Accelerator>(accelBytes);
                 pos                   += accelBytes.Length;
             }
