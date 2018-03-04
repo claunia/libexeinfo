@@ -48,7 +48,8 @@ namespace exeinfogui.NE
                 accelerators.AddRange(table.Accelerators.Select(accel => new Accelerator
                 {
                     Type    = $"{accel.Type}",
-                    Key     = $"{accel.Key}",
+                    Key     = accel.Type.HasFlag(libexeinfo.NE.Os2AcceleratorFlags.AF_VIRTUALKEY) ? $"{accel.Key}" :
+                   $"'{(char)(byte)accel.Key}'",
                     Command = accel.Command
                 }));
             }
@@ -60,12 +61,13 @@ namespace exeinfogui.NE
                                                 .Select(accel => new Accelerator
                                                  {
                                                      Type    = $"{accel.Flags}",
-                                                     Key     = $"{accel.Key}",
+                                                     Key = accel.Flags.HasFlag(libexeinfo.NE.WinAcceleratorFlags.VirtualKey) ? $"{accel.Key}" :
+                                                               $"'{(char)(byte)accel.Key}'",
                                                      Command = accel.Command
                                                  }));
             }
 
-            if(accelerators.Count > 0) grdAccelerators.DataStore = accelerators;
+            if(accelerators.Count > 0) grdAccelerators.DataStore = accelerators.OrderBy(r => r.Command).ThenBy(r=>r.Key);
         }
 
         class Accelerator
