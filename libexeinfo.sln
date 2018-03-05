@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "exeinfogui.Desktop", "exein
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "exeinfogui.XamMac", "exeinfogui.XamMac\exeinfogui.XamMac.csproj", "{E2DC1857-A942-419B-849E-58AC8BBB94CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iconviewer", "iconviewer\iconviewer\iconviewer.csproj", "{D6282B50-9A8D-44C5-8674-43BED27B5B53}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iconviewer.Desktop", "iconviewer\iconviewer.Desktop\iconviewer.Desktop.csproj", "{3206160A-B6AB-4B90-AC29-888C7E64A2CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -37,6 +41,14 @@ Global
 		{E2DC1857-A942-419B-849E-58AC8BBB94CD}.Debug|x86.Build.0 = Debug|Any CPU
 		{E2DC1857-A942-419B-849E-58AC8BBB94CD}.Release|x86.ActiveCfg = Release|Any CPU
 		{E2DC1857-A942-419B-849E-58AC8BBB94CD}.Release|x86.Build.0 = Release|Any CPU
+		{D6282B50-9A8D-44C5-8674-43BED27B5B53}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D6282B50-9A8D-44C5-8674-43BED27B5B53}.Debug|x86.Build.0 = Debug|Any CPU
+		{D6282B50-9A8D-44C5-8674-43BED27B5B53}.Release|x86.ActiveCfg = Release|Any CPU
+		{D6282B50-9A8D-44C5-8674-43BED27B5B53}.Release|x86.Build.0 = Release|Any CPU
+		{3206160A-B6AB-4B90-AC29-888C7E64A2CE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3206160A-B6AB-4B90-AC29-888C7E64A2CE}.Debug|x86.Build.0 = Debug|Any CPU
+		{3206160A-B6AB-4B90-AC29-888C7E64A2CE}.Release|x86.ActiveCfg = Release|Any CPU
+		{3206160A-B6AB-4B90-AC29-888C7E64A2CE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		version = 0.2

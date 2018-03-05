@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Icon Viewer" ClientSize="500, 500" Padding="10">
+	<StackLayout Orientation="Vertical">
+        <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Top">
+            <StackLayout Orientation="Horizontal">
+                <StackLayoutItem HorizontalAlignment="Left">
+    	    	    <Label>Path</Label>
+                </StackLayoutItem>
+                <StackLayoutItem HorizontalAlignment="Stretch" Expand="True">
+                    <TextBox ID="txtPath" ReadOnly="True"/>
+                </StackLayoutItem>
+                <StackLayoutItem HorizontalAlignment="Right">
+                    <Button ID="btnPath" Click="OnBtnPathClick">Open</Button>
+                </StackLayoutItem>
+            </StackLayout>
+        </StackLayoutItem>
+        <StackLayoutItem HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Expand="True">
+            <ImageView ID="imgIcon"/>
+        </StackLayoutItem>
+	</StackLayout>
+	<Form.Menu>
+		<MenuBar>
+			<MenuBar.QuitItem>
+				<ButtonMenuItem Text="Quit" Shortcut="CommonModifier+Q" Click="HandleQuit" />
+			</MenuBar.QuitItem>
+			<MenuBar.AboutItem>
+				<ButtonMenuItem Text="About..." Click="HandleAbout" />
+			</MenuBar.AboutItem>
+		</MenuBar>
+	</Form.Menu>
+</Form>

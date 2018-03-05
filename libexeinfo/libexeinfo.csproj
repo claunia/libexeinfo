@@ -58,6 +58,7 @@
     <Compile Include="IExecutable.cs" />
     <Compile Include="NE\Accelerators.cs" />
     <Compile Include="NE\GetStrings.cs" />
+    <Compile Include="Os2\Bitmap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MZ\Consts.cs" />
     <Compile Include="MZ\Info.cs" />
