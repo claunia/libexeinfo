@@ -58,6 +58,8 @@ namespace libexeinfo.Os2
         /// </summary>
         public const ushort TYPE_BITMAP_ARRAY = 0x4142;
 
+        const int VISIBLE = -16777216;
+
         /// <summary>
         ///     This will decode a bitmap array, or if data is not an array, return an array with the single bitmap element
         /// </summary>
@@ -74,9 +76,7 @@ namespace libexeinfo.Os2
             bitmapArrayHeader = BigEndianMarshal.ByteArrayToStructureLittleEndian<BitmapArrayHeader>(buffer);
             bitmapFileHeader  = BigEndianMarshal.ByteArrayToStructureLittleEndian<BitmapInfoHeader>(buffer);
 
-            List<BitmapInfoHeader> headers  = new List<BitmapInfoHeader>();
-            List<RGB[]>            palettes = new List<RGB[]>();
-            List<byte[]>           datas    = new List<byte[]>();
+            List<DecodedBitmap> bitmaps = new List<DecodedBitmap>();
 
             do
             {
@@ -118,26 +118,94 @@ namespace libexeinfo.Os2
                         palette[i] =  BigEndianMarshal.ByteArrayToStructureLittleEndian<RGB>(buffer);
                     }
 
-                    headers.Add(bitmapFileHeader);
-                    palettes.Add(palette);
                     remaining -= bitmapFileHeader.Fix;
                     // rgb[1];
                     remaining -= 1;
 
                     buffer = new byte[bitmapFileHeader.X * bitmapFileHeader.Y * bitmapFileHeader.BitsPerPlane / 8];
                     Array.Copy(data, bitmapFileHeader.Offset, buffer, 0, buffer.Length);
-                    datas.Add(buffer);
+
+                    DecodedBitmap bitmap = DecodeBitmap(bitmapFileHeader, palette, buffer);
+
+                    // Mask palette
+                    int[] argbPalette = new int[palette.Length];
+                    for(int c = 0; c < palette.Length; c++)
+                        argbPalette[c] = (palette[c].Red << 16) + (palette[c].Green << 8) + palette[c].Blue;
+
+                    // First image, then mask
+                    if(bitmapFileHeader.Type == TYPE_ICON || bitmapFileHeader.Type == TYPE_POINTER)
+                    {
+                        int[] icon = new int[bitmap.Width * bitmap.Height / 2];
+                        int[] mask = new int[bitmap.Width * bitmap.Height / 2];
+                        Array.Copy(bitmap.Pixels, 0,           icon, 0, icon.Length);
+                        Array.Copy(bitmap.Pixels, icon.Length, mask, 0, mask.Length);
+
+                        bitmap.Pixels =  new int[bitmap.Width * bitmap.Height / 2];
+                        bitmap.Height /= 2;
+                        for(int px = 0; px                           < bitmap.Pixels.Length; px++)
+                            bitmap.Pixels[px] = icon[px] + (mask[px] == argbPalette[0] ? VISIBLE : 0);
+                    }
+                    // We got the mask, now we need to read the color
+                    else if(bitmapFileHeader.Type == TYPE_COLOR_ICON || bitmapFileHeader.Type == TYPE_COLOR_POINTER)
+                    {
+                        DecodedBitmap mask = bitmap;
+
+                        buffer = new byte[Marshal.SizeOf(typeof(BitmapInfoHeader))];
+                        Array.Copy(data, pos, buffer, 0, buffer.Length);
+                        bitmapFileHeader = BigEndianMarshal.ByteArrayToStructureLittleEndian<BitmapInfoHeader>(buffer);
+
+                        // Stop at unknown header
+                        if(bitmapFileHeader.Size != Marshal.SizeOf(typeof(BitmapInfoHeader))) break;
+
+                        // Multiplanes not supported
+                        if(bitmapFileHeader.Planes != 1) break;
+
+                        // TODO: Non paletted?
+                        pos     += bitmapFileHeader.Size;
+                        palette =  new RGB[1 << bitmapFileHeader.BitsPerPlane];
+                        buffer  =  new byte[Marshal.SizeOf(typeof(RGB))];
+                        for(int i = 0; i < palette.Length; i++)
+                        {
+                            Array.Copy(data, pos, buffer, 0, buffer.Length);
+                            pos        += buffer.Length;
+                            palette[i] =  BigEndianMarshal.ByteArrayToStructureLittleEndian<RGB>(buffer);
+                        }
+
+                        remaining -= bitmapFileHeader.Fix;
+                        // rgb[1];
+                        remaining -= 1;
+
+                        buffer = new byte[bitmapFileHeader.X * bitmapFileHeader.Y * bitmapFileHeader.BitsPerPlane / 8];
+                        Array.Copy(data, bitmapFileHeader.Offset, buffer, 0, buffer.Length);
+
+                        bitmap = DecodeBitmap(bitmapFileHeader, palette, buffer);
+
+                        for(int px = 0; px < bitmap.Pixels.Length; px++)
+                            bitmap.Pixels[px] = bitmap.Pixels[px] +
+                                                (mask.Pixels[px   + bitmapFileHeader.X * bitmapFileHeader.Y] ==
+                                                 argbPalette[0]
+                                                     ? VISIBLE
+                                                     : 0);
+                    }
+                    // Not an icon, all pixels are visible
+                    else
+                        for(int px = 0; px < bitmap.Pixels.Length; px++)
+                            bitmap.Pixels[px] = bitmap.Pixels[px] + VISIBLE;
+
+                    // OS/2 coordinate 0,0 is lower,left, so need to reverse first all pixels then by line
+                    int[] pixels = bitmap.Pixels.Reverse().ToArray();
+                    for(int y = 0; y     < bitmap.Height; y++)
+                        for(int x = 0; x < bitmap.Width; x++)
+                            bitmap.Pixels[y * bitmap.Width + (bitmap.Width - x - 1)] = pixels[y * bitmap.Width + x];
+
+                    bitmaps.Add(bitmap);
                 }
 
                 pos = bitmapArrayHeader.Next;
             }
             while(bitmapArrayHeader.Next != 0);
 
-            DecodedBitmap[] bitmaps = new DecodedBitmap[datas.Count];
-
-            for(int b = 0; b < bitmaps.Length; b++) bitmaps[b] = DecodeBitmap(headers[b], palettes[b], datas[b]);
-
-            return bitmaps;
+            return bitmaps.ToArray();
         }
 
         static DecodedBitmap DecodeBitmap(BitmapInfoHeader header, IList<RGB> palette, byte[] data)
@@ -172,8 +240,7 @@ namespace libexeinfo.Os2
                 default: return null;
             }
 
-            const int VISIBLE     = -16777216;
-            int[]     argbPalette = new int[palette.Count];
+            int[] argbPalette = new int[palette.Count];
 
             for(int c = 0; c < palette.Count; c++)
                 argbPalette[c] = (palette[c].Red << 16) + (palette[c].Green << 8) + palette[c].Blue;
@@ -197,26 +264,6 @@ namespace libexeinfo.Os2
 
                 pos += pos % 2;
             }
-
-            // First image, then mask
-            if(header.Type == TYPE_ICON || header.Type == TYPE_POINTER)
-            {
-                int[] icon = new int[bitmap.Width * bitmap.Height / 2];
-                int[] mask = new int[bitmap.Width * bitmap.Height / 2];
-                Array.Copy(bitmap.Pixels, 0,           icon, 0, icon.Length);
-                Array.Copy(bitmap.Pixels, icon.Length, mask, 0, mask.Length);
-
-                bitmap.Pixels =  new int[bitmap.Width * bitmap.Height / 2];
-                bitmap.Height /= 2;
-                for(int px = 0; px                           < bitmap.Pixels.Length; px++)
-                    bitmap.Pixels[px] = icon[px] + (mask[px] == argbPalette[0] ? VISIBLE : 0);
-            }
-
-            // OS/2 coordinate 0,0 is lower,left, so need to reverse first all pixels then by line
-            int[] pixels = bitmap.Pixels.Reverse().ToArray();
-            for(int y = 0; y     < bitmap.Height; y++)
-                for(int x = 0; x < bitmap.Width; x++)
-                    bitmap.Pixels[y * bitmap.Width + (bitmap.Width - x - 1)] = pixels[y * bitmap.Width + x];
 
             return bitmap;
         }
