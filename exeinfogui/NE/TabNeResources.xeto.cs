@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using exeinfogui.Os2;
 using exeinfogui.Win16;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
@@ -35,13 +36,14 @@ namespace exeinfogui.NE
 {
     public class TabNeResources : TabPage
     {
+        PanelHexDump           panelHexDump;
         PanelNeAccelerators    panelNeAccelerators;
         PanelNeStrings         panelNeStrings;
+        PanelOs2Bitmap         panelOs2Bitmap;
         PanelWin16Version      panelWin16Version;
         Panel                  pnlResource;
         TreeGridItemCollection treeData;
         TreeGridView           treeResources;
-        PanelHexDump panelHexDump;
 
         public TabNeResources()
         {
@@ -57,7 +59,8 @@ namespace exeinfogui.NE
             panelWin16Version   = new PanelWin16Version();
             panelNeStrings      = new PanelNeStrings();
             panelNeAccelerators = new PanelNeAccelerators();
-            panelHexDump=new PanelHexDump();
+            panelHexDump        = new PanelHexDump();
+            panelOs2Bitmap      = new PanelOs2Bitmap();
         }
 
         public void Update(IEnumerable<libexeinfo.NE.ResourceType> resourceTypes, libexeinfo.NE.TargetOS os)
@@ -116,6 +119,18 @@ namespace exeinfogui.NE
                 case "RT_ACCELTABLE":
                     pnlResource.Content = panelNeAccelerators;
                     panelNeAccelerators.Update(data, libexeinfo.NE.TargetOS.OS2);
+                    break;
+                case "RT_BITMAP" when (libexeinfo.NE.TargetOS)((TreeGridItem)treeResources.SelectedItem).Values[4] ==
+                                      libexeinfo.NE.TargetOS.OS2:
+                case "RT_POINTER":
+                    // TODO: Some do not contain valid OS/2 bitmaps
+                    try
+                    {
+                        pnlResource.Content = panelOs2Bitmap;
+                        panelOs2Bitmap.Update(data);
+                    }
+                    catch { goto default; }
+
                     break;
                 default:
                     pnlResource.Content = panelHexDump;
