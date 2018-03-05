@@ -61,7 +61,7 @@ namespace iconviewer
         protected void OnBtnPathClick(object sender, EventArgs e)
         {
             OpenFileDialog dlgOpenFileDialog                         = new OpenFileDialog {MultiSelect = false};
-            dlgOpenFileDialog.Filters.Add(new FileFilter {Extensions = new[] {".ico"}});
+            dlgOpenFileDialog.Filters.Add(new FileFilter {Extensions = new[] {".ico", ".ptr", ".bmp"}});
             DialogResult result                                      = dlgOpenFileDialog.ShowDialog(this);
 
             if(result != DialogResult.Ok)
