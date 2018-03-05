@@ -91,8 +91,9 @@ namespace libexeinfo.Os2
                 }
                 else
                 {
-                    remaining = 1;
-                    pos       = 0;
+                    remaining              = 1;
+                    pos                    = 0;
+                    bitmapArrayHeader.Next = 0;
                 }
 
                 while(remaining > 0)
@@ -102,13 +103,13 @@ namespace libexeinfo.Os2
                     bitmapFileHeader = BigEndianMarshal.ByteArrayToStructureLittleEndian<BitmapInfoHeader>(buffer);
 
                     // Stop at unknown header
-                    if(bitmapFileHeader.Size != Marshal.SizeOf(typeof(BitmapInfoHeader))) break;
+                    if(bitmapFileHeader.Fix != 12) break;
 
                     // Multiplanes not supported
                     if(bitmapFileHeader.Planes != 1) break;
 
                     // TODO: Non paletted?
-                    pos           += bitmapFileHeader.Size;
+                    pos           += Marshal.SizeOf(typeof(BitmapInfoHeader));
                     RGB[] palette = new RGB[1 << bitmapFileHeader.BitsPerPlane];
                     buffer        = new byte[Marshal.SizeOf(typeof(RGB))];
                     for(int i = 0; i < palette.Length; i++)
