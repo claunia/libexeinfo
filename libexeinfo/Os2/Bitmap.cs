@@ -122,7 +122,23 @@ namespace libexeinfo.Os2
                     // rgb[1];
                     remaining -= 1;
 
-                    buffer = new byte[bitmapFileHeader.X * bitmapFileHeader.Y * bitmapFileHeader.BitsPerPlane / 8];
+                    // TODO (Optimize): Calculate real data length considering that every line is word-aligned (2-byte)
+                    long dataLength = 0;
+                    for(int y = 0; y < bitmapFileHeader.Y; y++)
+                    {
+                        int x = 0;
+                        while(x < bitmapFileHeader.X)
+                        {
+                            for(int k = 8 - bitmapFileHeader.BitsPerPlane; k >= 0;
+                                k -= (int)bitmapFileHeader.BitsPerPlane) x++;
+
+                            dataLength++;
+                        }
+
+                        dataLength += dataLength % 2;
+                    }
+
+                    buffer = new byte[dataLength];
                     Array.Copy(data, bitmapFileHeader.Offset, buffer, 0, buffer.Length);
 
                     DecodedBitmap bitmap = DecodeBitmap(bitmapFileHeader, palette, buffer);
@@ -175,7 +191,23 @@ namespace libexeinfo.Os2
                         // rgb[1];
                         remaining -= 1;
 
-                        buffer = new byte[bitmapFileHeader.X * bitmapFileHeader.Y * bitmapFileHeader.BitsPerPlane / 8];
+                        // TODO (Optimize): Calculate real data length considering that every line is word-aligned (2-byte)
+                        dataLength = 0;
+                        for(int y = 0; y < bitmapFileHeader.Y; y++)
+                        {
+                            int x = 0;
+                            while(x < bitmapFileHeader.X)
+                            {
+                                for(int k = 8 - bitmapFileHeader.BitsPerPlane; k >= 0;
+                                    k -= (int)bitmapFileHeader.BitsPerPlane) x++;
+
+                                dataLength++;
+                            }
+
+                            dataLength += dataLength % 2;
+                        }
+
+                        buffer = new byte[dataLength];
                         Array.Copy(data, bitmapFileHeader.Offset, buffer, 0, buffer.Length);
 
                         bitmap = DecodeBitmap(bitmapFileHeader, palette, buffer);
@@ -208,6 +240,7 @@ namespace libexeinfo.Os2
             return bitmaps.ToArray();
         }
 
+        // TODO: Mask is not correctly decoded on XGA icons (20x20 and 40x40)...
         static DecodedBitmap DecodeBitmap(BitmapInfoHeader header, IList<RGB> palette, byte[] data)
         {
             DecodedBitmap bitmap = new DecodedBitmap
@@ -257,6 +290,8 @@ namespace libexeinfo.Os2
                         bitmap.Pixels[y * bitmap.Width                                      + x] =
                             argbPalette[(data[pos] >> k) & ((1 << (int)bitmap.BitsPerPixel) - 1)];
                         x++;
+
+                        if(x == bitmap.Width) break;
                     }
 
                     pos++;
