@@ -31,22 +31,8 @@ using System.Runtime.InteropServices;
 
 namespace libexeinfo.Windows
 {
-    public class Bitmap
+    public static class Bitmap
     {
-        public enum Compression : uint
-        {
-            None           = 0,
-            Rle8           = 1,
-            Rle4           = 2,
-            Bitfields      = 3,
-            Jpeg           = 4,
-            Png            = 5,
-            AlphaBitfields = 6,
-            Cmyk           = 11,
-            CmykRle8       = 12,
-            CmykRle4       = 13
-        }
-
         const int VISIBLE = -16777216;
 
         /// <summary>
@@ -70,13 +56,13 @@ namespace libexeinfo.Windows
 
             // TODO: Non paletted?
             pos           += bitmapFileHeader.HeaderSize;
-            RGB[] palette = new RGB[1 << bitmapFileHeader.BitsPerPlane];
-            buffer        = new byte[Marshal.SizeOf(typeof(RGB))];
+            Rgb[] palette = new Rgb[1 << bitmapFileHeader.BitsPerPlane];
+            buffer        = new byte[Marshal.SizeOf(typeof(Rgb))];
             for(int i = 0; i < palette.Length; i++)
             {
                 Array.Copy(data, pos, buffer, 0, buffer.Length);
                 pos        += buffer.Length;
-                palette[i] =  BigEndianMarshal.ByteArrayToStructureLittleEndian<RGB>(buffer);
+                palette[i] =  BigEndianMarshal.ByteArrayToStructureLittleEndian<Rgb>(buffer);
             }
 
             // First let's do the icon itself
@@ -147,9 +133,9 @@ namespace libexeinfo.Windows
             return bitmap;
         }
 
-        static DecodedBitmap DecodeBitmap(BitmapInfoHeader header, IList<RGB> palette, byte[] data)
+        static DecodedBitmap DecodeBitmap(BitmapInfoHeader header, IList<Rgb> palette, byte[] data)
         {
-            if(header.Compression != Compression.None) return null;
+            if(header.BitmapCompression != BitmapCompression.None) return null;
 
             DecodedBitmap bitmap = new DecodedBitmap
             {
@@ -187,39 +173,6 @@ namespace libexeinfo.Windows
             }
 
             return bitmap;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct BitmapInfoHeader
-        {
-            public uint        HeaderSize;
-            public uint        Width;
-            public uint        Height;
-            public ushort      Planes;
-            public ushort      BitsPerPlane;
-            public Compression Compression;
-            public uint        ImageSize;
-            public uint        HorizontalResolution;
-            public uint        VerticalResolution;
-            public uint        ColorsInPalette;
-            public uint        ImportantColors;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct RGB
-        {
-            public byte Blue;
-            public byte Green;
-            public byte Red;
-            public byte Reserved;
-        }
-
-        public class DecodedBitmap
-        {
-            public uint  BitsPerPixel;
-            public uint  Height;
-            public int[] Pixels;
-            public uint  Width;
         }
     }
 }

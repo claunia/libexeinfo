@@ -36,7 +36,7 @@ namespace exeinfogui.Windows
                 return;
             }
 
-            Bitmap.DecodedBitmap icon;
+            libexeinfo.Windows.DecodedBitmap icon;
 
             try { icon   = Bitmap.DecodeIcon(data); }
             catch { icon = null; }

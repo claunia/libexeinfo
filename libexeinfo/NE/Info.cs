@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using libexeinfo.Os2;
 
 namespace libexeinfo
 {
@@ -87,13 +88,13 @@ namespace libexeinfo
                         else if(Header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
                                 Header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
                             sb.AppendLine("\tApplication uses Presentation Manager");
-                        if(Header.os2_flags.HasFlag(OS2Flags.LongFilename))
+                        if(Header.ExecutableFlags.HasFlag(ExecutableFlags.LongFilename))
                             sb.AppendLine("\tApplication supports long filenames");
-                        if(Header.os2_flags.HasFlag(OS2Flags.ProtectedMode2))
+                        if(Header.ExecutableFlags.HasFlag(ExecutableFlags.ProtectedMode2))
                             sb.AppendLine("\tApplication uses OS/2 2.x protected mode");
-                        if(Header.os2_flags.HasFlag(OS2Flags.ProportionalFonts))
+                        if(Header.ExecutableFlags.HasFlag(ExecutableFlags.ProportionalFonts))
                             sb.AppendLine("\tApplication uses OS/2 2.x proportional fonts");
-                        if(Header.os2_flags.HasFlag(OS2Flags.GangloadArea))
+                        if(Header.ExecutableFlags.HasFlag(ExecutableFlags.GangloadArea))
                             sb.AppendFormat("\tGangload area starts at {0} an runs for {1} bytes",
                                             Header.return_thunks_offset, Header.segment_reference_thunks).AppendLine();
                         else

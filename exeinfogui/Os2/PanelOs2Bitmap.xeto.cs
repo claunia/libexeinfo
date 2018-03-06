@@ -2,6 +2,7 @@
 using Eto.Drawing;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
+using libexeinfo.Os2;
 using Bitmap = libexeinfo.Os2.Bitmap;
 
 namespace exeinfogui.Os2
@@ -25,7 +26,7 @@ namespace exeinfogui.Os2
             grdIcons.Columns.Add(new GridColumn
             {
                 DataCell                     =
-                    new TextBoxCell {Binding = Binding.Property<Bitmap.DecodedBitmap, string>(b => $"{b.Type}")},
+                    new TextBoxCell {Binding = Binding.Property<DecodedBitmap, string>(b => $"{b.Type}")},
                 HeaderText                   = "Command"
             });
 
@@ -33,7 +34,7 @@ namespace exeinfogui.Os2
             {
                 DataCell = new TextBoxCell
                 {
-                    Binding = Binding.Property<Bitmap.DecodedBitmap, string>(b => $"{b.Width}x{b.Height}")
+                    Binding = Binding.Property<DecodedBitmap, string>(b => $"{b.Width}x{b.Height}")
                 },
                 HeaderText = "Size"
             });
@@ -42,7 +43,7 @@ namespace exeinfogui.Os2
             {
                 DataCell = new TextBoxCell
                 {
-                    Binding = Binding.Property<Bitmap.DecodedBitmap, string>(b => $"{1 << (int)b.BitsPerPixel}")
+                    Binding = Binding.Property<DecodedBitmap, string>(b => $"{1 << (int)b.BitsPerPixel}")
                 },
                 HeaderText = "Colors"
             });
@@ -55,7 +56,7 @@ namespace exeinfogui.Os2
 
         void GrdIconsOnSelectionChanged(object sender, EventArgs eventArgs)
         {
-            if(!(grdIcons.SelectedItem is Bitmap.DecodedBitmap icon))
+            if(!(grdIcons.SelectedItem is DecodedBitmap icon))
             {
                 imgIcon.Image = null;
                 return;
@@ -84,12 +85,12 @@ namespace exeinfogui.Os2
                 return;
             }
 
-            Bitmap.DecodedBitmap[] icons = Bitmap.DecodeBitmap(data);
+            DecodedBitmap[] icons = Bitmap.DecodeBitmap(data);
 
             if(icons == null || icons.Length == 0)
                 try
                 {
-                    libexeinfo.Windows.Bitmap.DecodedBitmap winIcon = null;
+                    libexeinfo.Windows.DecodedBitmap winIcon = null;
 
                     if(BitConverter.ToUInt32(data, 4) == 40)
                     {
@@ -103,7 +104,7 @@ namespace exeinfogui.Os2
                     if(winIcon != null)
                         icons = new[]
                         {
-                            new Bitmap.DecodedBitmap
+                            new DecodedBitmap
                             {
                                 BitsPerPixel = winIcon.BitsPerPixel,
                                 Height       = winIcon.Height,

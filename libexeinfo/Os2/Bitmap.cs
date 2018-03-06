@@ -31,7 +31,7 @@ using System.Runtime.InteropServices;
 
 namespace libexeinfo.Os2
 {
-    public class Bitmap
+    public static class Bitmap
     {
         /// <summary>
         ///     'IC', OS/2 only, icon
@@ -69,12 +69,7 @@ namespace libexeinfo.Os2
         {
             long              pos = 0;
             BitmapArrayHeader bitmapArrayHeader;
-            BitmapInfoHeader  bitmapFileHeader;
             byte[]            buffer = new byte[Marshal.SizeOf(typeof(BitmapInfoHeader))];
-
-            Array.Copy(data, pos, buffer, 0, buffer.Length);
-            bitmapArrayHeader = BigEndianMarshal.ByteArrayToStructureLittleEndian<BitmapArrayHeader>(buffer);
-            bitmapFileHeader  = BigEndianMarshal.ByteArrayToStructureLittleEndian<BitmapInfoHeader>(buffer);
 
             List<DecodedBitmap> bitmaps = new List<DecodedBitmap>();
 
@@ -100,7 +95,8 @@ namespace libexeinfo.Os2
                 {
                     buffer = new byte[Marshal.SizeOf(typeof(BitmapInfoHeader))];
                     Array.Copy(data, pos, buffer, 0, buffer.Length);
-                    bitmapFileHeader = BigEndianMarshal.ByteArrayToStructureLittleEndian<BitmapInfoHeader>(buffer);
+                    BitmapInfoHeader bitmapFileHeader =
+                        BigEndianMarshal.ByteArrayToStructureLittleEndian<BitmapInfoHeader>(buffer);
 
                     // Stop at unknown header
                     if(bitmapFileHeader.Fix != 12) break;
@@ -110,13 +106,13 @@ namespace libexeinfo.Os2
 
                     // TODO: Non paletted?
                     pos           += Marshal.SizeOf(typeof(BitmapInfoHeader));
-                    RGB[] palette = new RGB[1 << bitmapFileHeader.BitsPerPlane];
-                    buffer        = new byte[Marshal.SizeOf(typeof(RGB))];
+                    Rgb[] palette = new Rgb[1 << bitmapFileHeader.BitsPerPlane];
+                    buffer        = new byte[Marshal.SizeOf(typeof(Rgb))];
                     for(int i = 0; i < palette.Length; i++)
                     {
                         Array.Copy(data, pos, buffer, 0, buffer.Length);
                         pos        += buffer.Length;
-                        palette[i] =  BigEndianMarshal.ByteArrayToStructureLittleEndian<RGB>(buffer);
+                        palette[i] =  BigEndianMarshal.ByteArrayToStructureLittleEndian<Rgb>(buffer);
                     }
 
                     remaining -= bitmapFileHeader.Fix;
@@ -179,13 +175,13 @@ namespace libexeinfo.Os2
 
                         // TODO: Non paletted?
                         pos     += bitmapFileHeader.Size;
-                        palette =  new RGB[1 << bitmapFileHeader.BitsPerPlane];
-                        buffer  =  new byte[Marshal.SizeOf(typeof(RGB))];
+                        palette =  new Rgb[1 << bitmapFileHeader.BitsPerPlane];
+                        buffer  =  new byte[Marshal.SizeOf(typeof(Rgb))];
                         for(int i = 0; i < palette.Length; i++)
                         {
                             Array.Copy(data, pos, buffer, 0, buffer.Length);
                             pos        += buffer.Length;
-                            palette[i] =  BigEndianMarshal.ByteArrayToStructureLittleEndian<RGB>(buffer);
+                            palette[i] =  BigEndianMarshal.ByteArrayToStructureLittleEndian<Rgb>(buffer);
                         }
 
                         remaining -= bitmapFileHeader.Fix;
@@ -242,7 +238,7 @@ namespace libexeinfo.Os2
         }
 
         // TODO: Mask is not correctly decoded on XGA icons (20x20 and 40x40)...
-        static DecodedBitmap DecodeBitmap(BitmapInfoHeader header, IList<RGB> palette, byte[] data)
+        static DecodedBitmap DecodeBitmap(BitmapInfoHeader header, IList<Rgb> palette, byte[] data)
         {
             DecodedBitmap bitmap = new DecodedBitmap
             {
@@ -302,50 +298,6 @@ namespace libexeinfo.Os2
             }
 
             return bitmap;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct BitmapArrayHeader
-        {
-            public ushort Type;
-            public uint   Size;
-            public uint   Next;
-            public ushort XDisplay;
-            public ushort YDisplay;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct BitmapInfoHeader
-        {
-            public ushort Type;
-            public uint   Size;
-            public short  XHotspot;
-            public short  YHostpot;
-            public uint   Offset;
-            public uint   Fix;
-            public ushort X;
-            public ushort Y;
-            public ushort Planes;
-            public ushort BitsPerPlane;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct RGB
-        {
-            public byte Blue;
-            public byte Green;
-            public byte Red;
-        }
-
-        public class DecodedBitmap
-        {
-            public uint   BitsPerPixel;
-            public uint   Height;
-            public int[]  Pixels;
-            public string Type;
-            public uint   Width;
-            public short  XHotspot;
-            public short  YHostpot;
         }
     }
 }

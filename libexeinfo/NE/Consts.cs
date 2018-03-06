@@ -24,6 +24,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using libexeinfo.Os2;
+
 namespace libexeinfo
 {
     public partial class NE
@@ -95,27 +97,27 @@ namespace libexeinfo
         {
             switch(id)
             {
-                case (int)Os2ResourceTypes.RT_POINTER:      return "RT_POINTER";
-                case (int)Os2ResourceTypes.RT_BITMAP:       return "RT_BITMAP";
-                case (int)Os2ResourceTypes.RT_MENU:         return "RT_MENU";
-                case (int)Os2ResourceTypes.RT_DIALOG:       return "RT_DIALOG";
-                case (int)Os2ResourceTypes.RT_STRING:       return "RT_STRING";
-                case (int)Os2ResourceTypes.RT_FONTDIR:      return "RT_FONTDIR";
-                case (int)Os2ResourceTypes.RT_FONT:         return "RT_FONT";
-                case (int)Os2ResourceTypes.RT_ACCELTABLE:   return "RT_ACCELTABLE";
-                case (int)Os2ResourceTypes.RT_RCDATA:       return "RT_RCDATA";
-                case (int)Os2ResourceTypes.RT_MESSAGE:      return "RT_MESSAGE";
-                case (int)Os2ResourceTypes.RT_DLGINCLUDE:   return "RT_DLGINCLUDE";
-                case (int)Os2ResourceTypes.RT_VKEYTBL:      return "RT_VKEYTBL";
-                case (int)Os2ResourceTypes.RT_KEYTBL:       return "RT_KEYTBL";
-                case (int)Os2ResourceTypes.RT_CHARTBL:      return "RT_CHARTBL";
-                case (int)Os2ResourceTypes.RT_DISPLAYINFO:  return "RT_DISPLAYINFO";
-                case (int)Os2ResourceTypes.RT_FKASHORT:     return "RT_FKASHORT";
-                case (int)Os2ResourceTypes.RT_FKALONG:      return "RT_FKALONG";
-                case (int)Os2ResourceTypes.RT_HELPTABLE:    return "RT_HELPTABLE";
-                case (int)Os2ResourceTypes.RT_HELPSUBTABLE: return "RT_HELPSUBTABLE";
-                case (int)Os2ResourceTypes.RT_FDDIR:        return "RT_FDDIR";
-                case (int)Os2ResourceTypes.RT_FD:           return "RT_FD";
+                case (int)Os2.ResourceTypes.RT_POINTER:      return "RT_POINTER";
+                case (int)Os2.ResourceTypes.RT_BITMAP:       return "RT_BITMAP";
+                case (int)Os2.ResourceTypes.RT_MENU:         return "RT_MENU";
+                case (int)Os2.ResourceTypes.RT_DIALOG:       return "RT_DIALOG";
+                case (int)Os2.ResourceTypes.RT_STRING:       return "RT_STRING";
+                case (int)Os2.ResourceTypes.RT_FONTDIR:      return "RT_FONTDIR";
+                case (int)Os2.ResourceTypes.RT_FONT:         return "RT_FONT";
+                case (int)Os2.ResourceTypes.RT_ACCELTABLE:   return "RT_ACCELTABLE";
+                case (int)Os2.ResourceTypes.RT_RCDATA:       return "RT_RCDATA";
+                case (int)Os2.ResourceTypes.RT_MESSAGE:      return "RT_MESSAGE";
+                case (int)Os2.ResourceTypes.RT_DLGINCLUDE:   return "RT_DLGINCLUDE";
+                case (int)Os2.ResourceTypes.RT_VKEYTBL:      return "RT_VKEYTBL";
+                case (int)Os2.ResourceTypes.RT_KEYTBL:       return "RT_KEYTBL";
+                case (int)Os2.ResourceTypes.RT_CHARTBL:      return "RT_CHARTBL";
+                case (int)Os2.ResourceTypes.RT_DISPLAYINFO:  return "RT_DISPLAYINFO";
+                case (int)Os2.ResourceTypes.RT_FKASHORT:     return "RT_FKASHORT";
+                case (int)Os2.ResourceTypes.RT_FKALONG:      return "RT_FKALONG";
+                case (int)Os2.ResourceTypes.RT_HELPTABLE:    return "RT_HELPTABLE";
+                case (int)Os2.ResourceTypes.RT_HELPSUBTABLE: return "RT_HELPSUBTABLE";
+                case (int)Os2.ResourceTypes.RT_FDDIR:        return "RT_FDDIR";
+                case (int)Os2.ResourceTypes.RT_FD:           return "RT_FD";
                 default:                                    return $"{id}";
             }
         }

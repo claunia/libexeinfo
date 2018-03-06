@@ -3,6 +3,7 @@ using System.IO;
 using Eto.Drawing;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
+using libexeinfo.Os2;
 using Bitmap = libexeinfo.Os2.Bitmap;
 
 namespace iconviewer
@@ -20,7 +21,7 @@ namespace iconviewer
             grdIcons.Columns.Add(new GridColumn
             {
                 DataCell                     =
-                    new TextBoxCell {Binding = Binding.Property<Bitmap.DecodedBitmap, string>(b => $"{b.Type}")},
+                    new TextBoxCell {Binding = Binding.Property<DecodedBitmap, string>(b => $"{b.Type}")},
                 HeaderText                   = "Command"
             });
 
@@ -28,7 +29,7 @@ namespace iconviewer
             {
                 DataCell = new TextBoxCell
                 {
-                    Binding = Binding.Property<Bitmap.DecodedBitmap, string>(b => $"{b.Width}x{b.Height}")
+                    Binding = Binding.Property<DecodedBitmap, string>(b => $"{b.Width}x{b.Height}")
                 },
                 HeaderText = "Size"
             });
@@ -37,7 +38,7 @@ namespace iconviewer
             {
                 DataCell = new TextBoxCell
                 {
-                    Binding = Binding.Property<Bitmap.DecodedBitmap, string>(b => $"{1 << (int)b.BitsPerPixel}")
+                    Binding = Binding.Property<DecodedBitmap, string>(b => $"{1 << (int)b.BitsPerPixel}")
                 },
                 HeaderText = "Colors"
             });
@@ -48,7 +49,7 @@ namespace iconviewer
 
         void GrdIconsOnSelectionChanged(object sender, EventArgs eventArgs)
         {
-            if(!(grdIcons.SelectedItem is Bitmap.DecodedBitmap icon))
+            if(!(grdIcons.SelectedItem is DecodedBitmap icon))
             {
                 imgIcon.Image = null;
                 return;
@@ -78,7 +79,7 @@ namespace iconviewer
             fstream.Read(data, 0, data.Length);
             fstream.Dispose();
 
-            Bitmap.DecodedBitmap[] icons = Bitmap.DecodeBitmap(data);
+            DecodedBitmap[] icons = Bitmap.DecodeBitmap(data);
             imgIcon.Image                = new Eto.Drawing.Bitmap((int)icons[0].Width, (int)icons[0].Height,
                                                                   PixelFormat.Format32bppRgba, icons[0].Pixels);
             grdIcons.DataStore = icons;

@@ -30,6 +30,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using libexeinfo.Os2;
 
 namespace libexeinfo
 {
@@ -246,7 +247,7 @@ namespace libexeinfo
                     BaseStream.Position = BaseExecutable.Header.new_offset + Header.resource_table_offset;
                     buffer              = new byte[Header.resource_entries * 4];
                     BaseStream.Read(buffer, 0, buffer.Length);
-                    Os2ResourceTableEntry[] entries = new Os2ResourceTableEntry[Header.resource_entries];
+                    ResourceTableEntry[] entries = new ResourceTableEntry[Header.resource_entries];
                     for(int i = 0; i < entries.Length; i++)
                     {
                         entries[i].etype = BitConverter.ToUInt16(buffer, i * 4 + 0);

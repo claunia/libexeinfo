@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System.Runtime.InteropServices;
+using libexeinfo.Os2;
 
 namespace libexeinfo
 {
@@ -62,7 +63,7 @@ namespace libexeinfo
             public ushort           alignment_shift;
             public ushort           resource_entries;
             public TargetOS         target_os;
-            public OS2Flags         os2_flags;
+            public ExecutableFlags         ExecutableFlags;
             public ushort           return_thunks_offset;
             public ushort           segment_reference_thunks;
             public ushort           minimum_swap_area;
@@ -167,7 +168,7 @@ namespace libexeinfo
             /// </summary>
             public ushort dwSegmentLength;
             /// <summary>
-            ///     Flag word, <see cref="SegmentResourceFlags" />, <see cref="SEGMENT_TYPE_MASK" />, <see cref="SEGMENT_FLAGS_MASK" />
+            ///     Flag word, <see cref="SegmentFlags" />, <see cref="SEGMENT_TYPE_MASK" />, <see cref="SEGMENT_FLAGS_MASK" />
             ///     , <see cref="SEGMENT_DISCARD_MASK" />
             /// </summary>
             public ushort dwFlags;
@@ -175,70 +176,6 @@ namespace libexeinfo
             ///     Minimum allocation size of the segment, in bytes. Total size of the segment. Zero means 64KiB
             /// </summary>
             public ushort dwMinimumAllocation;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct Os2ResourceTableEntry
-        {
-            public ushort etype;
-            public ushort ename;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct Os2MenuHeader
-        {
-            public ushort cb;
-            public ushort type;
-            public ushort cp;
-            public ushort offset;
-            public ushort count;
-        }
-
-        /// <summary>
-        ///     Followed by data, if <see cref="Os2MenuItem.style" /> is <see cref="Os2MenuType.MIS_TEXT" /> a null-terminated
-        ///     string follows, if <see cref="Os2MenuType.MIS_BITMAP" /> a resource ID follows and if
-        ///     <see cref="Os2MenuType.MIS_SUBMENU" /> another header follows.
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        public struct Os2MenuItem
-        {
-            public Os2MenuType      style;
-            public Os2MenuAttribute attrib;
-            public ushort           id;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct Os2DialogTemplateItem
-        {
-            public ushort fsItemStatus;
-            public ushort cChildren;
-            public ushort cchClassName;
-            public ushort offClassName;
-            public ushort cchText;
-            public ushort offText;
-            public uint   flStyle;
-            public short  x;
-            public short  y;
-            public short  cx;
-            public short  cy;
-            public ushort id;
-            public ushort offPresParams;
-            public ushort offCtlData;
-        }
-
-        /// <summary>
-        ///     Dialog template, followed by several <see cref="Os2DialogTemplateItem" />
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        public struct Os2DialogTemplate
-        {
-            public ushort cbTemplate;
-            public ushort type;
-            public ushort codepage;
-            public ushort offadlgti;
-            public ushort fsTemplateStatus;
-            public ushort iItemFocus;
-            public ushort coffPresParams;
         }
     }
 }
