@@ -135,6 +135,17 @@ namespace exeinfogui.NE
                     catch { goto default; }
 
                     break;
+                case "RT_MENU" when (libexeinfo.NE.TargetOS)((TreeGridItem)treeResources.SelectedItem).Values[4] ==
+                                    libexeinfo.NE.TargetOS.OS2:
+                    if(BitConverter.ToUInt32(data, 0) == 40)
+                    {
+                        // Some OS/2 executables contain Windows "RT_ICON" resources, in OS/2 NE format
+                        pnlResource.Content = panelWindowsIcon;
+                        panelWindowsIcon.Update(data);
+                        break;
+                    }
+
+                    goto default;
                 case "RT_ICON":
                     pnlResource.Content = panelWindowsIcon;
                     panelWindowsIcon.Update(data);
