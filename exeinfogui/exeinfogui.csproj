@@ -23,5 +23,6 @@
     <Folder Include="NE\" />
     <Folder Include="Win16\" />
     <Folder Include="Os2\" />
+    <Folder Include="Windows\" />
   </ItemGroup>
 </Project>

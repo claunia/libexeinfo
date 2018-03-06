@@ -1,5 +1,5 @@
 ﻿//
-// Accelerator.cs
+// Bitmap.cs
 //
 // Author:
 //       Natalia Portillo <claunia@claunia.com>
@@ -225,7 +225,7 @@ namespace libexeinfo.Os2
                         for(int px = 0; px < bitmap.Pixels.Length; px++)
                             bitmap.Pixels[px] = bitmap.Pixels[px] + VISIBLE;
 
-                    // OS/2 coordinate 0,0 is lower,left, so need to reverse first all pixels then by line
+                    // Need to reverse first all pixels then by line
                     int[] pixels = bitmap.Pixels.Reverse().ToArray();
                     for(int y = 0; y     < bitmap.Height; y++)
                         for(int x = 0; x < bitmap.Width; x++)

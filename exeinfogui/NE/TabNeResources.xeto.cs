@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Linq;
 using exeinfogui.Os2;
 using exeinfogui.Win16;
+using exeinfogui.Windows;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
 
@@ -41,6 +42,7 @@ namespace exeinfogui.NE
         PanelNeStrings         panelNeStrings;
         PanelOs2Bitmap         panelOs2Bitmap;
         PanelWin16Version      panelWin16Version;
+        PanelWindowsIcon       panelWindowsIcon;
         Panel                  pnlResource;
         TreeGridItemCollection treeData;
         TreeGridView           treeResources;
@@ -61,6 +63,7 @@ namespace exeinfogui.NE
             panelNeAccelerators = new PanelNeAccelerators();
             panelHexDump        = new PanelHexDump();
             panelOs2Bitmap      = new PanelOs2Bitmap();
+            panelWindowsIcon    = new PanelWindowsIcon();
         }
 
         public void Update(IEnumerable<libexeinfo.NE.ResourceType> resourceTypes, libexeinfo.NE.TargetOS os)
@@ -131,6 +134,10 @@ namespace exeinfogui.NE
                     }
                     catch { goto default; }
 
+                    break;
+                case "RT_ICON":
+                    pnlResource.Content = panelWindowsIcon;
+                    panelWindowsIcon.Update(data);
                     break;
                 default:
                     pnlResource.Content = panelHexDump;

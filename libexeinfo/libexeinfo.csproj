@@ -95,6 +95,7 @@
     <Compile Include="Structs.cs" />
     <Compile Include="Swapping.cs" />
     <Compile Include="PE\Subsystems.cs" />
+    <Compile Include="Windows\Bitmap.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

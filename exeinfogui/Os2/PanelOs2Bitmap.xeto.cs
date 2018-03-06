@@ -87,6 +87,35 @@ namespace exeinfogui.Os2
             Bitmap.DecodedBitmap[] icons = Bitmap.DecodeBitmap(data);
 
             if(icons == null || icons.Length == 0)
+                try
+                {
+                    libexeinfo.Windows.Bitmap.DecodedBitmap winIcon = null;
+
+                    if(BitConverter.ToUInt32(data, 4) == 40)
+                    {
+                        byte[] cursor = new byte[data.Length - 4];
+                        Array.Copy(data, 4, cursor, 0, cursor.Length);
+                        winIcon = libexeinfo.Windows.Bitmap.DecodeIcon(cursor);
+                    }
+                    else if(BitConverter.ToUInt32(data, 0) == 40)
+                        winIcon = libexeinfo.Windows.Bitmap.DecodeIcon(data);
+
+                    if(winIcon != null)
+                        icons = new[]
+                        {
+                            new Bitmap.DecodedBitmap
+                            {
+                                BitsPerPixel = winIcon.BitsPerPixel,
+                                Height       = winIcon.Height,
+                                Pixels       = winIcon.Pixels,
+                                Type         = "Windows cursor",
+                                Width        = winIcon.Width
+                            }
+                        };
+                }
+                catch { icons = null; }
+
+            if(icons == null || icons.Length == 0)
             {
                 imgIcon.Image     = null;
                 grdIcons.Visible  = false;
