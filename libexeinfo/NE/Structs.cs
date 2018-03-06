@@ -183,5 +183,62 @@ namespace libexeinfo
             public ushort etype;
             public ushort ename;
         }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Os2MenuHeader
+        {
+            public ushort cb;
+            public ushort type;
+            public ushort cp;
+            public ushort offset;
+            public ushort count;
+        }
+
+        /// <summary>
+        ///     Followed by data, if <see cref="Os2MenuItem.style" /> is <see cref="Os2MenuType.MIS_TEXT" /> a null-terminated
+        ///     string follows, if <see cref="Os2MenuType.MIS_BITMAP" /> a resource ID follows and if
+        ///     <see cref="Os2MenuType.MIS_SUBMENU" /> another header follows.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Os2MenuItem
+        {
+            public Os2MenuType      style;
+            public Os2MenuAttribute attrib;
+            public ushort           id;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Os2DialogTemplateItem
+        {
+            public ushort fsItemStatus;
+            public ushort cChildren;
+            public ushort cchClassName;
+            public ushort offClassName;
+            public ushort cchText;
+            public ushort offText;
+            public uint   flStyle;
+            public short  x;
+            public short  y;
+            public short  cx;
+            public short  cy;
+            public ushort id;
+            public ushort offPresParams;
+            public ushort offCtlData;
+        }
+
+        /// <summary>
+        ///     Dialog template, followed by several <see cref="Os2DialogTemplateItem" />
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Os2DialogTemplate
+        {
+            public ushort cbTemplate;
+            public ushort type;
+            public ushort codepage;
+            public ushort offadlgti;
+            public ushort fsTemplateStatus;
+            public ushort iItemFocus;
+            public ushort coffPresParams;
+        }
     }
 }

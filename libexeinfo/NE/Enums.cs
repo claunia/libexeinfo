@@ -55,6 +55,43 @@ namespace libexeinfo
             GangloadArea      = 1 << 3
         }
 
+        [Flags]
+        public enum Os2MenuAttribute : ushort
+        {
+            MIA_FRAMED   = 0x1000,
+            MIA_CHECKED  = 0x2000,
+            MIA_DISABLED = 0x4000,
+            MIA_HILITED  = 0x8000
+        }
+
+        public enum Os2MenuType : ushort
+        {
+            MIS_TEXT      = 0x0001,
+            MIS_BITMAP    = 0x0002,
+            MIS_SEPARATOR = 0x0004,
+            MIS_OWNERDRAW = 0x0008,
+            MIS_SUBMENU   = 0x0010,
+            /// <summary>
+            ///     multiple choice submenu
+            /// </summary>
+            MIS_MULTMENU        = 0x0020,
+            MIS_SYSCOMMAND      = 0x0040,
+            MIS_HELP            = 0x0080,
+            MIS_STATIC          = 0x0100,
+            MIS_BUTTONSEPARATOR = 0x0200,
+            MIS_BREAK           = 0x0400,
+            MIS_BREAKSEPARATOR  = 0x0800,
+            /// <summary>
+            ///     multiple choice group start
+            /// </summary>
+            MIS_GROUP = 0x1000,
+            /// <summary>
+            ///     In multiple choice submenus a style of 'single' denotes the item is a radiobutton.  Absence of this style defaults
+            ///     the item to a checkbox.
+            /// </summary>
+            MIS_SINGLE = 0x2000
+        }
+
         /// <summary>
         ///     Resource types.
         /// </summary>
@@ -127,10 +164,10 @@ namespace libexeinfo
         [Flags]
         public enum ResourceFlags : ushort
         {
-            Moveable    = 0x10,
-            Pure        = 0x20,
-            Preload     = 0x40,
-            Discardable = 0x1000,
+            Moveable       = 0x10,
+            Pure           = 0x20,
+            Preload        = 0x40,
+            Discardable    = 0x1000,
             SegmentAligned = 0x8000
         }
 
