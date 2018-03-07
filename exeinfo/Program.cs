@@ -4,7 +4,7 @@
 // Author:
 //       Natalia Portillo <claunia@claunia.com>
 //
-// Copyright (c) 2017 Copyright © Claunia.com
+// Copyright (c) 2017-2018 Copyright © Claunia.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ namespace exeinfo
         {
             if(args.Length != 1)
             {
-                Console.WriteLine("exeinfo version 0.1 © 2017 Natalia Portillo");
+                Console.WriteLine("exeinfo version 0.1 © 2017-2018 Natalia Portillo");
                 Console.WriteLine("Usage: exeinfo file.exe");
                 return;
             }
