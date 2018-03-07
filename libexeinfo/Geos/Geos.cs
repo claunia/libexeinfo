@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace libexeinfo
 {
@@ -36,6 +37,7 @@ namespace libexeinfo
         ApplicationHeader   applicationHeader;
         ApplicationHeaderV2 applicationHeader2;
         Export[]            exports;
+        Encoding            geosEncoding = Claunia.Encoding.Encoding.GeosEncoding;
         GeodeHeader         header;
         GeodeHeaderV2       header2;
         Import[]            imports;
@@ -82,7 +84,6 @@ namespace libexeinfo
         public IEnumerable<string>       Strings                 { get; private set; }
         public IEnumerable<Segment>      Segments                { get; private set; }
 
-        // TODO: GEOS character set
         void Initialize()
         {
             Recognized = false;
@@ -104,9 +105,9 @@ namespace libexeinfo
 
             List<string> strings = new List<string>
             {
-                StringHandlers.CToString(isNewHeader ? header2.name : header.name),
-                StringHandlers.CToString(isNewHeader ? header2.copyright : header.copyright),
-                StringHandlers.CToString(isNewHeader ? header2.info : header.info)
+                StringHandlers.CToString(isNewHeader ? header2.name : header.name,           geosEncoding),
+                StringHandlers.CToString(isNewHeader ? header2.copyright : header.copyright, geosEncoding),
+                StringHandlers.CToString(isNewHeader ? header2.info : header.info,           geosEncoding)
             };
 
             uint segmentBase = 0;
@@ -121,7 +122,7 @@ namespace libexeinfo
                 imports            = new Import[applicationHeader2.imports];
                 exports            = new Export[applicationHeader2.exports];
                 segments           = new SegmentDescriptor[applicationHeader2.segments];
-                strings.Add($"{StringHandlers.CToString(applicationHeader2.name).Trim()}.{StringHandlers.CToString(applicationHeader2.extension).Trim()}");
+                strings.Add($"{StringHandlers.CToString(applicationHeader2.name, geosEncoding).Trim()}.{StringHandlers.CToString(applicationHeader2.extension, geosEncoding).Trim()}");
             }
             else
             {
@@ -132,7 +133,7 @@ namespace libexeinfo
                 imports           = new Import[applicationHeader.imports];
                 exports           = new Export[applicationHeader.exports];
                 segments          = new SegmentDescriptor[applicationHeader.segments];
-                strings.Add($"{StringHandlers.CToString(applicationHeader.name).Trim()}.{StringHandlers.CToString(applicationHeader.extension).Trim()}");
+                strings.Add($"{StringHandlers.CToString(applicationHeader.name, geosEncoding).Trim()}.{StringHandlers.CToString(applicationHeader.extension, geosEncoding).Trim()}");
             }
 
             buffer = new byte[Marshal.SizeOf(typeof(Import))];
@@ -140,7 +141,7 @@ namespace libexeinfo
             {
                 BaseStream.Read(buffer, 0, buffer.Length);
                 imports[i] = BigEndianMarshal.ByteArrayToStructureLittleEndian<Import>(buffer);
-                strings.Add(StringHandlers.CToString(imports[i].name).Trim());
+                strings.Add(StringHandlers.CToString(imports[i].name, geosEncoding).Trim());
             }
 
             buffer = new byte[Marshal.SizeOf(typeof(Export))];

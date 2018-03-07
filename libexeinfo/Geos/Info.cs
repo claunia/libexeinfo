@@ -43,39 +43,42 @@ namespace libexeinfo
                 sb.AppendFormat("\tAttributes: {0}",
                                 isNewHeader ? applicationHeader2.attributes : applicationHeader.attributes)
                   .AppendLine();
-                sb.AppendFormat("\tName: {0}", StringHandlers.CToString(isNewHeader ? header2.name : header.name))
+                sb.AppendFormat("\tName: {0}",
+                                StringHandlers.CToString(isNewHeader ? header2.name : header.name, geosEncoding))
                   .AppendLine();
                 sb.AppendFormat("\tInternal name: \"{0}.{1}\"",
                                 isNewHeader
-                                    ? StringHandlers.CToString(applicationHeader2.name).Trim()
-                                    : StringHandlers.CToString(applicationHeader.name).Trim(),
+                                    ? StringHandlers.CToString(applicationHeader2.name, geosEncoding).Trim()
+                                    : StringHandlers.CToString(applicationHeader.name, geosEncoding).Trim(),
                                 isNewHeader
-                                    ? StringHandlers.CToString(applicationHeader2.extension).Trim()
-                                    : StringHandlers.CToString(applicationHeader.extension).Trim()).AppendLine();
+                                    ? StringHandlers.CToString(applicationHeader2.extension, geosEncoding).Trim()
+                                    : StringHandlers.CToString(applicationHeader.extension, geosEncoding).Trim())
+                  .AppendLine();
                 sb.AppendFormat("\tVersion: {0}",
                                 isNewHeader
                                     ? $"{header2.release.major}.{header2.release.minor} {header2.release.change}-{header2.release.engineering}"
                                     : $"{header.release.major}.{header.release.minor} {header.release.change}-{header.release.engineering}")
                   .AppendLine();
                 sb.AppendFormat("\tCopyright string: {0}",
-                                StringHandlers.CToString(isNewHeader ? header2.copyright : header.copyright))
-                  .AppendLine();
+                                StringHandlers.CToString(isNewHeader ? header2.copyright : header.copyright,
+                                                         geosEncoding)).AppendLine();
                 sb.AppendFormat("\tInformational string: {0}",
-                                StringHandlers.CToString(isNewHeader ? header2.info : header.info)).AppendLine();
+                                StringHandlers.CToString(isNewHeader ? header2.info : header.info, geosEncoding))
+                  .AppendLine();
                 sb.AppendFormat("\tProtocol: {0}",
                                 isNewHeader
                                     ? $"{header2.protocol.major}.{header2.protocol.minor}"
                                     : $"{header.protocol.major}.{header.protocol.minor}").AppendLine();
                 sb.AppendFormat("\tApplication token: \"{0}\" id {1}",
                                 isNewHeader
-                                    ? StringHandlers.CToString(header2.application.str)
-                                    : StringHandlers.CToString(header.creator.str),
+                                    ? StringHandlers.CToString(header2.application.str, geosEncoding)
+                                    : StringHandlers.CToString(header.creator.str,      geosEncoding),
                                 isNewHeader ? header2.application.manufacturer : header.creator.manufacturer)
                   .AppendLine();
                 sb.AppendFormat("\tToken: \"{0}\" id {1}",
                                 isNewHeader
-                                    ? StringHandlers.CToString(header2.token.str)
-                                    : StringHandlers.CToString(header.token.str),
+                                    ? StringHandlers.CToString(header2.token.str, geosEncoding)
+                                    : StringHandlers.CToString(header.token.str,  geosEncoding),
                                 isNewHeader ? header2.token.manufacturer : header.token.manufacturer).AppendLine();
 
                 sb.AppendFormat("\tSegments: {0}",
@@ -88,8 +91,9 @@ namespace libexeinfo
                 sb.AppendFormat("\t{0} imports:", imports.Length).AppendLine();
                 for(int i = 0; i < imports.Length; i++)
                     sb.AppendFormat("\t\tImport \"{0}\", attributes {1}, protocol {2}.{3}",
-                                    StringHandlers.CToString(imports[i].name).Trim(), imports[i].attributes,
-                                    imports[i].protocol.major, imports[i].protocol.minor).AppendLine();
+                                    StringHandlers.CToString(imports[i].name, geosEncoding).Trim(),
+                                    imports[i].attributes, imports[i].protocol.major, imports[i].protocol.minor)
+                      .AppendLine();
 
                 sb.AppendFormat("\t{0} exports:", exports.Length).AppendLine();
                 for(int i = 0; i < exports.Length; i++)
