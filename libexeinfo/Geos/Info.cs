@@ -54,8 +54,8 @@ namespace libexeinfo
                                     : StringHandlers.CToString(applicationHeader.extension).Trim()).AppendLine();
                 sb.AppendFormat("\tVersion: {0}",
                                 isNewHeader
-                                    ? $"{header2.release.major}.{header2.release.minor}.{header2.release.change}.{header2.release.engineering}"
-                                    : $"{header.release.major}.{header.release.minor}.{header.release.change}.{header.release.engineering}")
+                                    ? $"{header2.release.major}.{header2.release.minor} {header2.release.change}-{header2.release.engineering}"
+                                    : $"{header.release.major}.{header.release.minor} {header.release.change}-{header.release.engineering}")
                   .AppendLine();
                 sb.AppendFormat("\tCopyright string: {0}",
                                 StringHandlers.CToString(isNewHeader ? header2.copyright : header.copyright))
