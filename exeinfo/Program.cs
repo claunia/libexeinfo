@@ -52,6 +52,7 @@ namespace exeinfo
             IExecutable lxExe   = new LX(args[0]);
             IExecutable coffExe = new COFF(args[0]);
             IExecutable peExe   = new PE(args[0]);
+            IExecutable geosExe = new Geos(args[0]);
 
             if(neExe.Recognized)
             {
@@ -71,8 +72,8 @@ namespace exeinfo
                             Console.WriteLine("\t\tFile subtype: {0} font", NE.Version.FontToString(vers.FileSubtype));
                         else if(vers.FileSubtype > 0)
                             Console.WriteLine("\t\tFile subtype: {0}", (uint)vers.FileSubtype);
-                        Console.WriteLine("\t\tFile flags: {0}",       vers.FileFlags);
-                        Console.WriteLine("\t\tFile OS: {0}",          NE.Version.OsToString(vers.FileOS));
+                        Console.WriteLine("\t\tFile flags: {0}", vers.FileFlags);
+                        Console.WriteLine("\t\tFile OS: {0}",    NE.Version.OsToString(vers.FileOS));
 
                         foreach(KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
                         {
@@ -140,10 +141,10 @@ namespace exeinfo
             {
                 recognized = true;
                 Console.Write(mzExe.Information);
-                if(((MZ)mzExe).ResourceStream          != null || ((MZ)mzExe).ResourceHeader.rsh_vrsn != 0 &&
-                   ((MZ)mzExe).ResourceHeader.rsh_vrsn != 1                                                &&
-                   ((MZ)mzExe).ResourceHeader.rsh_vrsn != 4                                                &&
-                   ((MZ)mzExe).ResourceHeader.rsh_vrsn != 5)
+                if(((MZ)mzExe).ResourceStream != null || ((MZ)mzExe).ResourceHeader.rsh_vrsn != 0 &&
+                   ((MZ)mzExe).ResourceHeader.rsh_vrsn                                       != 1 &&
+                   ((MZ)mzExe).ResourceHeader.rsh_vrsn                                       != 4 &&
+                   ((MZ)mzExe).ResourceHeader.rsh_vrsn                                       != 5)
                     PrintGemResources(((MZ)mzExe).ResourceHeader,    ((MZ)mzExe).ResourceObjectRoots,
                                       ((MZ)mzExe).ResourceExtension, ((MZ)mzExe).GemColorIcons);
 
@@ -158,10 +159,10 @@ namespace exeinfo
             {
                 recognized = true;
                 Console.Write(stExe.Information);
-                if(((AtariST)stExe).ResourceStream          != null || ((AtariST)stExe).ResourceHeader.rsh_vrsn != 0 &&
-                   ((AtariST)stExe).ResourceHeader.rsh_vrsn != 1                                                     &&
-                   ((AtariST)stExe).ResourceHeader.rsh_vrsn != 4                                                     &&
-                   ((AtariST)stExe).ResourceHeader.rsh_vrsn != 5)
+                if(((AtariST)stExe).ResourceStream != null || ((AtariST)stExe).ResourceHeader.rsh_vrsn != 0 &&
+                   ((AtariST)stExe).ResourceHeader.rsh_vrsn                                            != 1 &&
+                   ((AtariST)stExe).ResourceHeader.rsh_vrsn                                            != 4 &&
+                   ((AtariST)stExe).ResourceHeader.rsh_vrsn                                            != 5)
                     PrintGemResources(((AtariST)stExe).ResourceHeader,    ((AtariST)stExe).ResourceObjectRoots,
                                       ((AtariST)stExe).ResourceExtension, ((AtariST)stExe).GemColorIcons);
 
@@ -184,12 +185,25 @@ namespace exeinfo
                 }
             }
 
+            if(geosExe.Recognized)
+            {
+                recognized = true;
+                Console.Write(geosExe.Information);
+
+                if(geosExe.Strings != null && geosExe.Strings.Any())
+                {
+                    Console.WriteLine("\tStrings:");
+                    foreach(string str in geosExe.Strings) Console.WriteLine("\t\t{0}", str);
+                }
+            }
+
             if(!recognized) Console.WriteLine("Executable format not recognized");
         }
 
-        static void PrintGemResources(GEM.MagiCResourceHeader  resourceHeader, IReadOnlyList<GEM.TreeObjectNode> roots,
-                                      GEM.GemResourceExtension resourceExtension,
-                                      GEM.ColorIcon[]          colorIcons)
+        static void PrintGemResources(GEM.MagiCResourceHeader           resourceHeader,
+                                      IReadOnlyList<GEM.TreeObjectNode> roots,
+                                      GEM.GemResourceExtension          resourceExtension,
+                                      GEM.ColorIcon[]                   colorIcons)
         {
             Console.WriteLine("\t\tGEM Resources:");
             Console.WriteLine("\t\t\t{0} OBJECTs start at {1}",  resourceHeader.rsh_nobs, resourceHeader.rsh_object);
@@ -234,23 +248,19 @@ namespace exeinfo
                 case GEM.ObjectTypes.G_IBOX:
                     Console.WriteLine("{0} ({1} {2}) {3} border, {4} text, {5} interior, {6} fill, {7} mode," + " coordinates ({8},{9}) size {10}x{11}",
                                       node.type, node.flags, node.state,
-                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.BorderColorMask) >> 12),
-                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.TextColorMask)   >> 8),
-                                      (GEM.ObjectColors)((node.data      & 0xFFFF & GEM.InsideColorMask) >> 8),
+                                      (GEM.ObjectColors)((node.data & 0xFFFF      & GEM.BorderColorMask) >> 12),
+                                      (GEM.ObjectColors)((node.data & 0xFFFF      & GEM.TextColorMask)   >> 8),
+                                      (GEM.ObjectColors)((node.data & 0xFFFF      & GEM.InsideColorMask) >> 8),
                                       (GEM.ObjectFillPattern)((node.data & 0xFFFF & GEM.FillPatternMask) >> 4),
-                                      (node.data                         & 0xFFFF & GEM.TransparentColor) != 0
-                                          ? "transparent"
-                                          : "replace",
+                                      (node.data & 0xFFFF & GEM.TransparentColor) != 0 ? "transparent" : "replace",
                                       node.x, node.y, node.width, node.height);
                     break;
                 case GEM.ObjectTypes.G_BOXCHAR:
                     sbyte thickness = (sbyte)((node.data & 0xFF0000) >> 16);
 
                     if(thickness      < 0) thickStr = $"{thickness * -1} pixels outward thickness";
-                    else if(thickness > 0)
-                        thickStr = $"{thickness} pixels inward thickness";
-                    else
-                        thickStr = "no thickness";
+                    else if(thickness > 0) thickStr = $"{thickness} pixels inward thickness";
+                    else thickStr                   = "no thickness";
 
                     char character =
                         Claunia.Encoding.Encoding.AtariSTEncoding.GetString(new[]
@@ -262,12 +272,10 @@ namespace exeinfo
                                       "{0} ({1} {2}) {3} border, {4} text, {5} interior, {6} fill, {7} mode, {8}," +
                                       " '{9}' character, coordinates ({10},{11}) size {12}x{13}", node.type, node.flags,
                                       node.state, (GEM.ObjectColors)((node.data & 0xFFFF & GEM.BorderColorMask) >> 12),
-                                      (GEM.ObjectColors)((node.data             & 0xFFFF & GEM.TextColorMask)   >> 8),
-                                      (GEM.ObjectColors)((node.data             & 0xFFFF & GEM.InsideColorMask) >> 8),
-                                      (GEM.ObjectFillPattern)((node.data        & 0xFFFF & GEM.FillPatternMask) >> 4),
-                                      (node.data                                & 0xFFFF & GEM.TransparentColor) != 0
-                                          ? "transparent"
-                                          : "replace",
+                                      (GEM.ObjectColors)((node.data & 0xFFFF             & GEM.TextColorMask)   >> 8),
+                                      (GEM.ObjectColors)((node.data & 0xFFFF             & GEM.InsideColorMask) >> 8),
+                                      (GEM.ObjectFillPattern)((node.data & 0xFFFF        & GEM.FillPatternMask) >> 4),
+                                      (node.data & 0xFFFF & GEM.TransparentColor) != 0 ? "transparent" : "replace",
                                       thickStr, character, node.x, node.y, node.width, node.height);
                     break;
                 case GEM.ObjectTypes.G_BUTTON:
@@ -283,11 +291,9 @@ namespace exeinfo
                     if(node.TedInfo == null) goto default;
 
                     if(node.TedInfo.Thickness < 0)
-                        thickStr = $"{node.TedInfo.Thickness * -1} pixels outward thickness";
-                    else if(node.TedInfo.Thickness > 0)
-                        thickStr = $"{node.TedInfo.Thickness} pixels inward thickness";
-                    else
-                        thickStr = "no thickness";
+                        thickStr                                 = $"{node.TedInfo.Thickness * -1} pixels outward thickness";
+                    else if(node.TedInfo.Thickness > 0) thickStr = $"{node.TedInfo.Thickness} pixels inward thickness";
+                    else thickStr                                = "no thickness";
 
                     Console.WriteLine("{0} ({1} {2}), coordinates ({3},{4}) size {5}x{6}, font {7}, {8}-justified," + " {9}, {10} border, {11} text, {12} interior, {13} fill, {14} mode," + " text: \"{15}\", validation: \"{16}\", template: \"{17}\"",
                                       node.type, node.flags, node.state, node.x, node.y, node.width, node.height,

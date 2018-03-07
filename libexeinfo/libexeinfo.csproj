@@ -55,6 +55,11 @@
     <Compile Include="GEM\Resources.cs" />
     <Compile Include="GEM\Structs.cs" />
     <Compile Include="GEM\Vdi.cs" />
+    <Compile Include="Geos\Consts.cs" />
+    <Compile Include="Geos\Enums.cs" />
+    <Compile Include="Geos\Geos.cs" />
+    <Compile Include="Geos\Info.cs" />
+    <Compile Include="Geos\Structs.cs" />
     <Compile Include="IExecutable.cs" />
     <Compile Include="NE\Accelerators.cs" />
     <Compile Include="NE\GetStrings.cs" />
