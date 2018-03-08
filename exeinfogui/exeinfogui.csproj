@@ -26,5 +26,6 @@
     <Folder Include="Os2\" />
     <Folder Include="Windows\" />
     <Folder Include="LE\" />
+    <Folder Include="LX\" />
   </ItemGroup>
 </Project>

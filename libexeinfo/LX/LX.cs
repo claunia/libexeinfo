@@ -30,6 +30,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using libexeinfo.Os2;
 
 namespace libexeinfo
 {
@@ -47,6 +48,7 @@ namespace libexeinfo
         public NE.ResidentName[] ImportNames;
         string                   ModuleDescription;
         string                   ModuleName;
+        public NE.ResourceTable         neFormatResourceTable;
         public NE.ResidentName[] NonResidentNames;
         ObjectPageTableEntry[]   objectPageTableEntries;
         ObjectTableEntry[]       objectTableEntries;
@@ -327,6 +329,55 @@ namespace libexeinfo
             {
                 BaseStream.Read(buffer, 0, buffer.Length);
                 resources[i] = BigEndianMarshal.ByteArrayToStructureLittleEndian<ResourceTableEntry>(buffer);
+            }
+
+            SortedDictionary<ResourceTypes, List<NE.Resource>> os2Resources =
+                new SortedDictionary<ResourceTypes, List<NE.Resource>>();
+
+            for(int i = 0; i < resources.Length; i++)
+            {
+                os2Resources.TryGetValue(resources[i].type, out List<NE.Resource> thisResourceType);
+
+                if(thisResourceType == null) thisResourceType = new List<NE.Resource>();
+
+                NE.Resource thisResource = new NE.Resource
+                {
+                    id         = resources[i].id,
+                    name       = $"{resources[i].id}",
+                    flags      = 0,
+                    dataOffset = (uint)(sections[resources[i].obj_no - 1].Offset + resources[i].offset),
+                    length     = resources[i].size
+                };
+
+                thisResource.data   = new byte[thisResource.length];
+                BaseStream.Position = thisResource.dataOffset;
+                BaseStream.Read(thisResource.data, 0, thisResource.data.Length);
+
+                thisResourceType.Add(thisResource);
+                os2Resources.Remove(resources[i].type);
+                os2Resources.Add(resources[i].type, thisResourceType);
+            }
+
+            if(os2Resources.Count > 0)
+            {
+                neFormatResourceTable = new NE.ResourceTable();
+                int counter = 0;
+                neFormatResourceTable.types = new NE.ResourceType[os2Resources.Count];
+                foreach(KeyValuePair<ResourceTypes, List<NE.Resource>> kvp in os2Resources)
+                {
+                    neFormatResourceTable.types[counter].count     = (ushort)kvp.Value.Count;
+                    neFormatResourceTable.types[counter].id        = (ushort)kvp.Key;
+                    neFormatResourceTable.types[counter].name      = NE.ResourceIdToNameOs2((ushort)kvp.Key);
+                    neFormatResourceTable.types[counter].resources = kvp.Value.OrderBy(r => r.id).ToArray();
+                    counter++;
+                }
+
+                foreach(NE.ResourceType rtype in neFormatResourceTable.types)
+                {
+                    if(rtype.name != "RT_STRING") continue;
+
+                    strings.AddRange(NE.GetOs2Strings(rtype));
+                }
             }
 
             Segments = sections;

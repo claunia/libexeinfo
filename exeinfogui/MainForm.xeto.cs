@@ -28,6 +28,7 @@ using System;
 using System.Linq;
 using exeinfogui.GEM;
 using exeinfogui.LE;
+using exeinfogui.LX;
 using exeinfogui.NE;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
@@ -50,6 +51,7 @@ namespace exeinfogui
         TextBox         txtOs;
         TextBox         txtSubsystem;
         TextBox         txtType;
+        TabLxResources tabLxResources;
 
         public MainForm()
         {
@@ -60,11 +62,13 @@ namespace exeinfogui
             tabGemResources = new TabGemResources {Visible = false};
             tabNeResources  = new TabNeResources {Visible  = false};
             tabLeVxdVersion = new TabLeVxdVersion {Visible = false};
+            tabLxResources = new TabLxResources {Visible = false};
             tabMain.Pages.Add(tabSegments);
             tabMain.Pages.Add(tabStrings);
             tabMain.Pages.Add(tabGemResources);
             tabMain.Pages.Add(tabNeResources);
             tabMain.Pages.Add(tabLeVxdVersion);
+            tabMain.Pages.Add(tabLxResources);
         }
 
         protected void OnBtnLoadClick(object sender, EventArgs e)
@@ -80,6 +84,7 @@ namespace exeinfogui
             tabSegments.Visible     = false;
             tabNeResources.Visible  = false;
             tabLeVxdVersion.Visible = false;
+            tabLxResources.Visible = false;
 
             OpenFileDialog dlgOpen = new OpenFileDialog {Title = "Choose executable file", MultiSelect = false};
 
@@ -94,7 +99,7 @@ namespace exeinfogui
             IExecutable mzExe         = new MZ(dlgOpen.FileName);
             IExecutable neExe         = new libexeinfo.NE(dlgOpen.FileName);
             IExecutable stExe         = new AtariST(dlgOpen.FileName);
-            IExecutable lxExe         = new LX(dlgOpen.FileName);
+            IExecutable lxExe         = new libexeinfo.LX(dlgOpen.FileName);
             IExecutable coffExe       = new COFF(dlgOpen.FileName);
             IExecutable peExe         = new PE(dlgOpen.FileName);
             IExecutable geosExe       = new Geos(dlgOpen.FileName);
@@ -123,10 +128,15 @@ namespace exeinfogui
             else if(lxExe.Recognized)
             {
                 recognizedExe = lxExe;
-                if(((LX)lxExe).WinVersion != null)
+                if(((libexeinfo.LX)lxExe).WinVersion != null)
                 {
                     tabLeVxdVersion.Visible = true;
-                    tabLeVxdVersion.Update(((LX)lxExe).WinVersion);
+                    tabLeVxdVersion.Update(((libexeinfo.LX)lxExe).WinVersion);
+                }
+                if(((libexeinfo.LX)lxExe).neFormatResourceTable.types != null && ((libexeinfo.LX)lxExe).neFormatResourceTable.types.Any())
+                {
+                    tabLxResources.Update(((libexeinfo.LX)lxExe).neFormatResourceTable.types);
+                    tabLxResources.Visible = true;
                 }
             }
             else if(peExe.Recognized) recognizedExe = peExe;
