@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System.Runtime.InteropServices;
+using libexeinfo.Os2;
 
 namespace libexeinfo
 {
@@ -51,7 +52,8 @@ namespace libexeinfo
             /// <summary>
             ///     Format level, should be 0
             /// </summary>
-            public uint format_level;
+            public ushort format_minor;
+            public ushort format_major;
             /// <summary>
             ///     Type of CPU required by this executable to run
             /// </summary>
@@ -63,7 +65,8 @@ namespace libexeinfo
             /// <summary>
             ///     Executable version
             /// </summary>
-            public uint module_version;
+            public ushort module_minor;
+            public ushort module_major;
             /// <summary>
             ///     Executable flags
             /// </summary>
@@ -94,6 +97,7 @@ namespace libexeinfo
             public uint page_size;
             /// <summary>
             ///     Shift left bits for page offsets
+            ///     LE: Last page size in bytes
             /// </summary>
             public uint page_off_shift;
             /// <summary>
@@ -139,7 +143,7 @@ namespace libexeinfo
             /// <summary>
             ///     Resident name table offset
             /// </summary>
-            public uint resident_names_off;
+            public ushort resident_names_off;
             /// <summary>
             ///     Entry table offset
             /// </summary>
@@ -220,6 +224,55 @@ namespace libexeinfo
             ///     Heap size added to the auto ds object
             /// </summary>
             public uint heap_size;
+            // Following is only defined for Windows VxDs
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 12)]
+            public byte[] reserved;
+            public uint   win_res_off;
+            public uint   win_res_len;
+            public ushort device_id;
+            public byte   ddk_minor;
+            public byte   ddk_major;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 2)]
+        struct ObjectTableEntry
+        {
+            public uint        VirtualSize;
+            public uint        RelocationBaseAddress;
+            public ObjectFlags ObjectFlags;
+            public uint        PageTableIndex;
+            public uint        PageTableEntries;
+            /// <summary>
+            ///     Only used in LE
+            /// </summary>
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] Name;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 2)]
+        struct ObjectPageTableEntry
+        {
+            public uint                PageDataOffset;
+            public ushort              DataSize;
+            public PageTableAttributes Flags;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 2)]
+        struct ObjectPageTableEntry16
+        {
+            public ushort                High;
+            public byte                  Low;
+            public PageTableAttributes16 Flags;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 2)]
+        struct ResourceTableEntry
+        {
+            public ResourceTypes type;
+            public ushort        id;
+            public uint          size;
+            public ushort        obj_no;
+            public uint          offset;
         }
     }
 }

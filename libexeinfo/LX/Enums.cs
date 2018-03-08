@@ -109,7 +109,9 @@ namespace libexeinfo
             OS2     = 1,
             Windows = 2,
             DOS     = 3,
-            Win32   = 4
+            Win32   = 4,
+            NT      = 0x20,
+            Posix   = 0x21
         }
 
         static Architecture CpuToArchitecture(TargetCpu cpu)
@@ -117,16 +119,68 @@ namespace libexeinfo
             switch(cpu)
             {
                 case TargetCpu.i286: return Architecture.I286;
-                case TargetCpu.i386: 
-                case TargetCpu.i486: 
+                case TargetCpu.i386:
+                case TargetCpu.i486:
                 case TargetCpu.Pentium: return Architecture.I386;
-                case TargetCpu.i860: 
+                case TargetCpu.i860:
                 case TargetCpu.N11: return Architecture.I860;
-                case TargetCpu.MIPS1: 
+                case TargetCpu.MIPS1:
                 case TargetCpu.MIPS2: return Architecture.Mips;
                 case TargetCpu.MIPS3: return Architecture.Mips3;
-                default: return Architecture.Unknown;
+                default:              return Architecture.Unknown;
             }
+        }
+
+        [Flags]
+        enum ObjectFlags
+        {
+            Readable             = 0x0001,
+            Writable             = 0x0002,
+            Executable           = 0x0004,
+            Resource             = 0x0008,
+            Discardable          = 0x0010,
+            Shared               = 0x0020,
+            Preload              = 0x0040,
+            Invalid              = 0x0080,
+            Zeroed               = 0x0100,
+            Resident             = 0x0200,
+            Contiguous           = 0x0300,
+            LongLockable         = 0x0400,
+            Reserved             = 0x0800,
+            Alias1616Required    = 0x1000,
+            BigDefaultBitSetting = 0x2000,
+            Conforming           = 0x4000,
+            Privilege            = 0x8000
+        }
+
+        enum PageTableAttributes : ushort
+        {
+            /// <summary>
+            ///     Offset from preload page section
+            /// </summary>
+            LegalPhysicalPage = 0,
+            /// <summary>
+            ///     Offset from iterated page section
+            /// </summary>
+            IteratedDataPage = 1,
+            Invalid      = 2,
+            Zeroed       = 3,
+            RangeOfPages = 4
+        }
+
+        enum PageTableAttributes16 : byte
+        {
+            /// <summary>
+            ///     Offset from preload page section
+            /// </summary>
+            LegalPhysicalPage = (byte)PageTableAttributes.LegalPhysicalPage,
+            /// <summary>
+            ///     Offset from iterated page section
+            /// </summary>
+            IteratedDataPage = (byte)PageTableAttributes.IteratedDataPage,
+            Invalid      = (byte)PageTableAttributes.Invalid,
+            Zeroed       = (byte)PageTableAttributes.Zeroed,
+            RangeOfPages = (byte)PageTableAttributes.RangeOfPages
         }
     }
 }

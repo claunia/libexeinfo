@@ -27,6 +27,7 @@
 using System;
 using System.Linq;
 using exeinfogui.GEM;
+using exeinfogui.LE;
 using exeinfogui.NE;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
@@ -39,6 +40,7 @@ namespace exeinfogui
         ComboBox        cmbArch;
         Label           lblSubsystem;
         TabGemResources tabGemResources;
+        TabLeVxdVersion tabLeVxdVersion;
         TabControl      tabMain;
         TabNeResources  tabNeResources;
         TabPageSegments tabSegments;
@@ -57,10 +59,12 @@ namespace exeinfogui
             tabStrings      = new TabPageStrings {Visible  = false};
             tabGemResources = new TabGemResources {Visible = false};
             tabNeResources  = new TabNeResources {Visible  = false};
+            tabLeVxdVersion = new TabLeVxdVersion {Visible = false};
             tabMain.Pages.Add(tabSegments);
             tabMain.Pages.Add(tabStrings);
             tabMain.Pages.Add(tabGemResources);
             tabMain.Pages.Add(tabNeResources);
+            tabMain.Pages.Add(tabLeVxdVersion);
         }
 
         protected void OnBtnLoadClick(object sender, EventArgs e)
@@ -73,6 +77,9 @@ namespace exeinfogui
             txtSubsystem.Visible    = false;
             tabStrings.Visible      = false;
             tabGemResources.Visible = false;
+            tabSegments.Visible     = false;
+            tabNeResources.Visible  = false;
+            tabLeVxdVersion.Visible = false;
 
             OpenFileDialog dlgOpen = new OpenFileDialog {Title = "Choose executable file", MultiSelect = false};
 
@@ -113,7 +120,15 @@ namespace exeinfogui
                     tabNeResources.Visible = true;
                 }
             }
-            else if(lxExe.Recognized) recognizedExe = lxExe;
+            else if(lxExe.Recognized)
+            {
+                recognizedExe = lxExe;
+                if(((LX)lxExe).WinVersion != null)
+                {
+                    tabLeVxdVersion.Visible = true;
+                    tabLeVxdVersion.Update(((LX)lxExe).WinVersion);
+                }
+            }
             else if(peExe.Recognized) recognizedExe = peExe;
             else if(stExe.Recognized)
             {

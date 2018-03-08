@@ -88,19 +88,22 @@ namespace exeinfogui.Win16
 
         public void Update(byte[] data)
         {
-            libexeinfo.NE.Version version = new libexeinfo.NE.Version(data);
-            txtFileDate.Text              = version.FileDate  != new DateTime(1601, 1, 1) ? $"{version.FileDate}" : "Not set";
-            txtFileFlags.Text             = version.FileFlags == 0 ? "Normal" : $"{version.FileFlags}";
-            txtFileOs.Text                = libexeinfo.NE.Version.OsToString(version.FileOS);
+            Update(new libexeinfo.NE.Version(data));
+        }
+
+        public void Update(libexeinfo.NE.Version version)
+        {
+            txtFileDate.Text  = version.FileDate  != new DateTime(1601, 1, 1) ? $"{version.FileDate}" : "Not set";
+            txtFileFlags.Text = version.FileFlags == 0 ? "Normal" : $"{version.FileFlags}";
+            txtFileOs.Text    = libexeinfo.NE.Version.OsToString(version.FileOS);
 
             if(version.FileType == libexeinfo.NE.VersionFileType.VFT_DRV)
                 txtFileSubtype.Text = $"{libexeinfo.NE.Version.DriverToString(version.FileSubtype)} driver";
             else if(version.FileType == libexeinfo.NE.VersionFileType.VFT_DRV)
-                txtFileSubtype.Text = $"{libexeinfo.NE.Version.FontToString(version.FileSubtype)} font";
-            else if(version.FileSubtype > 0)
-                txtFileSubtype.Text = $"{(uint)version.FileSubtype}";
-            else
-                txtFileSubtype.Text = "None";
+                txtFileSubtype.Text =
+                    $"{libexeinfo.NE.Version.FontToString(version.FileSubtype)} font";
+            else if(version.FileSubtype > 0) txtFileSubtype.Text = $"{(uint)version.FileSubtype}";
+            else txtFileSubtype.Text                             = "None";
 
             txtFileType.Text       = libexeinfo.NE.Version.TypeToString(version.FileType);
             txtFileVersion.Text    = $"{version.FileVersion}";
@@ -113,8 +116,8 @@ namespace exeinfogui.Win16
                 string cultureName;
                 string encodingName;
 
-                try { cultureName   = new CultureInfo(Convert.ToInt32(strByLang.Key.Substring(0, 4), 16)).DisplayName; }
-                catch { cultureName = $"0x{Convert.ToInt32(strByLang.Key.Substring(0,            4), 16):X4}"; }
+                try { cultureName = new CultureInfo(Convert.ToInt32(strByLang.Key.Substring(0, 4), 16)).DisplayName; }
+                catch { cultureName = $"0x{Convert.ToInt32(strByLang.Key.Substring(0, 4), 16):X4}"; }
 
                 try
                 {
