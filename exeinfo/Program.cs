@@ -179,6 +179,58 @@ namespace exeinfo
             {
                 recognized = true;
                 Console.Write(peExe.Information);
+                
+                                if(((PE)peExe).Versions != null)
+                    foreach(PE.Version vers in ((PE)peExe).Versions)
+                    {
+                        Console.WriteLine("\tVersion resource {0}:",  vers.Name);
+                        Console.WriteLine("\t\tFile version: {0}",    vers.FileVersion);
+                        Console.WriteLine("\t\tProduct version: {0}", vers.ProductVersion);
+                        Console.WriteLine("\t\tFile type: {0}",       PE.Version.TypeToString(vers.FileType));
+                        if(vers.FileType == PE.VersionFileType.VFT_DRV)
+                            Console.WriteLine("\t\tFile subtype: {0} driver",
+                                              PE.Version.DriverToString(vers.FileSubtype));
+                        else if(vers.FileType == PE.VersionFileType.VFT_DRV)
+                            Console.WriteLine("\t\tFile subtype: {0} font", PE.Version.FontToString(vers.FileSubtype));
+                        else if(vers.FileSubtype > 0)
+                            Console.WriteLine("\t\tFile subtype: {0}", (uint)vers.FileSubtype);
+                        Console.WriteLine("\t\tFile flags: {0}", vers.FileFlags);
+                        Console.WriteLine("\t\tFile OS: {0}", PE.Version.OsToString(vers.FileOS));
+
+                        foreach(KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
+                        {
+                            string cultureName;
+                            string encodingName;
+
+                            try
+                            {
+                                cultureName = new CultureInfo(Convert.ToInt32(strByLang.Key.Substring(0, 4), 16))
+                                   .DisplayName;
+                            }
+                            catch
+                            {
+                                cultureName =
+                                    $"unsupported culture 0x{Convert.ToInt32(strByLang.Key.Substring(0, 4), 16):X4}";
+                            }
+
+                            try
+                            {
+                                encodingName = Encoding
+                                              .GetEncoding(Convert.ToInt32(strByLang.Key.Substring(4), 16))
+                                              .EncodingName;
+                            }
+                            catch
+                            {
+                                encodingName =
+                                    $"unsupported encoding 0x{Convert.ToInt32(strByLang.Key.Substring(4), 16):X4}";
+                            }
+
+                            Console.WriteLine("\t\tStrings for {0} in codepage {1}:", cultureName, encodingName);
+                            foreach(KeyValuePair<string, string> strings in strByLang.Value)
+                                Console.WriteLine("\t\t\t{0}: {1}", strings.Key, strings.Value);
+                        }
+                    }
+
 
                 if(peExe.Strings != null && peExe.Strings.Any())
                 {

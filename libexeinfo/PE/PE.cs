@@ -53,6 +53,7 @@ namespace libexeinfo
         COFF.SectionHeader[] sectionHeaders;
         public ResourceNode  WindowsResourcesRoot;
         WindowsHeader64      winHeader;
+        public Version[] Versions;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.PE" /> class.
@@ -387,9 +388,14 @@ namespace libexeinfo
                     // TODO: Decode BeOS resource format
                 }
                 else
+                {
                     WindowsResourcesRoot = GetResourceNode(BaseStream, rsrc.pointerToRawData,
                                                            rsrc.virtualAddress,
                                                            rsrc.pointerToRawData, 0, null, 0);
+                    Versions = GetVersions().ToArray();
+
+                    strings.AddRange(from v in Versions from s in v.StringsByLanguage from k in s.Value select k.Value);
+                }
 
             sectionHeaders = newSectionHeaders.Values.OrderBy(s => s.pointerToRawData).ToArray();
             Segment[] segments = new Segment[sectionHeaders.Length];

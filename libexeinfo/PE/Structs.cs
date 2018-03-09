@@ -459,5 +459,39 @@ namespace libexeinfo
             public byte[] data;
             public int level;
         }
+        
+        /// <summary>
+        ///     Node in a version resource
+        /// </summary>
+        class VersionNode
+        {
+            public ushort        wValueLength;
+            public ushort        wLength;
+            public ushort wType;
+            public VersionNode[] children;
+            public byte[]        rgbData;
+            public string        szName;
+        }
+
+        /// <summary>
+        ///     Fixed file version info
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
+        public struct FixedFileInfo
+        {
+            public uint dwSignature;
+            public uint dwStrucVersion;
+            public uint dwFileVersionMS;
+            public uint dwFileVersionLS;
+            public uint dwProductVersionMS;
+            public uint dwProductVersionLS;
+            public uint dwFileFlagsMask;
+            public uint dwFileFlags;
+            public uint dwFileOS;
+            public uint dwFileType;
+            public uint dwFileSubtype;
+            public uint dwFileDateMS;
+            public uint dwFileDateLS;
+        }
     }
 }

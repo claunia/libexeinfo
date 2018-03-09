@@ -34,5 +34,13 @@ namespace libexeinfo
         const ushort SIGNATURE = 0x00004550;
         const ushort PE32      = COFF.ZMAGIC;
         internal const ushort PE32Plus  = 0x20b;
+        /// <summary>
+        ///     Signature for a <see cref="FixedFileInfo" />
+        /// </summary>
+        const string FIXED_FILE_INFO_SIG = "VS_VERSION_INFO";
+        /// <summary>
+        ///     Signature for list of name=value strings inside a version resource
+        /// </summary>
+        const string STRING_FILE_INFO = "StringFileInfo";
     }
 }
