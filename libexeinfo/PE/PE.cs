@@ -51,9 +51,9 @@ namespace libexeinfo
         string[]             importedNames;
         string               moduleName;
         COFF.SectionHeader[] sectionHeaders;
+        public Version[]     Versions;
         public ResourceNode  WindowsResourcesRoot;
         WindowsHeader64      winHeader;
-        public Version[] Versions;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.PE" /> class.
@@ -395,6 +395,9 @@ namespace libexeinfo
                     Versions = GetVersions().ToArray();
 
                     strings.AddRange(from v in Versions from s in v.StringsByLanguage from k in s.Value select k.Value);
+
+                    foreach(ResourceNode rtype in WindowsResourcesRoot.children.Where(r => r.name == "RT_STRING"))
+                        strings.AddRange(GetStrings(rtype));
                 }
 
             sectionHeaders = newSectionHeaders.Values.OrderBy(s => s.pointerToRawData).ToArray();
@@ -501,8 +504,14 @@ namespace libexeinfo
                     };
 
                     if(level == 2)
-                        try { thisNode.children[i].name = new CultureInfo((int)thisNode.children[i].id).DisplayName; }
-                        catch { thisNode.children[i].name = $"Language ID {thisNode.children[i].id}"; }
+                        if(thisNode.children[i].id == 0)
+                            thisNode.children[i].name = "Neutral";
+                        else
+                            try
+                            {
+                                thisNode.children[i].name = new CultureInfo((int)thisNode.children[i].id).DisplayName;
+                            }
+                            catch { thisNode.children[i].name = $"Language ID {thisNode.children[i].id}"; }
 
                     stream.Position = dataEntry.rva - (rsrcVa - rsrcStart);
                     stream.Read(thisNode.children[i].data, 0, (int)dataEntry.size);
