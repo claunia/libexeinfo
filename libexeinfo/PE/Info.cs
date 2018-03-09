@@ -195,8 +195,45 @@ namespace libexeinfo
                     sb.AppendFormat("\tExecutable contains debug information of type {0}", debugDirectory.type)
                       .AppendLine();
 
+                if(WindowsResourcesRoot != null)
+                {
+                    sb.AppendLine("\tResources:");
+                    PrintResourceNode(sb, WindowsResourcesRoot, 2);
+                }
+
                 return sb.ToString();
             }
+        }
+
+        static void PrintResourceNode(StringBuilder sb, ResourceNode node, int level)
+        {
+            for(int i = 0; i < level; i++) sb.Append("\t");
+            if(node.children != null)
+            {
+                switch(node.level)
+                {
+                    case 0:
+                        sb.AppendFormat("Root contains {0} types:", node.children.Length).AppendLine();
+                        break;
+                    case 1:
+                        sb.AppendFormat("Type {0} has {1} items:", node.name, node.children.Length).AppendLine();
+                        break;
+                    case 2:
+                        sb.AppendFormat("ID {0} has {1} languages:", node.id, node.children.Length).AppendLine();
+                        break;
+                    default:
+                        sb.AppendFormat("ID {0} has {1} items:", node.id, node.children.Length).AppendLine();
+                        break;
+                }
+
+                foreach(ResourceNode child in node.children) PrintResourceNode(sb, child, level + 1);
+            }
+
+            if(node.data == null) return;
+
+            if(node.level == 3)
+                sb.AppendFormat("{0} contains {1} bytes.", node.name, node.data.Length).AppendLine();
+            else sb.AppendFormat("ID {0} contains {1} bytes.", node.id, node.data.Length).AppendLine();
         }
     }
 }

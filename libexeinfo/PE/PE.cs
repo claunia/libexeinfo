@@ -26,18 +26,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using libexeinfo.Windows;
 
 namespace libexeinfo
 {
     /// <summary>
     ///     Represents a Microsoft Portable Executable
     /// </summary>
-    // TODO: Process BeOS resources
-    // TODO: Process Windows resources
     public partial class PE : IExecutable
     {
         MZ                   baseExecutable;
@@ -51,6 +51,7 @@ namespace libexeinfo
         string[]             importedNames;
         string               moduleName;
         COFF.SectionHeader[] sectionHeaders;
+        public ResourceNode  WindowsResourcesRoot;
         WindowsHeader64      winHeader;
 
         /// <summary>
@@ -367,23 +368,28 @@ namespace libexeinfo
                 debugDirectory = BigEndianMarshal.ByteArrayToStructureLittleEndian<DebugDirectory>(buffer);
             }
 
-            // BeOS .rsrc is not virtual addressing, and has no size, solve it
-            if(reqOs.Name == "BeOS" && newSectionHeaders.ContainsKey(".rsrc"))
-            {
-                newSectionHeaders.TryGetValue(".rsrc", out COFF.SectionHeader beRsrc);
-                newSectionHeaders.Remove(".rsrc");
-                beRsrc.pointerToRawData = beRsrc.virtualAddress;
+            if(newSectionHeaders.TryGetValue(".rsrc", out COFF.SectionHeader rsrc))
+                if(reqOs.Name == "BeOS")
+                {
+                    newSectionHeaders.Remove(".rsrc");
+                    rsrc.pointerToRawData = rsrc.virtualAddress;
 
-                long maxPosition = BaseStream.Length;
-                foreach(KeyValuePair<string, COFF.SectionHeader> kvp in newSectionHeaders)
-                    if(kvp.Value.pointerToRawData <= maxPosition &&
-                       kvp.Value.pointerToRawData > beRsrc.pointerToRawData)
-                        maxPosition = kvp.Value.pointerToRawData;
+                    long maxPosition = BaseStream.Length;
+                    foreach(KeyValuePair<string, COFF.SectionHeader> kvp in newSectionHeaders)
+                        if(kvp.Value.pointerToRawData <= maxPosition &&
+                           kvp.Value.pointerToRawData > rsrc.pointerToRawData)
+                            maxPosition = kvp.Value.pointerToRawData;
 
-                beRsrc.sizeOfRawData = (uint)(maxPosition - beRsrc.pointerToRawData);
-                beRsrc.virtualSize   = beRsrc.sizeOfRawData;
-                newSectionHeaders.Add(".rsrc", beRsrc);
-            }
+                    rsrc.sizeOfRawData = (uint)(maxPosition - rsrc.pointerToRawData);
+                    rsrc.virtualSize   = rsrc.sizeOfRawData;
+                    newSectionHeaders.Add(".rsrc", rsrc);
+
+                    // TODO: Decode BeOS resource format
+                }
+                else
+                    WindowsResourcesRoot = GetResourceNode(BaseStream, rsrc.pointerToRawData,
+                                                           rsrc.virtualAddress,
+                                                           rsrc.pointerToRawData, 0, null, 0);
 
             sectionHeaders = newSectionHeaders.Values.OrderBy(s => s.pointerToRawData).ToArray();
             Segment[] segments = new Segment[sectionHeaders.Length];
@@ -399,6 +405,105 @@ namespace libexeinfo
             Segments = segments;
             strings.Sort();
             Strings = strings;
+        }
+
+        static ResourceNode GetResourceNode(Stream stream, long position, long rsrcVa, long rsrcStart, uint id,
+                                            string name,   int  level)
+        {
+            long         oldPosition = stream.Position;
+            ResourceNode thisNode    = new ResourceNode {name = name, id = id, level = level};
+
+            if(thisNode.name == null)
+                thisNode.name = level == 1 ? Resources.IdToName((ushort)thisNode.id) : $"{thisNode.id}";
+
+            stream.Position = position;
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(ResourceDirectoryTable))];
+            stream.Read(buffer, 0, buffer.Length);
+            ResourceDirectoryTable rsrcTable =
+                BigEndianMarshal.ByteArrayToStructureLittleEndian<ResourceDirectoryTable>(buffer);
+
+            buffer = new byte[Marshal.SizeOf(typeof(ResourceDirectoryEntries))];
+            ResourceDirectoryEntries[] entries =
+                new ResourceDirectoryEntries[rsrcTable.nameEntries + rsrcTable.idEntries];
+
+            for(int i = 0; i < rsrcTable.nameEntries; i++)
+            {
+                stream.Read(buffer, 0, buffer.Length);
+                entries[i] = BigEndianMarshal.ByteArrayToStructureLittleEndian<ResourceDirectoryEntries>(buffer);
+            }
+
+            for(int i = 0; i < rsrcTable.idEntries; i++)
+            {
+                stream.Read(buffer, 0, buffer.Length);
+                entries[rsrcTable.nameEntries + i] =
+                    BigEndianMarshal.ByteArrayToStructureLittleEndian<ResourceDirectoryEntries>(buffer);
+            }
+
+            thisNode.children = new ResourceNode[entries.Length];
+
+            for(int i = 0; i < rsrcTable.nameEntries; i++)
+            {
+                byte[] len = new byte[2];
+
+                stream.Position = rsrcStart + (entries[i].nameOrID & 0x7FFFFFFF);
+                stream.Read(len, 0, 2);
+                buffer = new byte[BitConverter.ToUInt16(len, 0) * 2];
+                stream.Read(buffer, 0, buffer.Length);
+                string childName = Encoding.Unicode.GetString(buffer);
+
+                if((entries[i].rva & 0x80000000) == 0x80000000)
+                    thisNode.children[i] = GetResourceNode(stream,    rsrcStart + (entries[i].rva & 0x7FFFFFFF), rsrcVa,
+                                                           rsrcStart, 0,
+                                                           childName, level + 1);
+                else
+                {
+                    buffer          = new byte[Marshal.SizeOf(typeof(ResourceDataEntry))];
+                    stream.Position = rsrcStart + (entries[i].rva & 0x7FFFFFFF);
+                    stream.Read(buffer, 0, buffer.Length);
+                    ResourceDataEntry dataEntry =
+                        BigEndianMarshal.ByteArrayToStructureLittleEndian<ResourceDataEntry>(buffer);
+                    thisNode.children[i] = new ResourceNode
+                    {
+                        data  = new byte[dataEntry.size],
+                        id    = 0,
+                        name  = childName,
+                        level = level + 1
+                    };
+                    stream.Position = dataEntry.rva - (rsrcVa - rsrcStart);
+                    stream.Read(thisNode.children[i].data, 0, (int)dataEntry.size);
+                }
+            }
+
+            for(int i = rsrcTable.nameEntries; i < rsrcTable.nameEntries + rsrcTable.idEntries; i++)
+                if((entries[i].rva & 0x80000000) == 0x80000000)
+                    thisNode.children[i] = GetResourceNode(stream,    rsrcStart + (entries[i].rva & 0x7FFFFFFF), rsrcVa,
+                                                           rsrcStart, entries[i].nameOrID & 0x7FFFFFFF,          null,
+                                                           level + 1);
+                else
+                {
+                    buffer          = new byte[Marshal.SizeOf(typeof(ResourceDataEntry))];
+                    stream.Position = rsrcStart + (entries[i].rva & 0x7FFFFFFF);
+                    stream.Read(buffer, 0, buffer.Length);
+                    ResourceDataEntry dataEntry =
+                        BigEndianMarshal.ByteArrayToStructureLittleEndian<ResourceDataEntry>(buffer);
+                    thisNode.children[i] = new ResourceNode
+                    {
+                        data  = new byte[dataEntry.size],
+                        id    = entries[i].nameOrID & 0x7FFFFFFF,
+                        name  = $"{entries[i].nameOrID & 0x7FFFFFFF}",
+                        level = level + 1
+                    };
+
+                    if(level == 2)
+                        try { thisNode.children[i].name = new CultureInfo((int)thisNode.children[i].id).DisplayName; }
+                        catch { thisNode.children[i].name = $"Language ID {thisNode.children[i].id}"; }
+
+                    stream.Position = dataEntry.rva - (rsrcVa - rsrcStart);
+                    stream.Read(thisNode.children[i].data, 0, (int)dataEntry.size);
+                }
+
+            stream.Position = oldPosition;
+            return thisNode;
         }
 
         /// <summary>

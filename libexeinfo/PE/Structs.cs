@@ -24,6 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using System.Runtime.InteropServices;
 using static libexeinfo.COFF;
 
@@ -448,6 +449,15 @@ namespace libexeinfo
             ///     table until the image is bound.
             /// </summary>
             public uint importAddressTableRva;
+        }
+
+        public class ResourceNode
+        {
+            public uint id;
+            public string name;
+            public ResourceNode[] children;
+            public byte[] data;
+            public int level;
         }
     }
 }
