@@ -27,5 +27,6 @@
     <Folder Include="Windows\" />
     <Folder Include="LE\" />
     <Folder Include="LX\" />
+    <Folder Include="PE\" />
   </ItemGroup>
 </Project>

@@ -37,15 +37,14 @@ namespace exeinfogui.NE
 {
     public class TabNeResources : TabPage
     {
-        PanelHexDump           panelHexDump;
-        PanelNeAccelerators    panelNeAccelerators;
-        PanelNeStrings         panelNeStrings;
-        PanelOs2Bitmap         panelOs2Bitmap;
-        PanelWin16Version      panelWin16Version;
-        PanelWindowsIcon       panelWindowsIcon;
-        Panel                  pnlResource;
-        TreeGridItemCollection treeData;
-        TreeGridView           treeResources;
+        PanelHexDump        panelHexDump;
+        PanelNeAccelerators panelNeAccelerators;
+        PanelNeStrings      panelNeStrings;
+        PanelOs2Bitmap      panelOs2Bitmap;
+        PanelWin16Version   panelWin16Version;
+        PanelWindowsIcon    panelWindowsIcon;
+        Panel               pnlResource;
+        TreeGridView        treeResources;
 
         public TabNeResources()
         {
@@ -68,7 +67,7 @@ namespace exeinfogui.NE
 
         public void Update(IEnumerable<libexeinfo.NE.ResourceType> resourceTypes, libexeinfo.NE.TargetOS os)
         {
-            treeData = new TreeGridItemCollection();
+            TreeGridItemCollection treeData = new TreeGridItemCollection();
 
             foreach(libexeinfo.NE.ResourceType resourceType in resourceTypes.OrderBy(r => r.name))
             {

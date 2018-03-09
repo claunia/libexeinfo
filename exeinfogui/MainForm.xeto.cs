@@ -30,6 +30,7 @@ using exeinfogui.GEM;
 using exeinfogui.LE;
 using exeinfogui.LX;
 using exeinfogui.NE;
+using exeinfogui.PE;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
 using libexeinfo;
@@ -42,8 +43,10 @@ namespace exeinfogui
         Label           lblSubsystem;
         TabGemResources tabGemResources;
         TabLeVxdVersion tabLeVxdVersion;
+        TabLxResources  tabLxResources;
         TabControl      tabMain;
         TabNeResources  tabNeResources;
+        TabPeResources  tabPeResources;
         TabPageSegments tabSegments;
         TabPageStrings  tabStrings;
         TextBox         txtFile;
@@ -51,7 +54,6 @@ namespace exeinfogui
         TextBox         txtOs;
         TextBox         txtSubsystem;
         TextBox         txtType;
-        TabLxResources tabLxResources;
 
         public MainForm()
         {
@@ -62,13 +64,15 @@ namespace exeinfogui
             tabGemResources = new TabGemResources {Visible = false};
             tabNeResources  = new TabNeResources {Visible  = false};
             tabLeVxdVersion = new TabLeVxdVersion {Visible = false};
-            tabLxResources = new TabLxResources {Visible = false};
+            tabLxResources  = new TabLxResources {Visible  = false};
+            tabPeResources  = new TabPeResources {Visible  = false};
             tabMain.Pages.Add(tabSegments);
             tabMain.Pages.Add(tabStrings);
             tabMain.Pages.Add(tabGemResources);
             tabMain.Pages.Add(tabNeResources);
             tabMain.Pages.Add(tabLeVxdVersion);
             tabMain.Pages.Add(tabLxResources);
+            tabMain.Pages.Add(tabPeResources);
         }
 
         protected void OnBtnLoadClick(object sender, EventArgs e)
@@ -84,7 +88,8 @@ namespace exeinfogui
             tabSegments.Visible     = false;
             tabNeResources.Visible  = false;
             tabLeVxdVersion.Visible = false;
-            tabLxResources.Visible = false;
+            tabLxResources.Visible  = false;
+            tabPeResources.Visible  = false;
 
             OpenFileDialog dlgOpen = new OpenFileDialog {Title = "Choose executable file", MultiSelect = false};
 
@@ -101,7 +106,7 @@ namespace exeinfogui
             IExecutable stExe         = new AtariST(dlgOpen.FileName);
             IExecutable lxExe         = new libexeinfo.LX(dlgOpen.FileName);
             IExecutable coffExe       = new COFF(dlgOpen.FileName);
-            IExecutable peExe         = new PE(dlgOpen.FileName);
+            IExecutable peExe         = new libexeinfo.PE(dlgOpen.FileName);
             IExecutable geosExe       = new Geos(dlgOpen.FileName);
             IExecutable recognizedExe = null;
 
@@ -133,13 +138,24 @@ namespace exeinfogui
                     tabLeVxdVersion.Visible = true;
                     tabLeVxdVersion.Update(((libexeinfo.LX)lxExe).WinVersion);
                 }
-                if(((libexeinfo.LX)lxExe).neFormatResourceTable.types != null && ((libexeinfo.LX)lxExe).neFormatResourceTable.types.Any())
+
+                if(((libexeinfo.LX)lxExe).neFormatResourceTable.types != null &&
+                   ((libexeinfo.LX)lxExe).neFormatResourceTable.types.Any())
                 {
                     tabLxResources.Update(((libexeinfo.LX)lxExe).neFormatResourceTable.types);
                     tabLxResources.Visible = true;
                 }
             }
-            else if(peExe.Recognized) recognizedExe = peExe;
+            else if(peExe.Recognized)
+            {
+                recognizedExe = peExe;
+                if(((libexeinfo.PE)peExe).WindowsResourcesRoot          != null &&
+                   ((libexeinfo.PE)peExe).WindowsResourcesRoot.children != null)
+                {
+                    tabPeResources.Update(((libexeinfo.PE)peExe).WindowsResourcesRoot);
+                    tabPeResources.Visible = true;
+                }
+            }
             else if(stExe.Recognized)
             {
                 recognizedExe = stExe;

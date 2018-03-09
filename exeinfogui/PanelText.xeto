@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Panel xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackLayout Orientation="Vertical">
+        <StackLayoutItem HorizontalAlignment="Center">
+            <Label>Text</Label>
+        </StackLayoutItem>
+        <StackLayoutItem Expand="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <TextArea ID="txtText" ReadOnly="True" Wrap="True"/>
+        </StackLayoutItem>
+    </StackLayout>
+</Panel>
