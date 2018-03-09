@@ -32,14 +32,6 @@ namespace libexeinfo
         ///     New Executable signature, "NE"
         /// </summary>
         const ushort SIGNATURE = 0x454E;
-        /// <summary>
-        ///     Signature for a <see cref="FixedFileInfo" />
-        /// </summary>
-        const string FIXED_FILE_INFO_SIG = "VS_VERSION_INFO";
-        /// <summary>
-        ///     Signature for list of name=value strings inside a version resource
-        /// </summary>
-        const string STRING_FILE_INFO = "StringFileInfo";
 
         const        ushort SEGMENT_TYPE_MASK    = 0x07;
         const        ushort SEGMENT_FLAGS_MASK   = 0x3F8;

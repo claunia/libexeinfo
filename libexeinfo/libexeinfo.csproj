@@ -105,9 +105,11 @@
     <Compile Include="Swapping.cs" />
     <Compile Include="PE\Subsystems.cs" />
     <Compile Include="Windows\Bitmap.cs" />
+    <Compile Include="Windows\Consts.cs" />
     <Compile Include="Windows\Enums.cs" />
     <Compile Include="Windows\Resources.cs" />
     <Compile Include="Windows\Structs.cs" />
+    <Compile Include="Windows\Version.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

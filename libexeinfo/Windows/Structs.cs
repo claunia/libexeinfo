@@ -60,4 +60,25 @@ namespace libexeinfo.Windows
         public int[] Pixels;
         public uint  Width;
     }
+
+    /// <summary>
+    ///     Fixed file version info
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct FixedFileInfo
+    {
+        public uint dwSignature;
+        public uint dwStrucVersion;
+        public uint dwFileVersionMS;
+        public uint dwFileVersionLS;
+        public uint dwProductVersionMS;
+        public uint dwProductVersionLS;
+        public uint dwFileFlagsMask;
+        public uint dwFileFlags;
+        public uint dwFileOS;
+        public uint dwFileType;
+        public uint dwFileSubtype;
+        public uint dwFileDateMS;
+        public uint dwFileDateLS;
+    }
 }

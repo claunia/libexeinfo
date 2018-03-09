@@ -31,6 +31,8 @@ using System.Globalization;
 using System.Text;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
+using libexeinfo.Windows;
+using Version = libexeinfo.Windows.Version;
 
 namespace exeinfogui.Win16
 {
@@ -95,17 +97,16 @@ namespace exeinfogui.Win16
         {
             txtFileDate.Text  = version.FileDate  != new DateTime(1601, 1, 1) ? $"{version.FileDate}" : "Not set";
             txtFileFlags.Text = version.FileFlags == 0 ? "Normal" : $"{version.FileFlags}";
-            txtFileOs.Text    = libexeinfo.NE.Version.OsToString(version.FileOS);
+            txtFileOs.Text    = Version.OsToString(version.FileOs);
 
-            if(version.FileType == libexeinfo.NE.VersionFileType.VFT_DRV)
-                txtFileSubtype.Text = $"{libexeinfo.NE.Version.DriverToString(version.FileSubtype)} driver";
-            else if(version.FileType == libexeinfo.NE.VersionFileType.VFT_DRV)
-                txtFileSubtype.Text =
-                    $"{libexeinfo.NE.Version.FontToString(version.FileSubtype)} font";
+            if(version.FileType == VersionFileType.VFT_DRV)
+                txtFileSubtype.Text = $"{Version.DriverToString(version.FileSubtype)} driver";
+            else if(version.FileType == VersionFileType.VFT_DRV)
+                txtFileSubtype.Text                              = $"{Version.FontToString(version.FileSubtype)} font";
             else if(version.FileSubtype > 0) txtFileSubtype.Text = $"{(uint)version.FileSubtype}";
             else txtFileSubtype.Text                             = "None";
 
-            txtFileType.Text       = libexeinfo.NE.Version.TypeToString(version.FileType);
+            txtFileType.Text       = Version.TypeToString(version.FileType);
             txtFileVersion.Text    = $"{version.FileVersion}";
             txtProductVersion.Text = $"{version.ProductVersion}";
 

@@ -24,7 +24,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
 using System.Runtime.InteropServices;
 using static libexeinfo.COFF;
 
@@ -453,45 +452,24 @@ namespace libexeinfo
 
         public class ResourceNode
         {
-            public uint id;
-            public string name;
             public ResourceNode[] children;
-            public byte[] data;
-            public int level;
+            public byte[]         data;
+            public uint           id;
+            public int            level;
+            public string         name;
         }
-        
+
         /// <summary>
         ///     Node in a version resource
         /// </summary>
         class VersionNode
         {
-            public ushort        wValueLength;
-            public ushort        wLength;
-            public ushort wType;
             public VersionNode[] children;
             public byte[]        rgbData;
             public string        szName;
-        }
-
-        /// <summary>
-        ///     Fixed file version info
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        public struct FixedFileInfo
-        {
-            public uint dwSignature;
-            public uint dwStrucVersion;
-            public uint dwFileVersionMS;
-            public uint dwFileVersionLS;
-            public uint dwProductVersionMS;
-            public uint dwProductVersionLS;
-            public uint dwFileFlagsMask;
-            public uint dwFileFlags;
-            public uint dwFileOS;
-            public uint dwFileType;
-            public uint dwFileSubtype;
-            public uint dwFileDateMS;
-            public uint dwFileDateLS;
+            public ushort        wLength;
+            public ushort        wType;
+            public ushort        wValueLength;
         }
     }
 }

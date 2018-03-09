@@ -63,7 +63,7 @@ namespace libexeinfo
             public ushort           alignment_shift;
             public ushort           resource_entries;
             public TargetOS         target_os;
-            public ExecutableFlags         ExecutableFlags;
+            public ExecutableFlags  ExecutableFlags;
             public ushort           return_thunks_offset;
             public ushort           segment_reference_thunks;
             public ushort           minimum_swap_area;
@@ -120,27 +120,6 @@ namespace libexeinfo
             public VersionNode[] children;
             public byte[]        rgbData;
             public string        szName;
-        }
-
-        /// <summary>
-        ///     Fixed file version info
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        public struct FixedFileInfo
-        {
-            public uint dwSignature;
-            public uint dwStrucVersion;
-            public uint dwFileVersionMS;
-            public uint dwFileVersionLS;
-            public uint dwProductVersionMS;
-            public uint dwProductVersionLS;
-            public uint dwFileFlagsMask;
-            public uint dwFileFlags;
-            public uint dwFileOS;
-            public uint dwFileType;
-            public uint dwFileSubtype;
-            public uint dwFileDateMS;
-            public uint dwFileDateLS;
         }
 
         public struct ResidentName

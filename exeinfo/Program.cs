@@ -30,6 +30,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using libexeinfo;
+using libexeinfo.Windows;
+using Version = libexeinfo.Windows.Version;
 
 namespace exeinfo
 {
@@ -64,16 +66,15 @@ namespace exeinfo
                         Console.WriteLine("\tVersion resource {0}:",  vers.Name);
                         Console.WriteLine("\t\tFile version: {0}",    vers.FileVersion);
                         Console.WriteLine("\t\tProduct version: {0}", vers.ProductVersion);
-                        Console.WriteLine("\t\tFile type: {0}",       NE.Version.TypeToString(vers.FileType));
-                        if(vers.FileType == NE.VersionFileType.VFT_DRV)
-                            Console.WriteLine("\t\tFile subtype: {0} driver",
-                                              NE.Version.DriverToString(vers.FileSubtype));
-                        else if(vers.FileType == NE.VersionFileType.VFT_DRV)
-                            Console.WriteLine("\t\tFile subtype: {0} font", NE.Version.FontToString(vers.FileSubtype));
+                        Console.WriteLine("\t\tFile type: {0}",       Version.TypeToString(vers.FileType));
+                        if(vers.FileType == VersionFileType.VFT_DRV)
+                            Console.WriteLine("\t\tFile subtype: {0} driver", Version.DriverToString(vers.FileSubtype));
+                        else if(vers.FileType == VersionFileType.VFT_DRV)
+                            Console.WriteLine("\t\tFile subtype: {0} font", Version.FontToString(vers.FileSubtype));
                         else if(vers.FileSubtype > 0)
                             Console.WriteLine("\t\tFile subtype: {0}", (uint)vers.FileSubtype);
                         Console.WriteLine("\t\tFile flags: {0}", vers.FileFlags);
-                        Console.WriteLine("\t\tFile OS: {0}",    NE.Version.OsToString(vers.FileOS));
+                        Console.WriteLine("\t\tFile OS: {0}",    Version.OsToString(vers.FileOs));
 
                         foreach(KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
                         {
@@ -126,15 +127,15 @@ namespace exeinfo
                     Console.WriteLine("\tVxD version resource {0}:", vers.Name);
                     Console.WriteLine("\t\tFile version: {0}",       vers.FileVersion);
                     Console.WriteLine("\t\tProduct version: {0}",    vers.ProductVersion);
-                    Console.WriteLine("\t\tFile type: {0}",          NE.Version.TypeToString(vers.FileType));
-                    if(vers.FileType == NE.VersionFileType.VFT_DRV)
-                        Console.WriteLine("\t\tFile subtype: {0} driver", NE.Version.DriverToString(vers.FileSubtype));
-                    else if(vers.FileType == NE.VersionFileType.VFT_DRV)
+                    Console.WriteLine("\t\tFile type: {0}",          Version.TypeToString(vers.FileType));
+                    if(vers.FileType == VersionFileType.VFT_DRV)
+                        Console.WriteLine("\t\tFile subtype: {0} driver", Version.DriverToString(vers.FileSubtype));
+                    else if(vers.FileType == VersionFileType.VFT_DRV)
                         Console.WriteLine("\t\tFile subtype: {0} font",
-                                          NE.Version.FontToString(vers.FileSubtype));
+                                          Version.FontToString(vers.FileSubtype));
                     else if(vers.FileSubtype > 0) Console.WriteLine("\t\tFile subtype: {0}", (uint)vers.FileSubtype);
                     Console.WriteLine("\t\tFile flags: {0}", vers.FileFlags);
-                    Console.WriteLine("\t\tFile OS: {0}",    NE.Version.OsToString(vers.FileOS));
+                    Console.WriteLine("\t\tFile OS: {0}",    Version.OsToString(vers.FileOs));
 
                     foreach(KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
                     {
@@ -179,23 +180,22 @@ namespace exeinfo
             {
                 recognized = true;
                 Console.Write(peExe.Information);
-                
-                                if(((PE)peExe).Versions != null)
+
+                if(((PE)peExe).Versions != null)
                     foreach(PE.Version vers in ((PE)peExe).Versions)
                     {
                         Console.WriteLine("\tVersion resource {0}:",  vers.Name);
                         Console.WriteLine("\t\tFile version: {0}",    vers.FileVersion);
                         Console.WriteLine("\t\tProduct version: {0}", vers.ProductVersion);
-                        Console.WriteLine("\t\tFile type: {0}",       PE.Version.TypeToString(vers.FileType));
-                        if(vers.FileType == PE.VersionFileType.VFT_DRV)
-                            Console.WriteLine("\t\tFile subtype: {0} driver",
-                                              PE.Version.DriverToString(vers.FileSubtype));
-                        else if(vers.FileType == PE.VersionFileType.VFT_DRV)
-                            Console.WriteLine("\t\tFile subtype: {0} font", PE.Version.FontToString(vers.FileSubtype));
+                        Console.WriteLine("\t\tFile type: {0}",       Version.TypeToString(vers.FileType));
+                        if(vers.FileType == VersionFileType.VFT_DRV)
+                            Console.WriteLine("\t\tFile subtype: {0} driver", Version.DriverToString(vers.FileSubtype));
+                        else if(vers.FileType == VersionFileType.VFT_DRV)
+                            Console.WriteLine("\t\tFile subtype: {0} font", Version.FontToString(vers.FileSubtype));
                         else if(vers.FileSubtype > 0)
                             Console.WriteLine("\t\tFile subtype: {0}", (uint)vers.FileSubtype);
                         Console.WriteLine("\t\tFile flags: {0}", vers.FileFlags);
-                        Console.WriteLine("\t\tFile OS: {0}", PE.Version.OsToString(vers.FileOS));
+                        Console.WriteLine("\t\tFile OS: {0}",    Version.OsToString(vers.FileOs));
 
                         foreach(KeyValuePair<string, Dictionary<string, string>> strByLang in vers.StringsByLanguage)
                         {
@@ -230,7 +230,6 @@ namespace exeinfo
                                 Console.WriteLine("\t\t\t{0}: {1}", strings.Key, strings.Value);
                         }
                     }
-
 
                 if(peExe.Strings != null && peExe.Strings.Any())
                 {

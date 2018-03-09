@@ -40,7 +40,7 @@ namespace libexeinfo
         ///     Gets all the version resources from this instance
         /// </summary>
         /// <returns>The decoded version resources.</returns>
-        public List<Version> GetVersions()
+        List<Version> GetVersions()
         {
             return (from type in Resources.types
                     where (type.id & 0x7FFF) == (int)ResourceTypes.RT_VERSION
@@ -80,43 +80,43 @@ namespace libexeinfo
             ///     File version.
             /// </summary>
             /// <value>The file version.</value>
-            public string FileVersion { get; set; }
+            public string FileVersion { get; private set; }
 
             /// <summary>
             ///     Product version.
             /// </summary>
             /// <value>The product version.</value>
-            public string ProductVersion { get; set; }
+            public string ProductVersion { get; private set; }
 
             /// <summary>
             ///     File flags.
             /// </summary>
             /// <value>The file flags.</value>
-            public VersionFileFlags FileFlags { get; set; }
+            public VersionFileFlags FileFlags { get; private set; }
 
             /// <summary>
             ///     File operating system.
             /// </summary>
             /// <value>The file operating system.</value>
-            public VersionFileOS FileOS { get; set; }
+            public VersionFileOS FileOs { get; private set; }
 
             /// <summary>
             ///     File type.
             /// </summary>
             /// <value>The type of the file.</value>
-            public VersionFileType FileType { get; set; }
+            public VersionFileType FileType { get; private set; }
 
             /// <summary>
             ///     File subtype.
             /// </summary>
             /// <value>The file subtype.</value>
-            public VersionFileSubtype FileSubtype { get; set; }
+            public VersionFileSubtype FileSubtype { get; private set; }
 
             /// <summary>
             ///     File date.
             /// </summary>
             /// <value>The file date.</value>
-            public DateTime FileDate { get; set; }
+            public DateTime FileDate { get; private set; }
 
             /// <summary>
             ///     Resource name
@@ -167,7 +167,7 @@ namespace libexeinfo
 
             void DecodeNode(VersionNode node, string parent, string grandparent)
             {
-                if(node.szName == FIXED_FILE_INFO_SIG)
+                if(node.szName == Consts.FixedFileInfoSig)
                 {
                     IntPtr infoPtr = Marshal.AllocHGlobal(node.cbData);
                     Marshal.Copy(node.rgbData, 0, infoPtr, node.cbData);
@@ -179,19 +179,19 @@ namespace libexeinfo
                     ProductVersion =
                         $"{(info.dwProductVersionMS & 0xFFFF0000) >> 16}.{info.dwProductVersionMS & 0xFFFF:D2}.{(info.dwProductVersionLS & 0xFFFF0000) >> 16}.{info.dwProductVersionLS & 0xFFFF}";
                     FileFlags   = (VersionFileFlags)(info.dwFileFlags & info.dwFileFlagsMask);
-                    FileOS      = (VersionFileOS)info.dwFileOS;
+                    FileOs      = (VersionFileOS)info.dwFileOS;
                     FileType    = (VersionFileType)info.dwFileType;
                     FileSubtype = (VersionFileSubtype)info.dwFileSubtype;
                     FileDate    = DateTime.FromFileTime(info.dwFileDateMS * 0x100000000 + info.dwFileDateLS);
                 }
 
-                if(parent == STRING_FILE_INFO)
+                if(parent == Consts.StringFileInfo)
                 {
                     Dictionary<string, string> strings = new Dictionary<string, string>();
                     StringsByLanguage.Add(node.szName, strings);
                 }
 
-                if(grandparent == STRING_FILE_INFO)
+                if(grandparent == Consts.StringFileInfo)
                     if(StringsByLanguage.TryGetValue(parent, out Dictionary<string, string> strings))
                     {
                         Encoding encoding;
@@ -205,121 +205,6 @@ namespace libexeinfo
                 if(node.children == null) return;
 
                 foreach(VersionNode n in node.children) DecodeNode(n, node.szName, parent);
-            }
-
-            /// <summary>
-            ///     Converts a <see cref="VersionFileType" /> to string
-            /// </summary>
-            /// <returns>The string.</returns>
-            /// <param name="type">
-            ///     <see cref="VersionFileType" />
-            /// </param>
-            public static string TypeToString(VersionFileType type)
-            {
-                switch(type)
-                {
-                    case VersionFileType.VFT_APP:        return "Application";
-                    case VersionFileType.VFT_DLL:        return "Dynamic-link library";
-                    case VersionFileType.VFT_DRV:        return "Device driver";
-                    case VersionFileType.VFT_FONT:       return "Font";
-                    case VersionFileType.VFT_STATIC_LIB: return "Static-link library";
-                    case VersionFileType.VFT_UNKNOWN:    return "Unknown";
-                    case VersionFileType.VFT_VXD:        return "Virtual device";
-                    default:                             return $"Unknown type code {(uint)type}";
-                }
-            }
-
-            /// <summary>
-            ///     Converts a <see cref="VersionFileSubtype" /> to string, considering file type to be a driver
-            /// </summary>
-            /// <returns>The string.</returns>
-            /// <param name="subtype">
-            ///     <see cref="VersionFileSubtype" />
-            /// </param>
-            public static string DriverToString(VersionFileSubtype subtype)
-            {
-                switch(subtype)
-                {
-                    case VersionFileSubtype.VFT2_DRV_COMM:              return "Communications";
-                    case VersionFileSubtype.VFT2_DRV_DISPLAY:           return "Display";
-                    case VersionFileSubtype.VFT2_DRV_INSTALLABLE:       return "Installable";
-                    case VersionFileSubtype.VFT2_DRV_KEYBOARD:          return "Keyboard";
-                    case VersionFileSubtype.VFT2_DRV_LANGUAGE:          return "Language";
-                    case VersionFileSubtype.VFT2_DRV_MOUSE:             return "Mouse";
-                    case VersionFileSubtype.VFT2_DRV_NETWORK:           return "Network";
-                    case VersionFileSubtype.VFT2_DRV_PRINTER:           return "Printer";
-                    case VersionFileSubtype.VFT2_DRV_SOUND:             return "Sound";
-                    case VersionFileSubtype.VFT2_DRV_SYSTEM:            return "System";
-                    case VersionFileSubtype.VFT2_DRV_VERSIONED_PRINTER: return "Versioned";
-                    case VersionFileSubtype.VFT2_UNKNOWN:               return "Unknown";
-                    default:                                            return $"Unknown type code {(uint)subtype}";
-                }
-            }
-
-            /// <summary>
-            ///     Converts a <see cref="VersionFileSubtype" /> to string, considering file type to be a font
-            /// </summary>
-            /// <returns>The string.</returns>
-            /// <param name="subtype">
-            ///     <see cref="VersionFileSubtype" />
-            /// </param>
-            public static string FontToString(VersionFileSubtype subtype)
-            {
-                switch(subtype)
-                {
-                    case VersionFileSubtype.VFT2_FONT_RASTER:   return "Raster";
-                    case VersionFileSubtype.VFT2_FONT_TRUETYPE: return "TrueType";
-                    case VersionFileSubtype.VFT2_FONT_VECTOR:   return "Vector";
-                    case VersionFileSubtype.VFT2_UNKNOWN:       return "Unknown";
-                    default:                                    return $"Unknown type code {(uint)subtype}";
-                }
-            }
-
-            /// <summary>
-            ///     Converts a <see cref="VersionFileOS" /> to string
-            /// </summary>
-            /// <returns>The string.</returns>
-            /// <param name="os">
-            ///     <see cref="VersionFileOS" />
-            /// </param>
-            public static string OsToString(VersionFileOS os)
-            {
-                switch(os)
-                {
-                    case VersionFileOS.VOS_DOS:           return "DOS";
-                    case VersionFileOS.VOS_NT:            return "Windows NT";
-                    case VersionFileOS.VOS_WINDOWS16:     return "16-bit Windows";
-                    case VersionFileOS.VOS_WINDOWS32:     return "32-bit Windows";
-                    case VersionFileOS.VOS_OS216:         return "16-bit OS/2";
-                    case VersionFileOS.VOS_OS232:         return "32-bit OS/2";
-                    case VersionFileOS.VOS_PM16:          return "16-bit Presentation Manager";
-                    case VersionFileOS.VOS_PM32:          return "32-bit Presentation Manager";
-                    case VersionFileOS.VOS_UNKNOWN:       return "Unknown";
-                    case VersionFileOS.VOS_DOS_NT:        return "DOS running under Windows NT";
-                    case VersionFileOS.VOS_DOS_WINDOWS16: return "16-bit Windows running under DOS";
-                    case VersionFileOS.VOS_DOS_WINDOWS32: return "32-bit Windows running under DOS";
-                    case VersionFileOS.VOS_DOS_PM16:      return "16-bit Presentation Manager running under DOS";
-                    case VersionFileOS.VOS_DOS_PM32:      return "32-bit Presentation Manager running under DOS";
-                    case VersionFileOS.VOS_NT_WINDOWS16:  return "16-bit Windows running under Windows NT";
-                    case VersionFileOS.VOS_NT_WINDOWS32:  return "32-bit Windows running under Windows NT";
-                    case VersionFileOS.VOS_NT_PM16:
-                        return "16-bit Presentation Manager running under Windows NT";
-                    case VersionFileOS.VOS_NT_PM32:
-                        return "32-bit Presentation Manager running under Windows NT";
-                    case VersionFileOS.VOS_OS216_WINDOWS16: return "16-bit Windows running under 16-bit OS/2";
-                    case VersionFileOS.VOS_OS216_WINDOWS32: return "32-bit Windows running under 16-bit OS/2";
-                    case VersionFileOS.VOS_OS216_PM16:
-                        return "16-bit Presentation Manager running under 16-bit OS/2";
-                    case VersionFileOS.VOS_OS216_PM32:
-                        return "32-bit Presentation Manager running under 16-bit OS/2";
-                    case VersionFileOS.VOS_OS232_WINDOWS16: return "16-bit Windows running under 32-bit OS/2";
-                    case VersionFileOS.VOS_OS232_WINDOWS32: return "32-bit Windows running under 32-bit OS/2";
-                    case VersionFileOS.VOS_OS232_PM16:
-                        return "16-bit Presentation Manager running under 32-bit OS/2";
-                    case VersionFileOS.VOS_OS232_PM32:
-                        return "32-bit Presentation Manager running under 32-bit OS/2";
-                    default: return $"Unknown OS code {(uint)os}";
-                }
             }
         }
     }

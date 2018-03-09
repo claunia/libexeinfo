@@ -24,15 +24,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace libexeinfo
+namespace libexeinfo.Windows
 {
-    public partial class PE
+    public static class Consts
     {
         /// <summary>
-        ///     Portable Executable signature, "PE\0\0"
+        ///     Signature for a <see cref="FixedFileInfo" />
         /// </summary>
-        const ushort SIGNATURE = 0x00004550;
-        const          ushort PE32     = COFF.ZMAGIC;
-        internal const ushort PE32Plus = 0x20b;
+        public const string FixedFileInfoSig = "VS_VERSION_INFO";
+        /// <summary>
+        ///     Signature for list of name=value strings inside a version resource
+        /// </summary>
+        public const string StringFileInfo = "StringFileInfo";
     }
 }
