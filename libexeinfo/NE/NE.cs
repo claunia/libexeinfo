@@ -43,7 +43,7 @@ namespace libexeinfo
         /// <summary>
         ///     Header for this executable
         /// </summary>
-        public NEHeader       Header;
+        public NEHeader Header;
         string[]              ImportedNames;
         string                ModuleDescription;
         string                ModuleName;
@@ -83,10 +83,10 @@ namespace libexeinfo
             Initialize();
         }
 
-        public Stream                    BaseStream    { get; }
-        public bool                      IsBigEndian   => false;
-        public bool                      Recognized    { get; private set; }
-        public string                    Type          { get; private set; }
+        public Stream BaseStream  { get; }
+        public bool   IsBigEndian => false;
+        public bool   Recognized  { get; private set; }
+        public string Type        { get; private set; }
         public IEnumerable<Architecture> Architectures =>
             new[]
             {
@@ -120,8 +120,8 @@ namespace libexeinfo
             Marshal.FreeHGlobal(hdrPtr);
             if(Header.signature != SIGNATURE) return;
 
-            Recognized           = true;
-            Type                 = "New Executable (NE)";
+            Recognized = true;
+            Type       = "New Executable (NE)";
             List<string> strings = new List<string>();
 
             OperatingSystem reqOs = new OperatingSystem();
@@ -174,9 +174,9 @@ namespace libexeinfo
                     break;
                 case TargetOS.DOS:
                 case TargetOS.Borland:
-                    reqOs.Name                                               = "DOS";
-                    reqOs.MajorVersion                                       = Header.os_major;
-                    reqOs.MinorVersion                                       = Header.os_minor;
+                    reqOs.Name         = "DOS";
+                    reqOs.MajorVersion = Header.os_major;
+                    reqOs.MinorVersion = Header.os_minor;
                     if(Header.target_os == TargetOS.Borland) reqOs.Subsystem = "Borland Operating System Services";
                     break;
                 default:
@@ -204,10 +204,10 @@ namespace libexeinfo
             // Some executable indicates 0 entries, some indicate a table start and no limit, will need to explore till next item
             ushort resourceUpperLimit = ushort.MaxValue;
 
-            if(Header.entry_table_offset      >= Header.resource_table_offset &&
-               Header.entry_table_offset      <= resourceUpperLimit) resourceUpperLimit = Header.entry_table_offset;
-            if(Header.segment_table_offset    >= Header.resource_table_offset &&
-               Header.segment_table_offset    <= resourceUpperLimit) resourceUpperLimit = Header.segment_table_offset;
+            if(Header.entry_table_offset >= Header.resource_table_offset &&
+               Header.entry_table_offset <= resourceUpperLimit) resourceUpperLimit = Header.entry_table_offset;
+            if(Header.segment_table_offset >= Header.resource_table_offset &&
+               Header.segment_table_offset <= resourceUpperLimit) resourceUpperLimit = Header.segment_table_offset;
             if(Header.module_reference_offset >= Header.resource_table_offset &&
                Header.module_reference_offset <= resourceUpperLimit)
                 resourceUpperLimit = Header.module_reference_offset;
@@ -220,8 +220,8 @@ namespace libexeinfo
                Header.imported_names_offset <= resourceUpperLimit) resourceUpperLimit = Header.imported_names_offset;
 
             if(Header.resource_table_offset < resourceUpperLimit && Header.resource_table_offset != 0)
-                if(Header.target_os         == TargetOS.Windows || Header.target_os              == TargetOS.Win32 ||
-                   Header.target_os         == TargetOS.Unknown)
+                if(Header.target_os == TargetOS.Windows || Header.target_os == TargetOS.Win32 ||
+                   Header.target_os == TargetOS.Unknown)
                 {
                     Resources = GetResources(BaseStream, BaseExecutable.Header.new_offset, Header.resource_table_offset,
                                              resourceUpperLimit);
@@ -279,14 +279,12 @@ namespace libexeinfo
                             length     = resourceSegments[i].dwSegmentLength
                         };
 
-                        if(thisResource.length == 0)
-                            thisResource.length = 65536;
-                        if(thisResource.dataOffset == 0)
-                            thisResource.dataOffset = 65536;
+                        if(thisResource.length     == 0) thisResource.length     = 65536;
+                        if(thisResource.dataOffset == 0) thisResource.dataOffset = 65536;
                         if((resourceSegments[i].dwFlags & (ushort)SegmentFlags.Huge) == (ushort)SegmentFlags.Huge)
                             thisResource.length <<= Header.alignment_shift;
-                        thisResource.data       =  new byte[thisResource.length];
-                        BaseStream.Position     =  thisResource.dataOffset;
+                        thisResource.data   = new byte[thisResource.length];
+                        BaseStream.Position = thisResource.dataOffset;
                         BaseStream.Read(thisResource.data, 0, thisResource.data.Length);
 
                         thisResourceType.Add(thisResource);
@@ -296,14 +294,14 @@ namespace libexeinfo
 
                     if(os2resources.Count > 0)
                     {
-                        Resources       = new ResourceTable();
-                        int counter     = 0;
+                        Resources = new ResourceTable();
+                        int counter = 0;
                         Resources.types = new ResourceType[os2resources.Count];
                         foreach(KeyValuePair<ushort, List<Resource>> kvp in os2resources)
                         {
                             Resources.types[counter].count     = (ushort)kvp.Value.Count;
                             Resources.types[counter].id        = kvp.Key;
-                            Resources.types[counter].name      = ResourceIdToNameOs2(kvp.Key);
+                            Resources.types[counter].name      = Os2.Resources.IdToName(kvp.Key);
                             Resources.types[counter].resources = kvp.Value.OrderBy(r => r.id).ToArray();
                             counter++;
                         }
@@ -319,12 +317,12 @@ namespace libexeinfo
 
             resourceUpperLimit = ushort.MaxValue;
 
-            if(Header.entry_table_offset       >= Header.module_reference_offset &&
-               Header.entry_table_offset       <= resourceUpperLimit) resourceUpperLimit = Header.entry_table_offset;
-            if(Header.segment_table_offset     >= Header.module_reference_offset &&
-               Header.segment_table_offset     <= resourceUpperLimit) resourceUpperLimit = Header.segment_table_offset;
-            if(Header.resource_table_offset    >= Header.module_reference_offset &&
-               Header.resource_table_offset    <= resourceUpperLimit) resourceUpperLimit = Header.resource_table_offset;
+            if(Header.entry_table_offset >= Header.module_reference_offset &&
+               Header.entry_table_offset <= resourceUpperLimit) resourceUpperLimit = Header.entry_table_offset;
+            if(Header.segment_table_offset >= Header.module_reference_offset &&
+               Header.segment_table_offset <= resourceUpperLimit) resourceUpperLimit = Header.segment_table_offset;
+            if(Header.resource_table_offset >= Header.module_reference_offset &&
+               Header.resource_table_offset <= resourceUpperLimit) resourceUpperLimit = Header.resource_table_offset;
             if(Header.nonresident_names_offset >= Header.module_reference_offset &&
                Header.nonresident_names_offset <= resourceUpperLimit)
                 resourceUpperLimit = (ushort)Header.nonresident_names_offset;
@@ -335,8 +333,8 @@ namespace libexeinfo
                Header.reference_count         > 0)
             {
                 short[] referenceOffsets = new short[Header.reference_count];
-                buffer                   = new byte[2];
-                BaseStream.Position      = Header.module_reference_offset + BaseExecutable.Header.new_offset;
+                buffer              = new byte[2];
+                BaseStream.Position = Header.module_reference_offset + BaseExecutable.Header.new_offset;
                 for(int i = 0; i < Header.reference_count; i++)
                 {
                     BaseStream.Read(buffer, 0, 2);
@@ -349,7 +347,7 @@ namespace libexeinfo
                     BaseStream.Position = Header.imported_names_offset + BaseExecutable.Header.new_offset +
                                           referenceOffsets[i];
                     int len = BaseStream.ReadByte();
-                    buffer  = new byte[len];
+                    buffer = new byte[len];
                     BaseStream.Read(buffer, 0, len);
                     ImportedNames[i] = Encoding.ASCII.GetString(buffer);
                 }
@@ -357,10 +355,10 @@ namespace libexeinfo
 
             resourceUpperLimit = ushort.MaxValue;
 
-            if(Header.entry_table_offset      >= Header.resident_names_offset &&
-               Header.entry_table_offset      <= resourceUpperLimit) resourceUpperLimit = Header.entry_table_offset;
-            if(Header.segment_table_offset    >= Header.resident_names_offset &&
-               Header.segment_table_offset    <= resourceUpperLimit) resourceUpperLimit = Header.segment_table_offset;
+            if(Header.entry_table_offset >= Header.resident_names_offset &&
+               Header.entry_table_offset <= resourceUpperLimit) resourceUpperLimit = Header.entry_table_offset;
+            if(Header.segment_table_offset >= Header.resident_names_offset &&
+               Header.segment_table_offset <= resourceUpperLimit) resourceUpperLimit = Header.segment_table_offset;
             if(Header.module_reference_offset >= Header.resident_names_offset &&
                Header.module_reference_offset <= resourceUpperLimit)
                 resourceUpperLimit = Header.module_reference_offset;
@@ -382,7 +380,7 @@ namespace libexeinfo
                     if(ResidentNames.Length > 1)
                     {
                         ResidentName[] newResidentNames = new ResidentName[ResidentNames.Length - 1];
-                        Array.Copy(ResidentNames, 1, newResidentNames, 0, ResidentNames.Length  - 1);
+                        Array.Copy(ResidentNames, 1, newResidentNames, 0, ResidentNames.Length - 1);
                         ResidentNames = newResidentNames;
                     }
                     else ResidentNames = null;
@@ -401,7 +399,7 @@ namespace libexeinfo
 
                     if(NonResidentNames.Length > 1)
                     {
-                        ResidentName[] newNonResidentNames = new ResidentName[NonResidentNames.Length   - 1];
+                        ResidentName[] newNonResidentNames = new ResidentName[NonResidentNames.Length - 1];
                         Array.Copy(NonResidentNames, 1, newNonResidentNames, 0, NonResidentNames.Length - 1);
                         NonResidentNames = newNonResidentNames;
                     }

@@ -30,6 +30,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using libexeinfo.Windows;
 
 namespace libexeinfo
 {
@@ -129,7 +130,7 @@ namespace libexeinfo
 
                 VersionNode node = new VersionNode
                 {
-                    cbNode = BitConverter.ToUInt16(data, startPosition + nodeLength),
+                    cbNode = BitConverter.ToUInt16(data, startPosition              + nodeLength),
                     cbData = BitConverter.ToUInt16(data, startPosition + nodeLength + 2)
                 };
                 nodeLength += 4;
@@ -148,7 +149,7 @@ namespace libexeinfo
 
                 node.rgbData = new byte[node.cbData];
                 Array.Copy(data, startPosition + nodeLength, node.rgbData, 0, node.cbData);
-                nodeLength                        += node.cbData;
+                nodeLength += node.cbData;
                 if(nodeLength % 4 > 0) nodeLength += 4 - nodeLength % 4;
 
                 List<VersionNode> children = new List<VersionNode>();
@@ -177,8 +178,7 @@ namespace libexeinfo
                         $"{(info.dwFileVersionMS & 0xFFFF0000) >> 16}.{info.dwFileVersionMS & 0xFFFF:D2}.{(info.dwFileVersionLS & 0xFFFF0000) >> 16}.{info.dwFileVersionLS & 0xFFFF}";
                     ProductVersion =
                         $"{(info.dwProductVersionMS & 0xFFFF0000) >> 16}.{info.dwProductVersionMS & 0xFFFF:D2}.{(info.dwProductVersionLS & 0xFFFF0000) >> 16}.{info.dwProductVersionLS & 0xFFFF}";
-                    FileFlags =
-                        (VersionFileFlags)(info.dwFileFlags & info.dwFileFlagsMask);
+                    FileFlags   = (VersionFileFlags)(info.dwFileFlags & info.dwFileFlagsMask);
                     FileOS      = (VersionFileOS)info.dwFileOS;
                     FileType    = (VersionFileType)info.dwFileType;
                     FileSubtype = (VersionFileSubtype)info.dwFileSubtype;
@@ -196,7 +196,7 @@ namespace libexeinfo
                     {
                         Encoding encoding;
 
-                        try { encoding   = Encoding.GetEncoding(Convert.ToInt32(parent.Substring(4), 16)); }
+                        try { encoding = Encoding.GetEncoding(Convert.ToInt32(parent.Substring(4), 16)); }
                         catch { encoding = Encoding.ASCII; }
 
                         strings.Add(node.szName, encoding.GetString(node.rgbData));
@@ -252,8 +252,7 @@ namespace libexeinfo
                     case VersionFileSubtype.VFT2_DRV_SYSTEM:            return "System";
                     case VersionFileSubtype.VFT2_DRV_VERSIONED_PRINTER: return "Versioned";
                     case VersionFileSubtype.VFT2_UNKNOWN:               return "Unknown";
-                    default:
-                        return $"Unknown type code {(uint)subtype}";
+                    default:                                            return $"Unknown type code {(uint)subtype}";
                 }
             }
 
@@ -272,8 +271,7 @@ namespace libexeinfo
                     case VersionFileSubtype.VFT2_FONT_TRUETYPE: return "TrueType";
                     case VersionFileSubtype.VFT2_FONT_VECTOR:   return "Vector";
                     case VersionFileSubtype.VFT2_UNKNOWN:       return "Unknown";
-                    default:
-                        return $"Unknown type code {(uint)subtype}";
+                    default:                                    return $"Unknown type code {(uint)subtype}";
                 }
             }
 

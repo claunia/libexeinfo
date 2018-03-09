@@ -48,7 +48,7 @@ namespace libexeinfo
         public NE.ResidentName[] ImportNames;
         string                   ModuleDescription;
         string                   ModuleName;
-        public NE.ResourceTable         neFormatResourceTable;
+        public NE.ResourceTable  neFormatResourceTable;
         public NE.ResidentName[] NonResidentNames;
         ObjectPageTableEntry[]   objectPageTableEntries;
         ObjectTableEntry[]       objectTableEntries;
@@ -367,7 +367,7 @@ namespace libexeinfo
                 {
                     neFormatResourceTable.types[counter].count     = (ushort)kvp.Value.Count;
                     neFormatResourceTable.types[counter].id        = (ushort)kvp.Key;
-                    neFormatResourceTable.types[counter].name      = NE.ResourceIdToNameOs2((ushort)kvp.Key);
+                    neFormatResourceTable.types[counter].name      = Resources.IdToName((ushort)kvp.Key);
                     neFormatResourceTable.types[counter].resources = kvp.Value.OrderBy(r => r.id).ToArray();
                     counter++;
                 }

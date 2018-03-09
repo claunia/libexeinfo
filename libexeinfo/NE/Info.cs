@@ -44,8 +44,8 @@ namespace libexeinfo
                 if(!string.IsNullOrEmpty(ModuleName)) sb.AppendFormat("\tModule name: {0}", ModuleName).AppendLine();
                 if(!string.IsNullOrEmpty(ModuleDescription))
                     sb.AppendFormat("\tModule description: {0}", ModuleDescription).AppendLine();
-                sb.AppendFormat("\tFile's CRC: 0x{0:X8}",        Header.crc).AppendLine();
-                sb.AppendFormat("\tLinker version: {0}.{1}",     Header.linker_major, Header.linker_minor).AppendLine();
+                sb.AppendFormat("\tFile's CRC: 0x{0:X8}", Header.crc).AppendLine();
+                sb.AppendFormat("\tLinker version: {0}.{1}", Header.linker_major, Header.linker_minor).AppendLine();
                 if(Header.program_flags.HasFlag(ProgramFlags.SingleDGroup) &&
                    !Header.program_flags.HasFlag(ProgramFlags.MultipleDGroup))
                     sb.AppendLine("\tApplication uses a single shared DGroup");
@@ -99,8 +99,7 @@ namespace libexeinfo
                                             Header.return_thunks_offset, Header.segment_reference_thunks).AppendLine();
                         else
                         {
-                            sb.AppendFormat("\tReturn thunks are at: {0}", Header.return_thunks_offset)
-                              .AppendLine();
+                            sb.AppendFormat("\tReturn thunks are at: {0}", Header.return_thunks_offset).AppendLine();
                             sb.AppendFormat("\tSegment reference thunks are at: {0}", Header.segment_reference_thunks)
                               .AppendLine();
                         }
@@ -142,8 +141,7 @@ namespace libexeinfo
                         else if(Header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
                                 Header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
                             sb.AppendLine("\tApplication uses Windows");
-                        sb.AppendFormat("\tReturn thunks are at: {0}", Header.return_thunks_offset)
-                          .AppendLine();
+                        sb.AppendFormat("\tReturn thunks are at: {0}", Header.return_thunks_offset).AppendLine();
                         sb.AppendFormat("\tSegment reference thunks are at: {0}", Header.segment_reference_thunks)
                           .AppendLine();
                         break;
@@ -160,8 +158,7 @@ namespace libexeinfo
                         else if(Header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
                                 Header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
                             sb.AppendLine("\tApplication uses Windows");
-                        sb.AppendFormat("\tReturn thunks are at: {0}", Header.return_thunks_offset)
-                          .AppendLine();
+                        sb.AppendFormat("\tReturn thunks are at: {0}", Header.return_thunks_offset).AppendLine();
                         sb.AppendFormat("\tSegment reference thunks are at: {0}", Header.segment_reference_thunks)
                           .AppendLine();
                         break;
@@ -178,18 +175,15 @@ namespace libexeinfo
                         else if(Header.application_flags.HasFlag(ApplicationFlags.FullScreen) &&
                                 Header.application_flags.HasFlag(ApplicationFlags.GUICompatible))
                             sb.AppendLine("\tApplication uses Windows");
-                        sb.AppendFormat("\tReturn thunks are at: {0}", Header.return_thunks_offset)
-                          .AppendLine();
+                        sb.AppendFormat("\tReturn thunks are at: {0}", Header.return_thunks_offset).AppendLine();
                         sb.AppendFormat("\tSegment reference thunks are at: {0}", Header.segment_reference_thunks)
                           .AppendLine();
                         break;
                     default:
-                        sb.AppendFormat("\tApplication for unknown OS {0}", (byte)Header.target_os)
-                          .AppendLine();
+                        sb.AppendFormat("\tApplication for unknown OS {0}", (byte)Header.target_os).AppendLine();
                         sb.AppendFormat("\tApplication requires OS {0}.{1} to run", Header.os_major, Header.os_minor)
                           .AppendLine();
-                        sb.AppendFormat("\tReturn thunks are at: {0}", Header.return_thunks_offset)
-                          .AppendLine();
+                        sb.AppendFormat("\tReturn thunks are at: {0}", Header.return_thunks_offset).AppendLine();
                         sb.AppendFormat("\tSegment reference thunks are at: {0}", Header.segment_reference_thunks)
                           .AppendLine();
                         break;
@@ -201,12 +195,12 @@ namespace libexeinfo
                 if(Header.application_flags.HasFlag(ApplicationFlags.DLL))
                     sb.AppendLine("\tExecutable is a dynamic library or a driver");
 
-                sb.AppendFormat("\tMinimum code swap area: {0} bytes",      Header.minimum_swap_area).AppendLine();
-                sb.AppendFormat("\tFile alignment shift: {0}",              1 << Header.alignment_shift).AppendLine();
+                sb.AppendFormat("\tMinimum code swap area: {0} bytes", Header.minimum_swap_area).AppendLine();
+                sb.AppendFormat("\tFile alignment shift: {0}", 1 << Header.alignment_shift).AppendLine();
                 sb.AppendFormat("\tInitial local heap should be {0} bytes", Header.initial_heap).AppendLine();
                 sb.AppendFormat("\tInitial stack size should be {0} bytes", Header.initial_stack).AppendLine();
                 sb.AppendFormat("\tCS:IP entry point: {0:X4}:{1:X4}", (Header.entry_point & 0xFFFF0000) >> 16,
-                                Header.entry_point                                        & 0xFFFF).AppendLine();
+                                Header.entry_point & 0xFFFF).AppendLine();
                 if(!Header.application_flags.HasFlag(ApplicationFlags.DLL))
                     sb.AppendFormat("\tSS:SP initial stack pointer: {0:X4}:{1:X4}",
                                     (Header.stack_pointer & 0xFFFF0000) >> 16, Header.stack_pointer & 0xFFFF)
@@ -300,7 +294,7 @@ namespace libexeinfo
 
             long oldPosition = stream.Position;
 
-            stream.Position = neStart          + tableOff;
+            stream.Position = neStart + tableOff;
             while(stream.Position < upperLimit + neStart)
             {
                 stringSize = (byte)stream.ReadByte();
@@ -329,7 +323,7 @@ namespace libexeinfo
             byte[] DW          = new byte[2];
             byte[] DD          = new byte[4];
 
-            stream.Position     = neStart + tableOff;
+            stream.Position = neStart + tableOff;
             ResourceTable table = new ResourceTable();
             stream.Read(DW, 0, 2);
             table.alignment_shift = BitConverter.ToUInt16(DW, 0);
@@ -374,27 +368,27 @@ namespace libexeinfo
                 if((table.types[t].id & 0x8000) == 0)
                 {
                     stream.Position = neStart + tableOff + table.types[t].id;
-                    byte   len      = (byte)stream.ReadByte();
-                    byte[] str      = new byte[len];
+                    byte   len = (byte)stream.ReadByte();
+                    byte[] str = new byte[len];
                     stream.Read(str, 0, len);
                     table.types[t].name = Encoding.ASCII.GetString(str);
                 }
-                else table.types[t].name = ResourceIdToName(table.types[t].id);
+                else table.types[t].name = Windows.Resources.IdToName(table.types[t].id);
 
                 for(int r = 0; r < table.types[t].resources.Length; r++)
                 {
                     if((table.types[t].resources[r].id & 0x8000) == 0)
                     {
                         stream.Position = neStart + tableOff + table.types[t].resources[r].id;
-                        byte   len      = (byte)stream.ReadByte();
-                        byte[] str      = new byte[len];
+                        byte   len = (byte)stream.ReadByte();
+                        byte[] str = new byte[len];
                         stream.Read(str, 0, len);
                         table.types[t].resources[r].name = Encoding.ASCII.GetString(str);
                     }
                     else table.types[t].resources[r].name = $"{table.types[t].resources[r].id & 0x7FFF}";
 
                     table.types[t].resources[r].data =
-                        new byte[table.types[t].resources[r].length          * (1 << table.alignment_shift)];
+                        new byte[table.types[t].resources[r].length * (1 << table.alignment_shift)];
                     stream.Position = table.types[t].resources[r].dataOffset * (1 << table.alignment_shift);
                     stream.Read(table.types[t].resources[r].data, 0, table.types[t].resources[r].data.Length);
                 }
