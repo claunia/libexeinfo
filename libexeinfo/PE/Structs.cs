@@ -34,14 +34,14 @@ namespace libexeinfo
         /// <summary>
         ///     Header for a Microsoft New Executable
         /// </summary>
-        [StructLayout(LayoutKind.Sequential /*, Pack = 2*/)]
-        public struct PEHeader
+        [StructLayout(LayoutKind.Sequential)]
+        struct PEHeader
         {
             /// <summary>
             ///     After the MS-DOS stub, at the file offset specified at offset 0x3c, is a 4-byte signature that identifies the file
             ///     as a PE format image file. This signature is "PE\0\0" (the letters "P" and "E" followed by two null bytes).
             /// </summary>
-            public uint       signature;
+            public uint signature;
             public COFFHeader coff;
         }
 
@@ -49,8 +49,8 @@ namespace libexeinfo
         ///     The next 21 fields are an extension to the COFF optional header format. They contain additional information that is
         ///     required by the linker and loader in Windows.
         /// </summary>
-        [StructLayout(LayoutKind.Sequential /*, Pack = 2*/)]
-        public struct WindowsHeader
+        [StructLayout(LayoutKind.Sequential)]
+        struct WindowsHeader
         {
             /// <summary>
             ///     The preferred address of the first byte of image when loaded into memory; must be a multiple of 64 K. The default
@@ -152,8 +152,8 @@ namespace libexeinfo
         ///     The next 21 fields are an extension to the COFF optional header format. They contain additional information that is
         ///     required by the linker and loader in Windows.
         /// </summary>
-        [StructLayout(LayoutKind.Sequential /*, Pack = 2*/)]
-        public struct WindowsHeader64
+        [StructLayout(LayoutKind.Sequential)]
+        struct WindowsHeader64
         {
             /// <summary>
             ///     The preferred address of the first byte of image when loaded into memory; must be a multiple of 64 K. The default
@@ -251,21 +251,21 @@ namespace libexeinfo
             public uint numberOfRvaAndSizes;
         }
 
-        [StructLayout(LayoutKind.Sequential /*, Pack = 2*/)]
-        public struct ImageDataDirectory
+        [StructLayout(LayoutKind.Sequential)]
+        struct ImageDataDirectory
         {
             /// <summary>
             ///     Relative virtual address of the table
             /// </summary>
-            uint rva;
+            public uint rva;
             /// <summary>
             ///     The size in bytes
             /// </summary>
-            uint size;
+            public uint size;
         }
 
-        [StructLayout(LayoutKind.Sequential /*, Pack = 2*/)]
-        public struct DebugDirectory
+        [StructLayout(LayoutKind.Sequential)]
+        struct DebugDirectory
         {
             /// <summary>
             ///     A reserved field intended to be used for flags, set to zero for now.
@@ -302,8 +302,8 @@ namespace libexeinfo
             public uint pointerToRawData;
         }
 
-        [StructLayout(LayoutKind.Sequential /*, Pack = 2*/)]
-        public struct ResourceDirectoryTable
+        [StructLayout(LayoutKind.Sequential)]
+        struct ResourceDirectoryTable
         {
             /// <summary>
             ///     Resource flags, reserved for future use; currently set to zero.
@@ -334,8 +334,8 @@ namespace libexeinfo
             public ushort idEntries;
         }
 
-        [StructLayout(LayoutKind.Sequential /*, Pack = 2*/)]
-        public struct ResourceDirectoryEntries
+        [StructLayout(LayoutKind.Sequential)]
+        struct ResourceDirectoryEntries
         {
             /// <summary>
             ///     Address of string that gives the Type, Name, or Language identifier, depending on level of table.
@@ -350,8 +350,8 @@ namespace libexeinfo
             public uint rva;
         }
 
-        [StructLayout(LayoutKind.Sequential /*, Pack = 2*/)]
-        public struct ResourceDataEntry
+        [StructLayout(LayoutKind.Sequential)]
+        struct ResourceDataEntry
         {
             /// <summary>
             ///     Address of a unit of resource data in the Resource Data area.
@@ -370,6 +370,84 @@ namespace libexeinfo
             ///     Reserved (must be set to 0)
             /// </summary>
             public uint reserved;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct ExportDirectoryTable
+        {
+            /// <summary>
+            ///     Reserved, must be 0.
+            /// </summary>
+            public uint exportFlags;
+            /// <summary>
+            ///     The time and date that the export data was created.
+            /// </summary>
+            public uint timestamp;
+            /// <summary>
+            ///     The major version number. The major and minor version numbers can be set by the user.
+            /// </summary>
+            public ushort majorVersion;
+            /// <summary>
+            ///     The minor version number.
+            /// </summary>
+            public ushort minorVersion;
+            /// <summary>
+            ///     The address of the ASCII string that contains the name of the DLL. This address is relative to the image base.
+            /// </summary>
+            public uint nameRva;
+            /// <summary>
+            ///     The starting ordinal number for exports in this image. This field specifies the starting ordinal number for the
+            ///     export address table. It is usually set to 1.
+            /// </summary>
+            public uint ordinalBase;
+            /// <summary>
+            ///     The number of entries in the export address table.
+            /// </summary>
+            public uint addressTableEntries;
+            /// <summary>
+            ///     The number of entries in the name pointer table. This is also the number of entries in the ordinal table.
+            /// </summary>
+            public uint numberOfNamePointers;
+            /// <summary>
+            ///     The address of the export address table, relative to the image base.
+            /// </summary>
+            public uint exportAddressTableRva;
+            /// <summary>
+            ///     The address of the export name pointer table, relative to the image base. The table size is given by the Number of
+            ///     Name Pointers field.
+            /// </summary>
+            public uint namePointerRva;
+            /// <summary>
+            ///     The address of the ordinal table, relative to the image base.
+            /// </summary>
+            public uint ordinalTableRva;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct ImportDirectoryTable
+        {
+            /// <summary>
+            ///     The RVA of the import lookup table. This table contains a name or ordinal for each import.
+            /// </summary>
+            public uint importLookupTableRva;
+            /// <summary>
+            ///     The stamp that is set to zero until the image is bound. After the image is bound, this field is set to the
+            ///     time/data stamp of the DLL.
+            /// </summary>
+            public uint timestamp;
+            /// <summary>
+            ///     The index of the first forwarder reference.
+            /// </summary>
+            public uint forwardedChain;
+            /// <summary>
+            ///     The address of an ASCII string that contains the name of the DLL. This address is relative to the image base.
+            /// </summary>
+            public uint nameRva;
+            /// <summary>
+            ///     The RVA of the import address table. The contents of this table are identical to the contents of the import lookup
+            ///     table until the image is bound.
+            /// </summary>
+            public uint importAddressTableRva;
         }
     }
 }

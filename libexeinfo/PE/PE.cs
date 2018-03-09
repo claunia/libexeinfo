@@ -27,21 +27,31 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace libexeinfo
 {
     /// <summary>
     ///     Represents a Microsoft Portable Executable
     /// </summary>
+    // TODO: Process BeOS resources
+    // TODO: Process Windows resources
     public partial class PE : IExecutable
     {
-        MZ BaseExecutable;
+        MZ                   baseExecutable;
+        DebugDirectory       debugDirectory;
+        ImageDataDirectory[] directoryEntries;
+        string[]             exportedNames;
         /// <summary>
         ///     Header for this executable
         /// </summary>
-        PEHeader        Header;
-        WindowsHeader64 WinHeader;
+        PEHeader header;
+        string[]             importedNames;
+        string               moduleName;
+        COFF.SectionHeader[] sectionHeaders;
+        WindowsHeader64      winHeader;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.PE" /> class.
@@ -73,47 +83,47 @@ namespace libexeinfo
             Initialize();
         }
 
-        public Stream                    BaseStream    { get; }
-        public bool                      IsBigEndian   => false;
-        public bool                      Recognized    { get; private set; }
-        public string                    Type          { get; private set; }
+        public Stream BaseStream  { get; }
+        public bool   IsBigEndian => false;
+        public bool   Recognized  { get; private set; }
+        public string Type        { get; private set; }
         public IEnumerable<Architecture> Architectures =>
-            new[] {COFF.MachineTypeToArchitecture(Header.coff.machine)};
-        public OperatingSystem RequiredOperatingSystem { get; private set; }
-        public IEnumerable<string> Strings { get; }
-        public IEnumerable<Segment> Segments { get; }
+            new[] {COFF.MachineTypeToArchitecture(header.coff.machine)};
+        public OperatingSystem      RequiredOperatingSystem { get; private set; }
+        public IEnumerable<string>  Strings                 { get; private set; }
+        public IEnumerable<Segment> Segments                { get; private set; }
 
         void Initialize()
         {
             Recognized = false;
             if(BaseStream == null) return;
 
-            BaseExecutable = new MZ(BaseStream);
-            if(!BaseExecutable.Recognized) return;
+            baseExecutable = new MZ(BaseStream);
+            if(!baseExecutable.Recognized) return;
 
-            if(BaseExecutable.Header.new_offset >= BaseStream.Length) return;
+            if(baseExecutable.Header.new_offset >= BaseStream.Length) return;
 
-            BaseStream.Seek(BaseExecutable.Header.new_offset, SeekOrigin.Begin);
+            BaseStream.Seek(baseExecutable.Header.new_offset, SeekOrigin.Begin);
             byte[] buffer = new byte[Marshal.SizeOf(typeof(PEHeader))];
             BaseStream.Read(buffer, 0, buffer.Length);
             IntPtr hdrPtr = Marshal.AllocHGlobal(buffer.Length);
             Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-            Header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
+            header = (PEHeader)Marshal.PtrToStructure(hdrPtr, typeof(PEHeader));
             Marshal.FreeHGlobal(hdrPtr);
-            Recognized = Header.signature == SIGNATURE;
+            Recognized = header.signature == SIGNATURE;
 
             if(!Recognized) return;
 
             Type = "Portable Executable (PE)";
 
-            if(Header.coff.optionalHeader.magic == PE32Plus)
+            if(header.coff.optionalHeader.magic == PE32Plus)
             {
                 BaseStream.Position -= 4;
                 buffer              =  new byte[Marshal.SizeOf(typeof(WindowsHeader64))];
                 BaseStream.Read(buffer, 0, buffer.Length);
                 hdrPtr = Marshal.AllocHGlobal(buffer.Length);
                 Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
-                WinHeader = (WindowsHeader64)Marshal.PtrToStructure(hdrPtr, typeof(WindowsHeader64));
+                winHeader = (WindowsHeader64)Marshal.PtrToStructure(hdrPtr, typeof(WindowsHeader64));
                 Marshal.FreeHGlobal(hdrPtr);
             }
             else
@@ -124,12 +134,12 @@ namespace libexeinfo
                 Marshal.Copy(buffer, 0, hdrPtr, buffer.Length);
                 WindowsHeader hdr32 = (WindowsHeader)Marshal.PtrToStructure(hdrPtr, typeof(WindowsHeader));
                 Marshal.FreeHGlobal(hdrPtr);
-                WinHeader = ToPlus(hdr32);
+                winHeader = ToPlus(hdr32);
             }
 
             OperatingSystem reqOs = new OperatingSystem();
 
-            switch(WinHeader.subsystem)
+            switch(winHeader.subsystem)
             {
                 case Subsystems.IMAGE_SUBSYSTEM_UNKNOWN:
                     reqOs.Name = "Unknown";
@@ -139,11 +149,11 @@ namespace libexeinfo
                     reqOs.Subsystem = "Native";
                     break;
                 case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_GUI:
-                    reqOs.Name      = WinHeader.majorOperatingSystemVersion < 3 ? "Windows NT" : "Windows";
+                    reqOs.Name      = winHeader.majorSubsystemVersion <= 3 ? "Windows NT" : "Windows";
                     reqOs.Subsystem = "GUI";
                     break;
                 case Subsystems.IMAGE_SUBSYSTEM_WINDOWS_CUI:
-                    reqOs.Name      = WinHeader.majorOperatingSystemVersion < 3 ? "Windows NT" : "Windows";
+                    reqOs.Name      = winHeader.majorSubsystemVersion <= 3 ? "Windows NT" : "Windows";
                     reqOs.Subsystem = "Console";
                     break;
                 case Subsystems.IMAGE_SUBSYSTEM_OS2_CUI:
@@ -175,13 +185,220 @@ namespace libexeinfo
                     reqOs.Subsystem = "Boot environment";
                     break;
                 default:
-                    reqOs.Name = $"Unknown code ${(ushort)WinHeader.subsystem}";
+                    reqOs.Name = $"Unknown code ${(ushort)winHeader.subsystem}";
                     break;
             }
 
-            reqOs.MajorVersion      = WinHeader.majorOperatingSystemVersion;
-            reqOs.MinorVersion      = WinHeader.minorOperatingSystemVersion;
+            reqOs.MajorVersion      = winHeader.majorSubsystemVersion;
+            reqOs.MinorVersion      = winHeader.minorSubsystemVersion;
             RequiredOperatingSystem = reqOs;
+
+            buffer           = new byte[Marshal.SizeOf(typeof(ImageDataDirectory))];
+            directoryEntries = new ImageDataDirectory[winHeader.numberOfRvaAndSizes];
+            for(int i = 0; i < directoryEntries.Length; i++)
+            {
+                BaseStream.Read(buffer, 0, buffer.Length);
+                directoryEntries[i] = BigEndianMarshal.ByteArrayToStructureLittleEndian<ImageDataDirectory>(buffer);
+            }
+
+            buffer         = new byte[Marshal.SizeOf(typeof(COFF.SectionHeader))];
+            sectionHeaders = new COFF.SectionHeader[header.coff.numberOfSections];
+            for(int i = 0; i < sectionHeaders.Length; i++)
+            {
+                BaseStream.Read(buffer, 0, buffer.Length);
+                sectionHeaders[i] = BigEndianMarshal.ByteArrayToStructureLittleEndian<COFF.SectionHeader>(buffer);
+            }
+
+            Dictionary<string, COFF.SectionHeader> newSectionHeaders =
+                sectionHeaders.ToDictionary(section => section.name);
+
+            for(int i = 0; i < directoryEntries.Length; i++)
+            {
+                string tableName;
+                switch(i)
+                {
+                    case 0:
+                        tableName = ".edata";
+                        break;
+                    case 1:
+                        tableName = ".idata";
+                        break;
+                    case 2:
+                        tableName = ".rsrc";
+                        break;
+                    case 3:
+                        tableName = ".pdata";
+                        break;
+                    case 5:
+                        tableName = ".reloc";
+                        break;
+                    case 6:
+                        tableName = ".debug";
+                        break;
+                    case 9:
+                        tableName = ".tls";
+                        break;
+                    case 14:
+                        tableName = ".cormeta";
+                        break;
+                    default: continue;
+                }
+
+                if(newSectionHeaders.ContainsKey(tableName)) continue;
+                if(directoryEntries[i].rva == 0) continue;
+
+                newSectionHeaders.Add(tableName,
+                                      new COFF.SectionHeader
+                                      {
+                                          characteristics =
+                                              COFF.SectionFlags.IMAGE_SCN_CNT_INITIALIZED_DATA |
+                                              COFF.SectionFlags.IMAGE_SCN_MEM_READ,
+                                          name             = tableName,
+                                          pointerToRawData = RvaToReal(directoryEntries[i].rva, sectionHeaders),
+                                          virtualAddress   = directoryEntries[i].rva,
+                                          sizeOfRawData    = directoryEntries[i].size,
+                                          virtualSize      = directoryEntries[i].size
+                                      });
+            }
+
+            List<byte>   chars;
+            List<string> strings = new List<string>();
+
+            if(newSectionHeaders.TryGetValue(".edata", out COFF.SectionHeader edata))
+            {
+                buffer              = new byte[Marshal.SizeOf(typeof(ExportDirectoryTable))];
+                BaseStream.Position = edata.pointerToRawData;
+                BaseStream.Read(buffer, 0, buffer.Length);
+                ExportDirectoryTable edataTable =
+                    BigEndianMarshal.ByteArrayToStructureLittleEndian<ExportDirectoryTable>(buffer);
+
+                BaseStream.Position = RvaToReal(edataTable.nameRva, sectionHeaders);
+                chars               = new List<byte>();
+                while(true)
+                {
+                    int ch = BaseStream.ReadByte();
+                    if(ch <= 0) break;
+
+                    chars.Add((byte)ch);
+                }
+
+                moduleName = Encoding.ASCII.GetString(chars.ToArray());
+
+                uint[] namePointers = new uint[edataTable.numberOfNamePointers];
+                exportedNames       = new string[edataTable.numberOfNamePointers];
+                buffer              = new byte[Marshal.SizeOf(typeof(uint)) * edataTable.numberOfNamePointers];
+                BaseStream.Position = RvaToReal(edataTable.namePointerRva, sectionHeaders);
+                BaseStream.Read(buffer, 0, buffer.Length);
+                for(int i = 0; i < edataTable.numberOfNamePointers; i++)
+                {
+                    namePointers[i]     = BitConverter.ToUInt32(buffer, i * 4);
+                    BaseStream.Position = RvaToReal(namePointers[i], sectionHeaders);
+
+                    chars = new List<byte>();
+                    while(true)
+                    {
+                        int ch = BaseStream.ReadByte();
+                        if(ch <= 0) break;
+
+                        chars.Add((byte)ch);
+                    }
+
+                    exportedNames[i] = Encoding.ASCII.GetString(chars.ToArray());
+                }
+            }
+
+            if(newSectionHeaders.TryGetValue(".idata", out COFF.SectionHeader idata))
+            {
+                buffer              = new byte[Marshal.SizeOf(typeof(ImportDirectoryTable))];
+                BaseStream.Position = idata.pointerToRawData;
+                List<ImportDirectoryTable> importDirectoryEntries = new List<ImportDirectoryTable>();
+
+                while(true)
+                {
+                    BaseStream.Read(buffer, 0, buffer.Length);
+                    if(buffer.All(b => b == 0)) break;
+
+                    importDirectoryEntries.Add(BigEndianMarshal
+                                                  .ByteArrayToStructureLittleEndian<ImportDirectoryTable>(buffer));
+                }
+
+                importedNames = new string[importDirectoryEntries.Count];
+                for(int i = 0; i < importDirectoryEntries.Count; i++)
+                {
+                    BaseStream.Position = RvaToReal(importDirectoryEntries[i].nameRva, sectionHeaders);
+
+                    chars = new List<byte>();
+                    while(true)
+                    {
+                        int ch = BaseStream.ReadByte();
+                        if(ch <= 0) break;
+
+                        chars.Add((byte)ch);
+                    }
+
+                    importedNames[i] = Encoding.ASCII.GetString(chars.ToArray());
+
+                    // BeOS R3 uses PE with no subsystem
+                    if(importedNames[i].ToLower() == "libbe.so")
+                    {
+                        reqOs.MajorVersion      = 3;
+                        reqOs.MinorVersion      = 0;
+                        reqOs.Subsystem         = null;
+                        reqOs.Name              = "BeOS";
+                        RequiredOperatingSystem = reqOs;
+                    }
+                    // Singularity appears as a native NT executable
+                    else if(importedNames[i].ToLower() == "singularity.v1.dll")
+                    {
+                        reqOs.MajorVersion      = 1;
+                        reqOs.MinorVersion      = 0;
+                        reqOs.Subsystem         = null;
+                        reqOs.Name              = "Singularity";
+                        RequiredOperatingSystem = reqOs;
+                    }
+                }
+            }
+
+            if(newSectionHeaders.TryGetValue(".debug", out COFF.SectionHeader debug) && debug.virtualAddress > 0)
+            {
+                buffer              = new byte[Marshal.SizeOf(typeof(DebugDirectory))];
+                BaseStream.Position = debug.pointerToRawData;
+                BaseStream.Read(buffer, 0, buffer.Length);
+                debugDirectory = BigEndianMarshal.ByteArrayToStructureLittleEndian<DebugDirectory>(buffer);
+            }
+
+            // BeOS .rsrc is not virtual addressing, and has no size, solve it
+            if(reqOs.Name == "BeOS" && newSectionHeaders.ContainsKey(".rsrc"))
+            {
+                newSectionHeaders.TryGetValue(".rsrc", out COFF.SectionHeader beRsrc);
+                newSectionHeaders.Remove(".rsrc");
+                beRsrc.pointerToRawData = beRsrc.virtualAddress;
+
+                long maxPosition = BaseStream.Length;
+                foreach(KeyValuePair<string, COFF.SectionHeader> kvp in newSectionHeaders)
+                    if(kvp.Value.pointerToRawData <= maxPosition &&
+                       kvp.Value.pointerToRawData > beRsrc.pointerToRawData)
+                        maxPosition = kvp.Value.pointerToRawData;
+
+                beRsrc.sizeOfRawData = (uint)(maxPosition - beRsrc.pointerToRawData);
+                beRsrc.virtualSize   = beRsrc.sizeOfRawData;
+                newSectionHeaders.Add(".rsrc", beRsrc);
+            }
+
+            sectionHeaders = newSectionHeaders.Values.OrderBy(s => s.pointerToRawData).ToArray();
+            Segment[] segments = new Segment[sectionHeaders.Length];
+            for(int i = 0; i < segments.Length; i++)
+                segments[i] = new Segment
+                {
+                    Flags  = $"{sectionHeaders[i].characteristics}",
+                    Name   = sectionHeaders[i].name,
+                    Offset = sectionHeaders[i].pointerToRawData,
+                    Size   = sectionHeaders[i].sizeOfRawData
+                };
+
+            Segments = segments;
+            strings.Sort();
+            Strings = strings;
         }
 
         /// <summary>
@@ -256,6 +473,15 @@ namespace libexeinfo
                 loaderFlags                 = header.loaderFlags,
                 numberOfRvaAndSizes         = header.numberOfRvaAndSizes
             };
+        }
+
+        static uint RvaToReal(uint rva, COFF.SectionHeader[] sections)
+        {
+            for(int i = 0; i < sections.Length; i++)
+                if(rva >= sections[i].virtualAddress && rva <= sections[i].virtualAddress + sections[i].sizeOfRawData)
+                    return sections[i].pointerToRawData + (rva - sections[i].virtualAddress);
+
+            return 0;
         }
     }
 }
