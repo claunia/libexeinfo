@@ -54,7 +54,7 @@ namespace libexeinfo
         public Version[]     Versions;
         public ResourceNode  WindowsResourcesRoot;
         WindowsHeader64      winHeader;
-        public BeOS.ResourceTypeBlock[] beosResources;
+        public BeOS.ResourceTypeBlock[] BeosResources;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.PE" /> class.
@@ -389,7 +389,7 @@ namespace libexeinfo
                     buffer = new byte[rsrc.sizeOfRawData];
                     BaseStream.Position = rsrc.pointerToRawData;
                     BaseStream.Read(buffer, 0, buffer.Length);
-                    beosResources = BeOS.Resources.Decode(buffer);
+                    BeosResources = BeOS.Resources.Decode(buffer);
                 }
                 else
                 {

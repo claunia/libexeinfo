@@ -23,7 +23,6 @@ namespace libexeinfo.BeOS
 
             if(header.magic != Consts.RESOURCES_HEADER_MAGIC) return null;
 
-            ResourceIndexEntry[] indexes = new ResourceIndexEntry[header.resource_count];
             pos    = header.index_section_offset;
             buffer = new byte[Marshal.SizeOf(typeof(ResourceIndexSectionHeader))];
             if(pos + buffer.Length > data.Length) return null;
@@ -33,7 +32,11 @@ namespace libexeinfo.BeOS
                 BigEndianMarshal.ByteArrayToStructureLittleEndian<ResourceIndexSectionHeader>(buffer);
             pos += (uint)buffer.Length;
 
-            for(int i = 0; i < header.resource_count; i++)
+            ResourceIndexEntry[] indexes =
+                new ResourceIndexEntry[(indexHeader.index_section_size -
+                                        Marshal.SizeOf(typeof(ResourceIndexSectionHeader))) /
+                                       Marshal.SizeOf(typeof(ResourceIndexEntry))];
+            for(int i = 0; i < indexes.Length; i++)
             {
                 buffer = new byte[Marshal.SizeOf(typeof(ResourceIndexEntry))];
                 Array.Copy(data, pos, buffer, 0, buffer.Length);
@@ -88,10 +91,10 @@ namespace libexeinfo.BeOS
                     id    = infos[i].id,
                     index = infos[i].index,
                     name  = names[i],
-                    data  = new byte[indexes[i].size]
+                    data  = new byte[indexes[infos[i].index - 1].size]
                 };
 
-                Array.Copy(data, indexes[i].offset, rez.data, 0, rez.data.Length);
+                Array.Copy(data, indexes[infos[i].index - 1].offset, rez.data, 0, rez.data.Length);
 
                 thisRezzes.Add(rez);
                 rezzes.Remove(types[i]);
@@ -118,7 +121,6 @@ namespace libexeinfo.BeOS
 
             if(header.magic != Consts.RESOURCES_HEADER_MAGIC) return null;
 
-            ResourceIndexEntry[] indexes = new ResourceIndexEntry[header.resource_count];
             pos    = header.index_section_offset;
             buffer = new byte[Marshal.SizeOf(typeof(ResourceIndexSectionHeader))];
             if(pos + buffer.Length > data.Length) return null;
@@ -128,7 +130,11 @@ namespace libexeinfo.BeOS
                 BigEndianMarshal.ByteArrayToStructureBigEndian<ResourceIndexSectionHeader>(buffer);
             pos += (uint)buffer.Length;
 
-            for(int i = 0; i < header.resource_count; i++)
+            ResourceIndexEntry[] indexes =
+                new ResourceIndexEntry[(indexHeader.index_section_size -
+                                        Marshal.SizeOf(typeof(ResourceIndexSectionHeader))) /
+                                       Marshal.SizeOf(typeof(ResourceIndexEntry))];
+            for(int i = 0; i < indexes.Length; i++)
             {
                 buffer = new byte[Marshal.SizeOf(typeof(ResourceIndexEntry))];
                 Array.Copy(data, pos, buffer, 0, buffer.Length);
@@ -183,10 +189,10 @@ namespace libexeinfo.BeOS
                     id    = infos[i].id,
                     index = infos[i].index,
                     name  = names[i],
-                    data  = new byte[indexes[i].size]
+                    data  = new byte[indexes[infos[i].index - 1].size]
                 };
 
-                Array.Copy(data, indexes[i].offset, rez.data, 0, rez.data.Length);
+                Array.Copy(data, indexes[infos[i].index - 1].offset, rez.data, 0, rez.data.Length);
 
                 thisRezzes.Add(rez);
                 rezzes.Remove(types[i]);

@@ -26,7 +26,7 @@
 
 namespace libexeinfo.BeOS
 {
-    static class Consts
+    public static class Consts
     {
         internal const int RESOURCES_HEADER_MAGIC = 0x444F1000;
 
