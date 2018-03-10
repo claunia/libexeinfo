@@ -397,7 +397,7 @@ namespace libexeinfo
                                      select BigEndianMarshal
                                         .ByteArrayToStructureLittleEndian<VersionInfo>(resource.data)
                                      into versionInfo
-                                     select StringHandlers.CToString(versionInfo.long_info));
+                                     select StringHandlers.CToString(versionInfo.long_info, Encoding.UTF8));
                 }
                 else
                 {
