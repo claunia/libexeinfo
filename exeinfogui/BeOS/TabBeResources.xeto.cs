@@ -40,6 +40,7 @@ namespace exeinfogui.BeOS
         PanelText    panelText;
         Panel        pnlResource;
         TreeGridView treeResources;
+        PanelBeIcon panelBeIcon;
 
         public TabBeResources()
         {
@@ -54,6 +55,7 @@ namespace exeinfogui.BeOS
 
             panelHexDump = new PanelHexDump();
             panelText    = new PanelText();
+            panelBeIcon = new PanelBeIcon();
         }
 
         public void Update(IEnumerable<ResourceTypeBlock> resources)
@@ -99,7 +101,12 @@ namespace exeinfogui.BeOS
             {
                 case Consts.B_MIME_STRING_TYPE:
                     pnlResource.Content = panelText;
-                    panelText.Update(data, Encoding.UTF8);
+                    panelText.Update(data, Encoding.ASCII);
+                    break;
+                case Consts.B_LARGE_ICON_TYPE:
+                case Consts.B_MINI_ICON_TYPE:
+                    pnlResource.Content = panelBeIcon;
+                    panelBeIcon.Update(data, type);
                     break;
                 default:
                     pnlResource.Content = panelHexDump;
