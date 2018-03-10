@@ -26,6 +26,7 @@
 
 namespace libexeinfo.BeOS
 {
+    // TODO: Find examples of 'CSTR', 'TEXT', and 'MMSG' with data
     public static class Consts
     {
         internal const int RESOURCES_HEADER_MAGIC = 0x444F1000;

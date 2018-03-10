@@ -202,4 +202,18 @@ namespace libexeinfo.BeOS
         public int    index;
         public string name;
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct VersionInfo
+    {
+        public uint        major;
+        public uint        middle;
+        public uint        minor;
+        public InfoVariety variety;
+        public uint        interna1;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 64)]
+        public byte[] short_info;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
+        public byte[] long_info;
+    }
 }

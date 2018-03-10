@@ -36,11 +36,13 @@ namespace exeinfogui.BeOS
 {
     public class TabBeResources : TabPage
     {
-        PanelHexDump panelHexDump;
-        PanelText    panelText;
-        Panel        pnlResource;
-        TreeGridView treeResources;
-        PanelBeIcon panelBeIcon;
+        bool           bigEndian;
+        PanelBeIcon    panelBeIcon;
+        PanelBeVersion panelBeVersion;
+        PanelHexDump   panelHexDump;
+        PanelText      panelText;
+        Panel          pnlResource;
+        TreeGridView   treeResources;
 
         public TabBeResources()
         {
@@ -53,12 +55,13 @@ namespace exeinfogui.BeOS
             treeResources.AllowMultipleSelection =  false;
             treeResources.SelectionChanged       += TreeResourcesOnSelectionChanged;
 
-            panelHexDump = new PanelHexDump();
-            panelText    = new PanelText();
-            panelBeIcon = new PanelBeIcon();
+            panelHexDump   = new PanelHexDump();
+            panelText      = new PanelText();
+            panelBeIcon    = new PanelBeIcon();
+            panelBeVersion = new PanelBeVersion();
         }
 
-        public void Update(IEnumerable<ResourceTypeBlock> resources)
+        public void Update(IEnumerable<ResourceTypeBlock> resources, bool bigEndian)
         {
             TreeGridItemCollection treeData = new TreeGridItemCollection();
 
@@ -84,6 +87,7 @@ namespace exeinfogui.BeOS
             }
 
             treeResources.DataStore = treeData;
+            this.bigEndian          = bigEndian;
         }
 
         void TreeResourcesOnSelectionChanged(object sender, EventArgs eventArgs)
@@ -107,6 +111,10 @@ namespace exeinfogui.BeOS
                 case Consts.B_MINI_ICON_TYPE:
                     pnlResource.Content = panelBeIcon;
                     panelBeIcon.Update(data, type);
+                    break;
+                case Consts.B_VERSION_INFO_TYPE:
+                    pnlResource.Content = panelBeVersion;
+                    panelBeVersion.Update(data, bigEndian);
                     break;
                 default:
                     pnlResource.Content = panelHexDump;

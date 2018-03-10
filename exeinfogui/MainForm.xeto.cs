@@ -162,7 +162,7 @@ namespace exeinfogui
 
                 if(((libexeinfo.PE)peExe).BeosResources != null)
                 {
-                    tabBeResources.Update(((libexeinfo.PE)peExe).BeosResources);
+                    tabBeResources.Update(((libexeinfo.PE)peExe).BeosResources, peExe.IsBigEndian);
                     tabBeResources.Visible = true;
                 }
             }

@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Panel xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackLayout Orientation="Vertical" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top">
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblMajorVersion">Major version</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtMajorVersion" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblMiddleVersion">Middle version</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtMiddleVersion" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblMinorVersion">Minor version</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtMinorVersion" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblVariety">Variety</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtVariety" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblInternal">Internal</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtInternal" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblShortInfo">Short information</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextBox ID="txtShortInfo" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal">
+            <StackLayoutItem>
+                <Label ID="lblLongInfo">Long information</Label>
+            </StackLayoutItem>
+            <StackLayoutItem Expand="True" HorizontalAlignment="Stretch">
+                <TextArea ID="txtLongInfo" ReadOnly="True"/>
+            </StackLayoutItem>
+        </StackLayout>
+    </StackLayout>
+</Panel>

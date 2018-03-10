@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="AtariST\Enums.cs" />
     <Compile Include="BeOS\Consts.cs" />
+    <Compile Include="BeOS\Enums.cs" />
     <Compile Include="BeOS\Resources.cs" />
     <Compile Include="BeOS\Structs.cs" />
     <Compile Include="Enums.cs" />

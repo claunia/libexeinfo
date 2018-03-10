@@ -31,7 +31,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using libexeinfo.Windows;
+using libexeinfo.BeOS;
 
 namespace libexeinfo
 {
@@ -40,10 +40,11 @@ namespace libexeinfo
     /// </summary>
     public partial class PE : IExecutable
     {
-        MZ                   baseExecutable;
-        DebugDirectory       debugDirectory;
-        ImageDataDirectory[] directoryEntries;
-        string[]             exportedNames;
+        MZ                         baseExecutable;
+        public ResourceTypeBlock[] BeosResources;
+        DebugDirectory             debugDirectory;
+        ImageDataDirectory[]       directoryEntries;
+        string[]                   exportedNames;
         /// <summary>
         ///     Header for this executable
         /// </summary>
@@ -54,7 +55,6 @@ namespace libexeinfo
         public Version[]     Versions;
         public ResourceNode  WindowsResourcesRoot;
         WindowsHeader64      winHeader;
-        public BeOS.ResourceTypeBlock[] BeosResources;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.PE" /> class.
@@ -386,10 +386,18 @@ namespace libexeinfo
                     rsrc.virtualSize   = rsrc.sizeOfRawData;
                     newSectionHeaders.Add(".rsrc", rsrc);
 
-                    buffer = new byte[rsrc.sizeOfRawData];
+                    buffer              = new byte[rsrc.sizeOfRawData];
                     BaseStream.Position = rsrc.pointerToRawData;
                     BaseStream.Read(buffer, 0, buffer.Length);
-                    BeosResources = BeOS.Resources.Decode(buffer);
+                    BeosResources = Resources.Decode(buffer);
+
+                    strings.AddRange(from type in BeosResources
+                                     where type.type == Consts.B_VERSION_INFO_TYPE
+                                     from resource in type.resources
+                                     select BigEndianMarshal
+                                        .ByteArrayToStructureLittleEndian<VersionInfo>(resource.data)
+                                     into versionInfo
+                                     select StringHandlers.CToString(versionInfo.long_info));
                 }
                 else
                 {
@@ -427,7 +435,7 @@ namespace libexeinfo
             ResourceNode thisNode    = new ResourceNode {name = name, id = id, level = level};
 
             if(thisNode.name == null)
-                thisNode.name = level == 1 ? Resources.IdToName((ushort)thisNode.id) : $"{thisNode.id}";
+                thisNode.name = level == 1 ? Windows.Resources.IdToName((ushort)thisNode.id) : $"{thisNode.id}";
 
             stream.Position = position;
             byte[] buffer = new byte[Marshal.SizeOf(typeof(ResourceDirectoryTable))];
