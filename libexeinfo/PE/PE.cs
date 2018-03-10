@@ -54,6 +54,7 @@ namespace libexeinfo
         public Version[]     Versions;
         public ResourceNode  WindowsResourcesRoot;
         WindowsHeader64      winHeader;
+        public BeOS.ResourceTypeBlock[] beosResources;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.PE" /> class.
@@ -385,7 +386,10 @@ namespace libexeinfo
                     rsrc.virtualSize   = rsrc.sizeOfRawData;
                     newSectionHeaders.Add(".rsrc", rsrc);
 
-                    // TODO: Decode BeOS resource format
+                    buffer = new byte[rsrc.sizeOfRawData];
+                    BaseStream.Position = rsrc.pointerToRawData;
+                    BaseStream.Read(buffer, 0, buffer.Length);
+                    beosResources = BeOS.Resources.Decode(buffer);
                 }
                 else
                 {
