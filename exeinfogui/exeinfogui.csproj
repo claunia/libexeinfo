@@ -28,5 +28,6 @@
     <Folder Include="LE\" />
     <Folder Include="LX\" />
     <Folder Include="PE\" />
+    <Folder Include="BeOS\" />
   </ItemGroup>
 </Project>

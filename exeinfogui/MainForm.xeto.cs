@@ -26,6 +26,7 @@
 
 using System;
 using System.Linq;
+using exeinfogui.BeOS;
 using exeinfogui.GEM;
 using exeinfogui.LE;
 using exeinfogui.LX;
@@ -41,6 +42,7 @@ namespace exeinfogui
     {
         ComboBox        cmbArch;
         Label           lblSubsystem;
+        TabBeResources  tabBeResources;
         TabGemResources tabGemResources;
         TabLeVxdVersion tabLeVxdVersion;
         TabLxResources  tabLxResources;
@@ -66,6 +68,7 @@ namespace exeinfogui
             tabLeVxdVersion = new TabLeVxdVersion {Visible = false};
             tabLxResources  = new TabLxResources {Visible  = false};
             tabPeResources  = new TabPeResources {Visible  = false};
+            tabBeResources  = new TabBeResources {Visible  = false};
             tabMain.Pages.Add(tabSegments);
             tabMain.Pages.Add(tabStrings);
             tabMain.Pages.Add(tabGemResources);
@@ -73,6 +76,7 @@ namespace exeinfogui
             tabMain.Pages.Add(tabLeVxdVersion);
             tabMain.Pages.Add(tabLxResources);
             tabMain.Pages.Add(tabPeResources);
+            tabMain.Pages.Add(tabBeResources);
         }
 
         protected void OnBtnLoadClick(object sender, EventArgs e)
@@ -90,6 +94,7 @@ namespace exeinfogui
             tabLeVxdVersion.Visible = false;
             tabLxResources.Visible  = false;
             tabPeResources.Visible  = false;
+            tabBeResources.Visible  = false;
 
             OpenFileDialog dlgOpen = new OpenFileDialog {Title = "Choose executable file", MultiSelect = false};
 
@@ -149,11 +154,16 @@ namespace exeinfogui
             else if(peExe.Recognized)
             {
                 recognizedExe = peExe;
-                if(((libexeinfo.PE)peExe).WindowsResourcesRoot          != null &&
-                   ((libexeinfo.PE)peExe).WindowsResourcesRoot.children != null)
+                if(((libexeinfo.PE)peExe).WindowsResourcesRoot?.children != null)
                 {
                     tabPeResources.Update(((libexeinfo.PE)peExe).WindowsResourcesRoot);
                     tabPeResources.Visible = true;
+                }
+
+                if(((libexeinfo.PE)peExe).BeosResources != null)
+                {
+                    tabBeResources.Update(((libexeinfo.PE)peExe).BeosResources);
+                    tabBeResources.Visible = true;
                 }
             }
             else if(stExe.Recognized)
