@@ -109,6 +109,7 @@ namespace exeinfogui.BeOS
                     break;
                 case Consts.B_LARGE_ICON_TYPE:
                 case Consts.B_MINI_ICON_TYPE:
+                case Consts.B_PNG_FORMAT:
                     pnlResource.Content = panelBeIcon;
                     panelBeIcon.Update(data, type);
                     break;
