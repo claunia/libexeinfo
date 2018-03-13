@@ -944,7 +944,11 @@ namespace libexeinfo
 
         enum GnuAbiSystem : uint
         {
-            Linux = 0
+            Linux = 0,
+            Hurd = 1,
+            Solaris = 2,
+            kFreeBSD = 3,
+            kNetBSD = 4
         }
     }
 }

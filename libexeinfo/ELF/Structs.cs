@@ -384,5 +384,12 @@ namespace libexeinfo
             public uint minor;
             public uint revision;
         }
+
+        struct FreeBSDTag
+        {
+            public uint major;
+            public uint minor;
+            public uint revision;
+        }
     }
 }

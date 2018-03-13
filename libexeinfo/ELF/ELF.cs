@@ -190,7 +190,7 @@ namespace libexeinfo
                 buffer              = new byte[sections[i].sh_size];
                 BaseStream.Read(buffer, 0, buffer.Length);
 
-                if(sectionNames[i] == ".interp" || sectionNames[i] == ".dynstr" || sectionNames[i] == ".comment")
+                if(sectionNames[i] == ".interp" || sectionNames[i] == ".dynstr" || sectionNames[i] == ".comment" || sectionNames[i] == ".strtab")
                 {
                     strStart = 0;
                     len      = 0;
@@ -211,7 +211,7 @@ namespace libexeinfo
                         len++;
                     }
                 }
-                else if(sectionNames[i].StartsWith(".note"))
+                else if(sectionNames[i].StartsWith(".note") && buffer.Length > 12)
                 {
                     uint namesz   = BitConverter.ToUInt32(buffer, 0);
                     uint descsz   = BitConverter.ToUInt32(buffer, 4);
@@ -237,10 +237,10 @@ namespace libexeinfo
                     switch(Header.ei_class)
                     {
                         case eiClass.ELFCLASS32:
-                            pos += pos % 4;
+                            pos += pos % 4 != 0 ? 4 - (pos % 4) : 0;
                             break;
                         case eiClass.ELFCLASS64:
-                            pos += pos % 8;
+                            pos += pos % 8 != 0 ? 8 - (pos % 8) : 0;
                             break;
                     }
 
@@ -260,7 +260,78 @@ namespace libexeinfo
                         MajorVersion = (int)gnuAbiTag.major,
                         MinorVersion = (int)gnuAbiTag.minor
                     };
+                else if(!string.IsNullOrEmpty(interpreter))
+                    RequiredOperatingSystem = new OperatingSystem {Name = interpreter};
             }
+            else if(notes.TryGetValue(".note.netbsd.ident", out ElfNote netbsdIdent) && netbsdIdent.name == "NetBSD")
+            {
+                uint netbsdVersionConstant            = BitConverter.ToUInt32(netbsdIdent.contents, 0);
+                if(IsBigEndian) netbsdVersionConstant = Swapping.Swap(netbsdVersionConstant);
+
+                if(netbsdVersionConstant > 100000000)
+                {
+                    RequiredOperatingSystem = new OperatingSystem
+                    {
+                        Name         = "NetBSD",
+                        MajorVersion = (int)(netbsdVersionConstant / 100000000),
+                        MinorVersion = (int)((netbsdVersionConstant / 1000000) % 100)
+                    };
+                }
+                else
+                {
+                    RequiredOperatingSystem = new OperatingSystem
+                    {
+                        Name         = "NetBSD"
+                    };
+                }
+            }
+            else if(notes.TryGetValue(".note.minix.ident", out ElfNote minixIdent) && minixIdent.name == "Minix")
+            {
+                uint minixVersionConstant            = BitConverter.ToUInt32(minixIdent.contents, 0);
+                if(IsBigEndian) minixVersionConstant = Swapping.Swap(minixVersionConstant);
+
+                if(minixVersionConstant > 100000000)
+                {
+                    RequiredOperatingSystem = new OperatingSystem
+                    {
+                        Name         = "MINIX",
+                        MajorVersion = (int)(minixVersionConstant             / 100000000),
+                        MinorVersion = (int)((minixVersionConstant / 1000000) % 100)
+                    };
+                }
+                else
+                {
+                    RequiredOperatingSystem = new OperatingSystem
+                    {
+                        Name = "MINIX"
+                    };
+                }
+            }
+            else if(notes.TryGetValue(".note.openbsd.ident", out ElfNote openbsdIdent) && openbsdIdent.name == "OpenBSD")
+            {
+                    RequiredOperatingSystem = new OperatingSystem
+                    {
+                        Name = "OpenBSD"
+                    };
+            }
+            else if(notes.TryGetValue(".note.tag", out ElfNote freebsdTag) && freebsdTag.name == "FreeBSD")
+            {
+                uint freebsdVersionConstant            = BitConverter.ToUInt32(freebsdTag.contents, 0);
+                if(IsBigEndian) freebsdVersionConstant = Swapping.Swap(freebsdVersionConstant);
+
+                FreeBSDTag freeBsdVersion = DecodeFreeBSDTag(freebsdVersionConstant);
+
+                RequiredOperatingSystem = new OperatingSystem
+                {
+                    Name         = "FreeBSD",
+                    MajorVersion = (int)freeBsdVersion.major,
+                    MinorVersion = (int)freeBsdVersion.minor
+                };
+            }
+
+            else if(!string.IsNullOrEmpty(interpreter))
+                RequiredOperatingSystem = new OperatingSystem {Name = interpreter};
+
 
             if(strings.Count > 0)
             {

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace libexeinfo
 {
@@ -83,12 +84,91 @@ namespace libexeinfo
                     sb.AppendFormat("\t\t\tLength: {0} bytes", note.contents.Length).AppendLine();
                 }
 
-                if(notes.TryGetValue(".note.ABI-tag", out ElfNote abiTag))
+                if(notes.TryGetValue(".note.ABI-tag", out ElfNote abiTag) && abiTag.name == "GNU")
                 {
                     GnuAbiTag gnuAbiTag = DecodeGnuAbiTag(abiTag, IsBigEndian);
-                    if(gnuAbiTag != null)
-                        sb.AppendFormat("\tGNU ABI tag: Requires {0} version {1}.{2}.{3}", gnuAbiTag.system,
-                                        gnuAbiTag.major, gnuAbiTag.minor, gnuAbiTag.revision).AppendLine();
+                    sb.AppendFormat("\tGNU ABI tag: Requires {0} version {1}.{2}.{3}", gnuAbiTag.system,
+                                    gnuAbiTag.major, gnuAbiTag.minor, gnuAbiTag.revision).AppendLine();
+                }
+
+                if(notes.TryGetValue(".note.netbsd.ident", out ElfNote netbsdIdent) && netbsdIdent.name == "NetBSD")
+                {
+                    uint netbsdVersionConstant            = BitConverter.ToUInt32(netbsdIdent.contents, 0);
+                    if(IsBigEndian) netbsdVersionConstant = Swapping.Swap(netbsdVersionConstant);
+
+                    if(netbsdVersionConstant > 100000000)
+                    {
+                        uint nbsdPatch = (netbsdVersionConstant / 100)     % 100;
+                        uint nbsdRel   = (netbsdVersionConstant / 10000)   % 100;
+                        uint nbsdMinor = (netbsdVersionConstant / 1000000) % 100;
+                        uint nbsdMajor = netbsdVersionConstant             / 100000000;
+
+                        sb.AppendFormat("\tNetBSD version: {0}.{1}", nbsdMajor, nbsdMinor);
+
+                        if(nbsdRel == 0 && nbsdPatch != 0) sb.AppendFormat(".{0}", nbsdPatch);
+                        else if(nbsdRel != 0)
+                        {
+                            while(nbsdRel > 26)
+                            {
+                                sb.Append("Z");
+                                nbsdRel -= 26;
+                            }
+
+                            sb.AppendFormat("{0}", (char)('A' + nbsdRel - 1));
+                        }
+
+                        sb.AppendLine();
+                    }
+                    else
+                    {
+                        sb.AppendFormat("\tNetBSD version constant: {0}", netbsdVersionConstant).AppendLine();
+                    }
+                }
+
+                if(notes.TryGetValue(".note.minix.ident", out ElfNote minixIdent) && minixIdent.name == "Minix")
+                {
+                    uint minixVersionConstant            = BitConverter.ToUInt32(minixIdent.contents, 0);
+                    if(IsBigEndian) minixVersionConstant = Swapping.Swap(minixVersionConstant);
+
+                    if(minixVersionConstant > 100000000)
+                    {
+                        uint minixPath = (minixVersionConstant / 100)     % 100;
+                        uint minixRel   = (minixVersionConstant / 10000)   % 100;
+                        uint minixMinor = (minixVersionConstant / 1000000) % 100;
+                        uint minixMajor = minixVersionConstant             / 100000000;
+
+                        sb.AppendFormat("\tMINIX version: {0}.{1}", minixMajor, minixMinor);
+
+                        if(minixRel == 0 && minixPath != 0) sb.AppendFormat(".{0}", minixPath);
+                        else if(minixRel != 0)
+                        {
+                            while(minixRel > 26)
+                            {
+                                sb.Append("Z");
+                                minixRel -= 26;
+                            }
+
+                            sb.AppendFormat("{0}", (char)('A' + minixRel - 1));
+                        }
+
+                        sb.AppendLine();
+                    }
+                    else
+                    {
+                        sb.AppendFormat("\tMINIX version constant: {0}", minixVersionConstant).AppendLine();
+                    }
+                }
+
+                if(notes.TryGetValue(".note.tag", out ElfNote freebsdTag) && freebsdTag.name == "FreeBSD")
+                {
+                    uint freebsdVersionConstant            = BitConverter.ToUInt32(freebsdTag.contents, 0);
+                    if(IsBigEndian) freebsdVersionConstant = Swapping.Swap(freebsdVersionConstant);
+
+                    FreeBSDTag freeBsdVersion = DecodeFreeBSDTag(freebsdVersionConstant);
+
+                    sb.AppendFormat("\tFreeBSD version: {0}.{1}");
+                    if(freeBsdVersion.revision > 0) sb.AppendFormat("{0}", freeBsdVersion.revision);
+                    sb.AppendLine();
                 }
 
                 if(notes.TryGetValue(".note.gnu.build-id", out ElfNote buildId))

@@ -57,6 +57,7 @@
     <Compile Include="ELF\Consts.cs" />
     <Compile Include="ELF\ELF.cs" />
     <Compile Include="ELF\Enums.cs" />
+    <Compile Include="ELF\FreeBSD.cs" />
     <Compile Include="ELF\GNU.cs" />
     <Compile Include="ELF\Info.cs" />
     <Compile Include="ELF\Structs.cs" />
