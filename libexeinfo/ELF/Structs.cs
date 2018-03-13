@@ -369,5 +369,12 @@ namespace libexeinfo
             /// </summary>
             public ulong ch_addralign;
         }
+
+        struct ElfNote
+        {
+            public string  name;
+            public uint    type;
+            public byte[] contents;
+        }
     }
 }

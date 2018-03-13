@@ -74,6 +74,13 @@ namespace libexeinfo
                     sb.AppendFormat("\t\tSection is aligned to {0} bytes", sections[i].sh_addralign).AppendLine();
                     if(sections[i].sh_entsize > 0)
                         sb.AppendFormat("\t\tIndex to name: {0}", sections[i].sh_entsize).AppendLine();
+                    
+                    if(!notes.TryGetValue(sectionNames[i], out ElfNote note)) continue;
+
+                    sb.AppendLine("\t\tNote contents:");
+                    sb.AppendFormat("\t\t\tName: {0}", note.name).AppendLine();
+                    sb.AppendFormat("\t\t\tType: {0}", note.type).AppendLine();
+                    sb.AppendFormat("\t\t\tLength: {0} bytes", note.contents.Length).AppendLine();
                 }
 
                 return sb.ToString();

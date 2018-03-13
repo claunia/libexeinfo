@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 namespace libexeinfo
 {
@@ -14,6 +15,7 @@ namespace libexeinfo
         string             interpreter;
         string[]           sectionNames;
         Elf64_Shdr[]       sections;
+        Dictionary<string, ElfNote> notes;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.ELF" /> class.
@@ -138,10 +140,11 @@ namespace libexeinfo
             Segment[] segments = new Segment[sections.Length];
 
             int len = 0;
+            int pos;
 
             for(int i = 0; i < sections.Length; i++)
             {
-                int pos = (int)sections[i].sh_name;
+                pos = (int)sections[i].sh_name;
                 len = 0;
 
                 for(int p = pos; p < buffer.Length; p++)
@@ -178,33 +181,70 @@ namespace libexeinfo
 
                 len++;
             }
+            
+            notes = new Dictionary<string, ElfNote>();
 
             // Sections that contain an array of null-terminated strings by definition
             for(int i = 0; i < sections.Length; i++)
             {
-                if(sectionNames[i] != ".interp" && sectionNames[i] != ".dynstr" &&
-                   sectionNames[i] != ".comment") continue;
-
                 BaseStream.Position = (long)sections[i].sh_offset;
                 buffer              = new byte[sections[i].sh_size];
                 BaseStream.Read(buffer, 0, buffer.Length);
 
-                strStart = 0;
-                len      = 0;
-                for(int p = 0; p < buffer.Length; p++)
+                if(sectionNames[i] == ".interp" || sectionNames[i] == ".dynstr" || sectionNames[i] == ".comment")
                 {
-                    if(buffer[p] == 0x00)
+                    strStart = 0;
+                    len      = 0;
+                    for(int p = 0; p < buffer.Length; p++)
                     {
-                        if(len == 0) continue;
+                        if(buffer[p] == 0x00)
+                        {
+                            if(len == 0) continue;
 
-                        strings.Add(Encoding.ASCII.GetString(buffer, strStart, len));
-                        if(sectionNames[i] == ".interp") interpreter = Encoding.ASCII.GetString(buffer, strStart, len);
-                        strStart = p + 1;
-                        len      = 0;
-                        continue;
+                            strings.Add(Encoding.ASCII.GetString(buffer, strStart, len));
+                            if(sectionNames[i] == ".interp")
+                                interpreter = Encoding.ASCII.GetString(buffer, strStart, len);
+                            strStart = p + 1;
+                            len      = 0;
+                            continue;
+                        }
+
+                        len++;
                     }
+                }
+                else if(sectionNames[i].StartsWith(".note"))
+                {
+                    uint namesz = BitConverter.ToUInt32(buffer, 0);
+                    uint descsz = BitConverter.ToUInt32(buffer, 4);
+                    uint notetype = BitConverter.ToUInt32(buffer, 8);
+                    pos = 12;
 
-                    len++;
+                    if(IsBigEndian)
+                    {
+                        namesz= Swapping.Swap(namesz);
+                        descsz = Swapping.Swap(descsz);
+                        notetype = Swapping.Swap(notetype);
+                    }
+                    
+                    ElfNote note = new ElfNote
+                    {
+                        name = Encoding.ASCII.GetString(buffer, pos, (int)(namesz - 1)),
+                        type = notetype,
+                        contents = new byte[descsz]
+                    };
+
+                    pos += (int)namesz;
+
+                    switch(Header.ei_class) {
+                        case eiClass.ELFCLASS32: pos += pos % 4;
+                            break;
+                        case eiClass.ELFCLASS64: pos += pos % 8;
+                            break;
+                    }
+                    
+                    Array.Copy(buffer, pos, note.contents, 0, descsz);
+                    
+                    notes.Add(sectionNames[i], note);
                 }
             }
 
