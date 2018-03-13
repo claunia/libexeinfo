@@ -65,7 +65,11 @@ namespace libexeinfo
             /// <summary>Stratus Technologies OpenVOS</summary>
             ELFOSABI_OPENVOS = 18,
             /// <summary>The object contains symbol versioning extensions</summary>
-            ELFOSABI_ARM_AEABI = 64
+            ELFOSABI_ARM_AEABI = 64,
+            /// <summary>ARM</summary>
+            ELFOSABI_ARM = 97,
+            /// <summary>Standalone (embedded applications)</summary>
+            ELFOSABI_STANDALONE = 255
         }
 
         enum eiVersion : byte
@@ -926,6 +930,16 @@ namespace libexeinfo
             EF_PARISC_NO_KABP = 0x00100000,
             /// <summary>Allow lazy swap for dynamically-allocated program segments</summary>
             EF_PARISC_LAZYSWAP = 0x00400000
+        }
+
+        enum eFlagsPaRiscArchitecture : uint
+        {
+            /// <summary>PA-RISC 1.0</summary>
+            EFA_PARISC_1_0 = 0x020B,
+            /// <summary>PA-RISC 1.1</summary>
+            EFA_PARISC_1_1 = 0x0210,
+            /// <summary>PA-RISC 2.0</summary>
+            EFA_PARISC_2_0 = 0x0214
         }
     }
 }

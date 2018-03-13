@@ -7,12 +7,7 @@
         const uint eFlagsPariscMask = 0xFFFF0000;
         /// <summary>Architecture version</summary>
         const uint EF_PARISC_ARCH = 0x0000FFFF;
-        /// <summary>PA-RISC 1.0</summary>
-        const uint EFA_PARISC_1_0 = 0x020B;
-        /// <summary>PA-RISC 1.1</summary>
-        const uint EFA_PARISC_1_1 = 0x0210;
-        /// <summary>PA-RISC 2.0</summary>
-        const uint EFA_PARISC_2_0 = 0x0214;
+        const uint eFlagsArmMask = 0x800600;
 
         static readonly byte[] ELFMAG = {0x7F, 0x45, 0x4C, 0x46};
 

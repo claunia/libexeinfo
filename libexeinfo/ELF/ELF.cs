@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace libexeinfo
 {
@@ -10,6 +11,9 @@ namespace libexeinfo
     {
         List<Architecture> architectures;
         Elf64_Ehdr         Header;
+        string             interpreter;
+        string[]           sectionNames;
+        Elf64_Shdr[]       sections;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.ELF" /> class.
@@ -50,7 +54,7 @@ namespace libexeinfo
         public bool                      Recognized              { get; private set; }
         public string                    Type                    { get; private set; }
         public IEnumerable<Architecture> Architectures           => architectures;
-        public OperatingSystem           RequiredOperatingSystem { get; }
+        public OperatingSystem           RequiredOperatingSystem { get; private set; }
         public IEnumerable<string>       Strings                 { get; private set; }
         public IEnumerable<Segment>      Segments                { get; }
 
@@ -84,10 +88,15 @@ namespace libexeinfo
                     Header = UpBits(buffer, Header.ei_data == eiData.ELFDATA2MSB);
                     break;
                 case eiClass.ELFCLASS64:
-                    Header           = BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Ehdr>(buffer);
-                    Header.e_type    = (eType)Swapping.Swap((ushort)Header.e_type);
-                    Header.e_machine = (eMachine)Swapping.Swap((ushort)Header.e_machine);
-                    Header.e_version = (eVersion)Swapping.Swap((uint)Header.e_version);
+                    if(Header.ei_data == eiData.ELFDATA2MSB)
+                    {
+                        Header           = BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Ehdr>(buffer);
+                        Header.e_type    = (eType)Swapping.Swap((ushort)Header.e_type);
+                        Header.e_machine = (eMachine)Swapping.Swap((ushort)Header.e_machine);
+                        Header.e_version = (eVersion)Swapping.Swap((uint)Header.e_version);
+                    }
+                    else Header = BigEndianMarshal.ByteArrayToStructureLittleEndian<Elf64_Ehdr>(buffer);
+
                     break;
                 default: return;
             }
@@ -97,8 +106,112 @@ namespace libexeinfo
 
             List<string> strings = new List<string>();
 
+            BaseStream.Position = (long)Header.e_shoff;
+            buffer              = new byte[Header.e_shentsize];
+            sections            = new Elf64_Shdr[Header.e_shnum];
+            for(int i = 0; i < sections.Length; i++)
+            {
+                BaseStream.Read(buffer, 0, buffer.Length);
+                switch(Header.ei_class)
+                {
+                    case eiClass.ELFCLASS32:
+                        sections[i] = UpBitsSection(buffer, Header.ei_data == eiData.ELFDATA2MSB);
+                        break;
+                    case eiClass.ELFCLASS64:
+                        if(Header.ei_data == eiData.ELFDATA2MSB)
+                        {
+                            sections[i]          = BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Shdr>(buffer);
+                            sections[i].sh_flags = (shFlags64)Swapping.Swap((ulong)sections[i].sh_flags);
+                            sections[i].sh_type  = (shType)Swapping.Swap((uint)sections[i].sh_type);
+                        }
+                        else sections[i] = BigEndianMarshal.ByteArrayToStructureLittleEndian<Elf64_Shdr>(buffer);
+
+                        break;
+                    default: return;
+                }
+            }
+
+            BaseStream.Position = (long)sections[Header.e_shstrndx].sh_offset;
+            buffer              = new byte[sections[Header.e_shstrndx].sh_size];
+            BaseStream.Read(buffer, 0, buffer.Length);
+            sectionNames = new string[sections.Length];
+            Segment[] segments = new Segment[sections.Length];
+
+            int len = 0;
+
+            for(int i = 0; i < sections.Length; i++)
+            {
+                int pos = (int)sections[i].sh_name;
+                len = 0;
+
+                for(int p = pos; p < buffer.Length; p++)
+                {
+                    if(buffer[p] == 0x00) break;
+
+                    len++;
+                }
+
+                sectionNames[i] = Encoding.ASCII.GetString(buffer, pos, len);
+                strings.Add(sectionNames[i]);
+                segments[i] = new Segment
+                {
+                    Flags  = $"{sections[i].sh_flags}",
+                    Name   = sectionNames[i],
+                    Offset = (long)sections[i].sh_offset,
+                    Size   = (long)sections[i].sh_size
+                };
+            }
+
+            int strStart = 0;
+            len = 0;
+            for(int p = 0; p < buffer.Length; p++)
+            {
+                if(buffer[p] == 0x00)
+                {
+                    if(len == 0) continue;
+
+                    strings.Add(Encoding.ASCII.GetString(buffer, strStart, len));
+                    strStart = p + 1;
+                    len      = 0;
+                    continue;
+                }
+
+                len++;
+            }
+
+            // Sections that contain an array of null-terminated strings by definition
+            for(int i = 0; i < sections.Length; i++)
+            {
+                if(sectionNames[i] != ".interp" && sectionNames[i] != ".dynstr" &&
+                   sectionNames[i] != ".comment") continue;
+
+                BaseStream.Position = (long)sections[i].sh_offset;
+                buffer              = new byte[sections[i].sh_size];
+                BaseStream.Read(buffer, 0, buffer.Length);
+
+                strStart = 0;
+                len      = 0;
+                for(int p = 0; p < buffer.Length; p++)
+                {
+                    if(buffer[p] == 0x00)
+                    {
+                        if(len == 0) continue;
+
+                        strings.Add(Encoding.ASCII.GetString(buffer, strStart, len));
+                        if(sectionNames[i] == ".interp") interpreter = Encoding.ASCII.GetString(buffer, strStart, len);
+                        strStart = p + 1;
+                        len      = 0;
+                        continue;
+                    }
+
+                    len++;
+                }
+            }
+
             if(strings.Count > 0)
             {
+                strings.Remove(null);
+                strings.Remove("");
                 strings.Sort();
                 Strings = strings.Distinct();
             }
@@ -131,6 +244,26 @@ namespace libexeinfo
                 e_shentsize   = ehdr32.e_shentsize,
                 e_shnum       = ehdr32.e_shnum,
                 e_shstrndx    = ehdr32.e_shstrndx
+            };
+        }
+
+        static Elf64_Shdr UpBitsSection(byte[] buffer, bool bigEndian)
+        {
+            Elf32_Shdr shdr32 = bigEndian
+                                    ? BigEndianMarshal.ByteArrayToStructureBigEndian<Elf32_Shdr>(buffer)
+                                    : BigEndianMarshal.ByteArrayToStructureLittleEndian<Elf32_Shdr>(buffer);
+            return new Elf64_Shdr
+            {
+                sh_name      = shdr32.sh_name,
+                sh_type      = bigEndian ? (shType)Swapping.Swap((uint)shdr32.sh_type) : shdr32.sh_type,
+                sh_flags     = (shFlags64)(bigEndian ? Swapping.Swap((uint)shdr32.sh_flags) : (uint)shdr32.sh_flags),
+                sh_addr      = shdr32.sh_addr,
+                sh_offset    = shdr32.sh_offset,
+                sh_size      = shdr32.sh_size,
+                sh_link      = shdr32.sh_link,
+                sh_info      = shdr32.sh_info,
+                sh_addralign = shdr32.sh_addralign,
+                sh_entsize   = shdr32.sh_entsize
             };
         }
 
