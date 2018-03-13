@@ -376,5 +376,13 @@ namespace libexeinfo
             public uint    type;
             public byte[] contents;
         }
+
+        class GnuAbiTag
+        {
+            public GnuAbiSystem system;
+            public uint major;
+            public uint minor;
+            public uint revision;
+        }
     }
 }

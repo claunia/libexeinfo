@@ -941,5 +941,10 @@ namespace libexeinfo
             /// <summary>PA-RISC 2.0</summary>
             EFA_PARISC_2_0 = 0x0214
         }
+
+        enum GnuAbiSystem : uint
+        {
+            Linux = 0
+        }
     }
 }

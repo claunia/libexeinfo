@@ -4,18 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 
 namespace libexeinfo
 {
     public partial class ELF : IExecutable
     {
-        List<Architecture> architectures;
-        Elf64_Ehdr         Header;
-        string             interpreter;
-        string[]           sectionNames;
-        Elf64_Shdr[]       sections;
+        List<Architecture>          architectures;
+        Elf64_Ehdr                  Header;
+        string                      interpreter;
         Dictionary<string, ElfNote> notes;
+        string[]                    sectionNames;
+        Elf64_Shdr[]                sections;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:libexeinfo.ELF" /> class.
@@ -58,7 +57,7 @@ namespace libexeinfo
         public IEnumerable<Architecture> Architectures           => architectures;
         public OperatingSystem           RequiredOperatingSystem { get; private set; }
         public IEnumerable<string>       Strings                 { get; private set; }
-        public IEnumerable<Segment>      Segments                { get; }
+        public IEnumerable<Segment>      Segments { get; private set; }
 
         /// <summary>
         ///     The <see cref="FileStream" /> that contains the executable represented by this instance
@@ -181,7 +180,7 @@ namespace libexeinfo
 
                 len++;
             }
-            
+
             notes = new Dictionary<string, ElfNote>();
 
             // Sections that contain an array of null-terminated strings by definition
@@ -214,38 +213,53 @@ namespace libexeinfo
                 }
                 else if(sectionNames[i].StartsWith(".note"))
                 {
-                    uint namesz = BitConverter.ToUInt32(buffer, 0);
-                    uint descsz = BitConverter.ToUInt32(buffer, 4);
+                    uint namesz   = BitConverter.ToUInt32(buffer, 0);
+                    uint descsz   = BitConverter.ToUInt32(buffer, 4);
                     uint notetype = BitConverter.ToUInt32(buffer, 8);
                     pos = 12;
 
                     if(IsBigEndian)
                     {
-                        namesz= Swapping.Swap(namesz);
-                        descsz = Swapping.Swap(descsz);
+                        namesz   = Swapping.Swap(namesz);
+                        descsz   = Swapping.Swap(descsz);
                         notetype = Swapping.Swap(notetype);
                     }
-                    
+
                     ElfNote note = new ElfNote
                     {
-                        name = Encoding.ASCII.GetString(buffer, pos, (int)(namesz - 1)),
-                        type = notetype,
+                        name     = Encoding.ASCII.GetString(buffer, pos, (int)(namesz - 1)),
+                        type     = notetype,
                         contents = new byte[descsz]
                     };
 
                     pos += (int)namesz;
 
-                    switch(Header.ei_class) {
-                        case eiClass.ELFCLASS32: pos += pos % 4;
+                    switch(Header.ei_class)
+                    {
+                        case eiClass.ELFCLASS32:
+                            pos += pos % 4;
                             break;
-                        case eiClass.ELFCLASS64: pos += pos % 8;
+                        case eiClass.ELFCLASS64:
+                            pos += pos % 8;
                             break;
                     }
-                    
+
                     Array.Copy(buffer, pos, note.contents, 0, descsz);
-                    
+
                     notes.Add(sectionNames[i], note);
                 }
+            }
+
+            if(notes.TryGetValue(".note.ABI-tag", out ElfNote abiTag))
+            {
+                GnuAbiTag gnuAbiTag = DecodeGnuAbiTag(abiTag, IsBigEndian);
+                if(gnuAbiTag != null)
+                    RequiredOperatingSystem = new OperatingSystem
+                    {
+                        Name         = $"{gnuAbiTag.system}",
+                        MajorVersion = (int)gnuAbiTag.major,
+                        MinorVersion = (int)gnuAbiTag.minor
+                    };
             }
 
             if(strings.Count > 0)
@@ -255,6 +269,8 @@ namespace libexeinfo
                 strings.Sort();
                 Strings = strings.Distinct();
             }
+
+            Segments = segments;
         }
 
         static Elf64_Ehdr UpBits(byte[] buffer, bool bigEndian)

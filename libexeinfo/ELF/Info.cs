@@ -74,7 +74,7 @@ namespace libexeinfo
                     sb.AppendFormat("\t\tSection is aligned to {0} bytes", sections[i].sh_addralign).AppendLine();
                     if(sections[i].sh_entsize > 0)
                         sb.AppendFormat("\t\tIndex to name: {0}", sections[i].sh_entsize).AppendLine();
-                    
+
                     if(!notes.TryGetValue(sectionNames[i], out ElfNote note)) continue;
 
                     sb.AppendLine("\t\tNote contents:");
@@ -82,6 +82,17 @@ namespace libexeinfo
                     sb.AppendFormat("\t\t\tType: {0}", note.type).AppendLine();
                     sb.AppendFormat("\t\t\tLength: {0} bytes", note.contents.Length).AppendLine();
                 }
+
+                if(notes.TryGetValue(".note.ABI-tag", out ElfNote abiTag))
+                {
+                    GnuAbiTag gnuAbiTag = DecodeGnuAbiTag(abiTag, IsBigEndian);
+                    if(gnuAbiTag != null)
+                        sb.AppendFormat("\tGNU ABI tag: Requires {0} version {1}.{2}.{3}", gnuAbiTag.system,
+                                        gnuAbiTag.major, gnuAbiTag.minor, gnuAbiTag.revision).AppendLine();
+                }
+
+                if(notes.TryGetValue(".note.gnu.build-id", out ElfNote buildId))
+                    sb.AppendFormat("\tGNU build ID: {0}", DecodeGnuBuildId(buildId));
 
                 return sb.ToString();
             }
