@@ -113,6 +113,7 @@ namespace exeinfogui
             IExecutable coffExe       = new COFF(dlgOpen.FileName);
             IExecutable peExe         = new libexeinfo.PE(dlgOpen.FileName);
             IExecutable geosExe       = new Geos(dlgOpen.FileName);
+            IExecutable elfExe        = new ELF(dlgOpen.FileName);
             IExecutable recognizedExe = null;
 
             if(mzExe.Recognized)
@@ -176,6 +177,7 @@ namespace exeinfogui
                 }
             }
             else if(coffExe.Recognized) recognizedExe = coffExe;
+            else if(elfExe.Recognized) recognizedExe  = elfExe;
             else if(geosExe.Recognized) recognizedExe = geosExe;
             else txtType.Text                         = "Format not recognized";
 

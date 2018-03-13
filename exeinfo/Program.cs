@@ -55,6 +55,7 @@ namespace exeinfo
             IExecutable coffExe = new COFF(args[0]);
             IExecutable peExe   = new PE(args[0]);
             IExecutable geosExe = new Geos(args[0]);
+            IExecutable elfExe  = new ELF(args[0]);
 
             if(neExe.Recognized)
             {
@@ -282,6 +283,17 @@ namespace exeinfo
                 {
                     Console.WriteLine("\tStrings:");
                     foreach(string str in coffExe.Strings) Console.WriteLine("\t\t{0}", str);
+                }
+            }
+            else if(elfExe.Recognized)
+            {
+                recognized = true;
+                Console.Write(elfExe.Information);
+
+                if(elfExe.Strings != null && elfExe.Strings.Any())
+                {
+                    Console.WriteLine("\tStrings:");
+                    foreach(string str in elfExe.Strings) Console.WriteLine("\t\t{0}", str);
                 }
             }
 
