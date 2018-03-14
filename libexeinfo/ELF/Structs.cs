@@ -372,17 +372,17 @@ namespace libexeinfo
 
         struct ElfNote
         {
-            public string  name;
-            public uint    type;
+            public string name;
+            public uint   type;
             public byte[] contents;
         }
 
         class GnuAbiTag
         {
+            public uint         major;
+            public uint         minor;
+            public uint         revision;
             public GnuAbiSystem system;
-            public uint major;
-            public uint minor;
-            public uint revision;
         }
 
         struct FreeBSDTag
@@ -390,6 +390,72 @@ namespace libexeinfo
             public uint major;
             public uint minor;
             public uint revision;
+        }
+
+        struct Elf32_Phdr
+        {
+            /// <summary>
+            ///     This member tells what kind of segment this array element describes or how to interpret the array element's
+            ///     information.
+            /// </summary>
+            public phType p_type;
+            /// <summary>This member gives the offset from the beginning of the file at which the first byte of the segment resides.</summary>
+            public uint p_offset;
+            /// <summary>This member gives the virtual address at which the first byte of the segment resides in memory.</summary>
+            public uint p_vaddr;
+            /// <summary>
+            ///     On systems for which physical addressing is relevant, this member is reserved for the segment's physical
+            ///     address. Because System V ignores physical addressing for application programs, this member has unspecified
+            ///     contents for executable files and shared objects.
+            /// </summary>
+            public uint p_paddr;
+            /// <summary>This member gives the number of bytes in the file image of the segment; it may be zero.</summary>
+            public uint p_filesz;
+            /// <summary>This member gives the number of bytes in the memory image of the segment; it may be zero.</summary>
+            public uint p_memsz;
+            /// <summary>This member gives flags relevant to the segment.</summary>
+            public phFlags p_flags;
+            /// <summary>
+            ///     As ``Program Loading'' describes in this chapter of the processor supplement, loadable process segments must
+            ///     have congruent values for <see cref="p_vaddr" /> and <see cref="p_offset" />, modulo the page size. This member
+            ///     gives the value to which the segments are aligned in memory and in the file. Values 0 and 1 mean no alignment is
+            ///     required. Otherwise, <see cref="p_align" /> should be a positive, integral power of 2, and <see cref="p_vaddr" />
+            ///     should equal <see cref="p_offset" />, modulo <see cref="p_align" />.
+            /// </summary>
+            public uint p_align;
+        }
+
+        struct Elf64_Phdr
+        {
+            /// <summary>
+            ///     This member tells what kind of segment this array element describes or how to interpret the array element's
+            ///     information.
+            /// </summary>
+            public phType p_type;
+            /// <summary>This member gives flags relevant to the segment.</summary>
+            public phFlags p_flags;
+            /// <summary>This member gives the offset from the beginning of the file at which the first byte of the segment resides.</summary>
+            public ulong p_offset;
+            /// <summary>This member gives the virtual address at which the first byte of the segment resides in memory.</summary>
+            public ulong p_vaddr;
+            /// <summary>
+            ///     On systems for which physical addressing is relevant, this member is reserved for the segment's physical
+            ///     address. Because System V ignores physical addressing for application programs, this member has unspecified
+            ///     contents for executable files and shared objects.
+            /// </summary>
+            public ulong p_paddr;
+            /// <summary>This member gives the number of bytes in the file image of the segment; it may be zero.</summary>
+            public ulong p_filesz;
+            /// <summary>This member gives the number of bytes in the memory image of the segment; it may be zero.</summary>
+            public ulong p_memsz;
+            /// <summary>
+            ///     As ``Program Loading'' describes in this chapter of the processor supplement, loadable process segments must
+            ///     have congruent values for <see cref="p_vaddr" /> and <see cref="p_offset" />, modulo the page size. This member
+            ///     gives the value to which the segments are aligned in memory and in the file. Values 0 and 1 mean no alignment is
+            ///     required. Otherwise, <see cref="p_align" /> should be a positive, integral power of 2, and <see cref="p_vaddr" />
+            ///     should equal <see cref="p_offset" />, modulo <see cref="p_align" />.
+            /// </summary>
+            public ulong p_align;
         }
     }
 }

@@ -13,6 +13,7 @@ namespace libexeinfo
         Elf64_Ehdr                  Header;
         string                      interpreter;
         Dictionary<string, ElfNote> notes;
+        Elf64_Phdr[]                programHeaders;
         string[]                    sectionNames;
         Elf64_Shdr[]                sections;
 
@@ -107,7 +108,92 @@ namespace libexeinfo
 
             List<string> strings = new List<string>();
 
-            if(Header.e_shnum == 0) return;
+            if(Header.e_phnum == 0 && Header.e_shnum == 0) return;
+
+            buffer              = new byte[Header.e_phentsize];
+            BaseStream.Position = (long)Header.e_phoff;
+            programHeaders      = new Elf64_Phdr[Header.e_phnum];
+            for(int i = 0; i < programHeaders.Length; i++)
+            {
+                BaseStream.Read(buffer, 0, buffer.Length);
+                switch(Header.ei_class)
+                {
+                    case eiClass.ELFCLASS32:
+                        programHeaders[i] = UpBitsProgramHeader(buffer, Header.ei_data == eiData.ELFDATA2MSB);
+                        break;
+                    case eiClass.ELFCLASS64:
+                        if(Header.ei_data == eiData.ELFDATA2MSB)
+                        {
+                            programHeaders[i] =
+                                BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Phdr>(buffer);
+                            programHeaders[i].p_type  = (phType)Swapping.Swap((uint)programHeaders[i].p_type);
+                            programHeaders[i].p_flags = (phFlags)Swapping.Swap((uint)programHeaders[i].p_flags);
+                        }
+                        else programHeaders[i] = BigEndianMarshal.ByteArrayToStructureLittleEndian<Elf64_Phdr>(buffer);
+
+                        break;
+                    default: return;
+                }
+            }
+
+            for(int i = 0; i < programHeaders.Length; i++)
+            {
+                if(programHeaders[i].p_type != phType.PT_INTERP) continue;
+
+                buffer              = new byte[programHeaders[i].p_filesz];
+                BaseStream.Position = (long)programHeaders[i].p_offset;
+                BaseStream.Read(buffer, 0, buffer.Length);
+                interpreter = StringHandlers.CToString(buffer);
+            }
+
+            Segment[] segments;
+
+            if(Header.e_shnum == 0)
+            {
+                segments = new Segment[programHeaders.Length];
+                for(int i = 0; i < programHeaders.Length; i++)
+                {
+                    segments[i] = new Segment
+                    {
+                        Flags  = $"{programHeaders[i].p_flags}",
+                        Offset = (long)programHeaders[i].p_offset,
+                        Size   = (long)programHeaders[i].p_filesz
+                    };
+
+                    switch(programHeaders[i].p_type)
+                    {
+                        case phType.PT_NULL: break;
+                        case phType.PT_LOAD:
+                            segments[i].Name = ".text";
+                            break;
+                        case phType.PT_DYNAMIC:
+                            segments[i].Name = ".dynamic";
+                            break;
+                        case phType.PT_INTERP:
+                            segments[i].Name = ".interp";
+                            break;
+                        case phType.PT_NOTE:
+                            segments[i].Name = ".note";
+                            break;
+                        case phType.PT_SHLIB:
+                            segments[i].Name = ".shlib";
+                            break;
+                        case phType.PT_PHDR: break;
+                        case phType.PT_TLS:
+                            segments[i].Name = ".tls";
+                            break;
+                        default:
+                            segments[i].Name = programHeaders[i].p_flags.HasFlag(phFlags.PF_X)
+                                                   ? ".text"
+                                                   : programHeaders[i].p_flags.HasFlag(phFlags.PF_W)
+                                                       ? ".data"
+                                                       : ".rodata";
+                            break;
+                    }
+                }
+
+                return;
+            }
 
             BaseStream.Position = (long)Header.e_shoff;
             buffer              = new byte[Header.e_shentsize];
@@ -138,7 +224,7 @@ namespace libexeinfo
             buffer              = new byte[sections[Header.e_shstrndx].sh_size];
             BaseStream.Read(buffer, 0, buffer.Length);
             sectionNames = new string[sections.Length];
-            Segment[] segments = new Segment[sections.Length];
+            segments     = new Segment[sections.Length];
 
             int len = 0;
             int pos;
@@ -444,27 +530,7 @@ namespace libexeinfo
                     default: throw new ArgumentOutOfRangeException();
                 }
             else if(!string.IsNullOrEmpty(interpreter))
-                switch(interpreter)
-                {
-                    case "/usr/lib/ldqnx.so.2":
-                        RequiredOperatingSystem = new OperatingSystem {Name = "QNX", MajorVersion = 6};
-                        break;
-                    case "/usr/dglib/libc.so.1":
-                        RequiredOperatingSystem = new OperatingSystem {Name = "DG/UX"};
-                        break;
-                    case "/shlib/ld-bsdi.so":
-                        RequiredOperatingSystem = new OperatingSystem {Name = "BSD/OS"};
-                        break;
-                    case "/usr/lib/libc.so.1" when skyos:
-                        RequiredOperatingSystem = new OperatingSystem {Name = "SkyOS"};
-                        break;
-                    case "/usr/lib/ld.so.1" when solaris:
-                        RequiredOperatingSystem = new OperatingSystem {Name = "Solaris"};
-                        break;
-                    default:
-                        RequiredOperatingSystem = new OperatingSystem {Name = interpreter};
-                        break;
-                }
+                RequiredOperatingSystem             = GetOsByInterpreter(interpreter, skyos, solaris);
             else if(beos) RequiredOperatingSystem   = new OperatingSystem {Name = "BeOS", MajorVersion = 4};
             else if(haiku) RequiredOperatingSystem  = new OperatingSystem {Name = "Haiku"};
             else if(lynxos) RequiredOperatingSystem = new OperatingSystem {Name = "LynxOS"};
@@ -500,6 +566,34 @@ namespace libexeinfo
             }
 
             Segments = segments;
+        }
+
+        static OperatingSystem GetOsByInterpreter(string interpreter, bool skyos, bool solaris)
+        {
+            switch(interpreter)
+            {
+                case "/usr/lib/ldqnx.so.2":
+                    return new OperatingSystem {Name = "QNX", MajorVersion = 6};
+
+                    break;
+                case "/usr/dglib/libc.so.1":
+                    return new OperatingSystem {Name = "DG/UX"};
+
+                    break;
+                case "/shlib/ld-bsdi.so":
+                    return new OperatingSystem {Name = "BSD/OS"};
+
+                    break;
+                case "/usr/lib/libc.so.1" when skyos:
+                    return new OperatingSystem {Name = "SkyOS"};
+
+                    break;
+                case "/usr/lib/ld.so.1" when solaris:
+                    return new OperatingSystem {Name = "Solaris"};
+
+                    break;
+                default: return new OperatingSystem {Name = interpreter};
+            }
         }
 
         static Elf64_Ehdr UpBits(byte[] buffer, bool bigEndian)
@@ -549,6 +643,24 @@ namespace libexeinfo
                 sh_info      = shdr32.sh_info,
                 sh_addralign = shdr32.sh_addralign,
                 sh_entsize   = shdr32.sh_entsize
+            };
+        }
+
+        static Elf64_Phdr UpBitsProgramHeader(byte[] buffer, bool bigEndian)
+        {
+            Elf32_Phdr phdr32 = bigEndian
+                                    ? BigEndianMarshal.ByteArrayToStructureBigEndian<Elf32_Phdr>(buffer)
+                                    : BigEndianMarshal.ByteArrayToStructureLittleEndian<Elf32_Phdr>(buffer);
+            return new Elf64_Phdr
+            {
+                p_offset = phdr32.p_offset,
+                p_type   = (phType)(bigEndian ? Swapping.Swap((uint)phdr32.p_type) : (uint)phdr32.p_type),
+                p_vaddr  = phdr32.p_vaddr,
+                p_paddr  = phdr32.p_paddr,
+                p_filesz = phdr32.p_filesz,
+                p_memsz  = phdr32.p_memsz,
+                p_flags  = phdr32.p_flags,
+                p_align  = phdr32.p_align
             };
         }
 

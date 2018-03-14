@@ -57,6 +57,8 @@ namespace libexeinfo
 
                 if(!string.IsNullOrEmpty(interpreter)) sb.AppendFormat("\tInterpreter: {0}", interpreter).AppendLine();
 
+                if(sections == null || sections.Length == 1) return sb.ToString();
+
                 for(int i = 1; i < sections.Length; i++)
                 {
                     sb.AppendFormat("\tSection {0}:", i).AppendLine();
