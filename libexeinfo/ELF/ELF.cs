@@ -57,7 +57,7 @@ namespace libexeinfo
         public IEnumerable<Architecture> Architectures           => architectures;
         public OperatingSystem           RequiredOperatingSystem { get; private set; }
         public IEnumerable<string>       Strings                 { get; private set; }
-        public IEnumerable<Segment>      Segments { get; private set; }
+        public IEnumerable<Segment>      Segments                { get; private set; }
 
         /// <summary>
         ///     The <see cref="FileStream" /> that contains the executable represented by this instance
@@ -106,6 +106,8 @@ namespace libexeinfo
                Header.ei_version != eiVersion.EV_CURRENT) return;
 
             List<string> strings = new List<string>();
+
+            if(Header.e_shnum == 0) return;
 
             BaseStream.Position = (long)Header.e_shoff;
             buffer              = new byte[Header.e_shentsize];
@@ -182,6 +184,11 @@ namespace libexeinfo
             }
 
             notes = new Dictionary<string, ElfNote>();
+            bool beos    = false;
+            bool haiku   = false;
+            bool solaris = false;
+            bool lynxos  = false;
+            bool skyos   = false;
 
             // Sections that contain an array of null-terminated strings by definition
             for(int i = 0; i < sections.Length; i++)
@@ -190,7 +197,8 @@ namespace libexeinfo
                 buffer              = new byte[sections[i].sh_size];
                 BaseStream.Read(buffer, 0, buffer.Length);
 
-                if(sectionNames[i] == ".interp" || sectionNames[i] == ".dynstr" || sectionNames[i] == ".comment" || sectionNames[i] == ".strtab")
+                if(sectionNames[i] == ".interp" || sectionNames[i] == ".dynstr" || sectionNames[i] == ".comment" ||
+                   sectionNames[i] == ".strtab" || sectionNames[i] == ".stab.indexstr")
                 {
                     strStart = 0;
                     len      = 0;
@@ -200,9 +208,28 @@ namespace libexeinfo
                         {
                             if(len == 0) continue;
 
-                            strings.Add(Encoding.ASCII.GetString(buffer, strStart, len));
-                            if(sectionNames[i] == ".interp")
-                                interpreter = Encoding.ASCII.GetString(buffer, strStart, len);
+                            string str                          = Encoding.ASCII.GetString(buffer, strStart, len);
+                            if(str[str.Length - 1] == '\0') str = str.Substring(0, str.Length - 1);
+                            if(!string.IsNullOrWhiteSpace(str))
+                            {
+                                strings.Add(str);
+                                switch(sectionNames[i])
+                                {
+                                    case ".interp":
+                                        interpreter = str;
+                                        break;
+                                    case ".comment":
+                                        if(str.Contains("beos")) beos     = true;
+                                        if(str.Contains("haiku")) haiku   = true;
+                                        if(str.Contains("(Lynx)")) lynxos = true;
+                                        break;
+                                    case ".dynstr":
+                                        if(str.StartsWith("SUNW")) solaris = true;
+                                        if(str == "libsky.so") skyos       = true;
+                                        break;
+                                }
+                            }
+
                             strStart = p + 1;
                             len      = 0;
                             continue;
@@ -234,15 +261,7 @@ namespace libexeinfo
 
                     pos += (int)namesz;
 
-                    switch(Header.ei_class)
-                    {
-                        case eiClass.ELFCLASS32:
-                            pos += pos % 4 != 0 ? 4 - (pos % 4) : 0;
-                            break;
-                        case eiClass.ELFCLASS64:
-                            pos += pos % 8 != 0 ? 8 - (pos % 8) : 0;
-                            break;
-                    }
+                    pos += pos % 4 != 0 ? 4 - pos % 4 : 0;
 
                     Array.Copy(buffer, pos, note.contents, 0, descsz);
 
@@ -250,71 +269,102 @@ namespace libexeinfo
                 }
             }
 
-            if(notes.TryGetValue(".note.ABI-tag", out ElfNote abiTag))
+            if(notes.TryGetValue(".note.ABI-tag", out ElfNote abiTag) && abiTag.name == "GNU")
             {
                 GnuAbiTag gnuAbiTag = DecodeGnuAbiTag(abiTag, IsBigEndian);
                 if(gnuAbiTag != null)
-                    RequiredOperatingSystem = new OperatingSystem
-                    {
-                        Name         = $"{gnuAbiTag.system}",
-                        MajorVersion = (int)gnuAbiTag.major,
-                        MinorVersion = (int)gnuAbiTag.minor
-                    };
+                    if(gnuAbiTag.system == GnuAbiSystem.Linux && interpreter == "/system/bin/linker")
+                        RequiredOperatingSystem = new OperatingSystem
+                        {
+                            Name         = "Android",
+                            MajorVersion = (int)gnuAbiTag.major,
+                            MinorVersion = (int)gnuAbiTag.minor
+                        };
+                    else
+                        RequiredOperatingSystem = new OperatingSystem
+                        {
+                            Name         = $"{gnuAbiTag.system}",
+                            MajorVersion = (int)gnuAbiTag.major,
+                            MinorVersion = (int)gnuAbiTag.minor
+                        };
                 else if(!string.IsNullOrEmpty(interpreter))
                     RequiredOperatingSystem = new OperatingSystem {Name = interpreter};
             }
-            else if(notes.TryGetValue(".note.netbsd.ident", out ElfNote netbsdIdent) && netbsdIdent.name == "NetBSD")
+            else if(notes.TryGetValue(".note.netbsd.ident", out ElfNote netbsdIdent) && netbsdIdent.name == "NetBSD" ||
+                    notes.TryGetValue(".note.ABI-tag",      out netbsdIdent)         && netbsdIdent.name == "NetBSD")
             {
                 uint netbsdVersionConstant            = BitConverter.ToUInt32(netbsdIdent.contents, 0);
                 if(IsBigEndian) netbsdVersionConstant = Swapping.Swap(netbsdVersionConstant);
 
                 if(netbsdVersionConstant > 100000000)
-                {
                     RequiredOperatingSystem = new OperatingSystem
                     {
                         Name         = "NetBSD",
-                        MajorVersion = (int)(netbsdVersionConstant / 100000000),
-                        MinorVersion = (int)((netbsdVersionConstant / 1000000) % 100)
+                        MajorVersion = (int)(netbsdVersionConstant           / 100000000),
+                        MinorVersion = (int)(netbsdVersionConstant / 1000000 % 100)
                     };
-                }
                 else
                 {
+                    int nbsdMajor = 0;
+                    int nbsdMinor = 0;
+
+                    switch(netbsdVersionConstant)
+                    {
+                        case 1993070:
+                            nbsdMajor = 0;
+                            nbsdMinor = 9;
+                            break;
+                        case 1994100:
+                            nbsdMajor = 1;
+                            nbsdMinor = 0;
+                            break;
+                        case 199511:
+                            nbsdMajor = 1;
+                            nbsdMinor = 1;
+                            break;
+                        case 199609:
+                            nbsdMajor = 1;
+                            nbsdMinor = 2;
+                            break;
+                        case 199714:
+                            nbsdMajor = 1;
+                            nbsdMinor = 3;
+                            break;
+                        case 199905:
+                            nbsdMajor = 1;
+                            nbsdMinor = 4;
+                            break;
+                    }
+
                     RequiredOperatingSystem = new OperatingSystem
                     {
-                        Name         = "NetBSD"
+                        Name         = "NetBSD",
+                        MajorVersion = nbsdMajor,
+                        MinorVersion = nbsdMinor
                     };
                 }
             }
-            else if(notes.TryGetValue(".note.minix.ident", out ElfNote minixIdent) && minixIdent.name == "Minix")
+            else if(notes.TryGetValue(".note.minix.ident", out ElfNote minixIdent) && minixIdent.name == "Minix" ||
+                    notes.TryGetValue(".note.ABI-tag",     out minixIdent)         && minixIdent.name == "Minix")
             {
                 uint minixVersionConstant            = BitConverter.ToUInt32(minixIdent.contents, 0);
                 if(IsBigEndian) minixVersionConstant = Swapping.Swap(minixVersionConstant);
 
                 if(minixVersionConstant > 100000000)
-                {
                     RequiredOperatingSystem = new OperatingSystem
                     {
                         Name         = "MINIX",
-                        MajorVersion = (int)(minixVersionConstant             / 100000000),
-                        MinorVersion = (int)((minixVersionConstant / 1000000) % 100)
+                        MajorVersion = (int)(minixVersionConstant           / 100000000),
+                        MinorVersion = (int)(minixVersionConstant / 1000000 % 100)
                     };
-                }
-                else
-                {
-                    RequiredOperatingSystem = new OperatingSystem
-                    {
-                        Name = "MINIX"
-                    };
-                }
+                else RequiredOperatingSystem = new OperatingSystem {Name = "MINIX"};
             }
-            else if(notes.TryGetValue(".note.openbsd.ident", out ElfNote openbsdIdent) && openbsdIdent.name == "OpenBSD")
-            {
-                    RequiredOperatingSystem = new OperatingSystem
-                    {
-                        Name = "OpenBSD"
-                    };
-            }
-            else if(notes.TryGetValue(".note.tag", out ElfNote freebsdTag) && freebsdTag.name == "FreeBSD")
+            else if(
+                notes.TryGetValue(".note.openbsd.ident", out ElfNote openbsdIdent) && openbsdIdent.name == "OpenBSD" ||
+                notes.TryGetValue(".note.ABI-tag",       out openbsdIdent)         && openbsdIdent.name == "OpenBSD")
+                RequiredOperatingSystem = new OperatingSystem {Name = "OpenBSD"};
+            else if(notes.TryGetValue(".note.tag",     out ElfNote freebsdTag) && freebsdTag.name == "FreeBSD" ||
+                    notes.TryGetValue(".note.ABI-tag", out freebsdTag)         && freebsdTag.name == "FreeBSD")
             {
                 uint freebsdVersionConstant            = BitConverter.ToUInt32(freebsdTag.contents, 0);
                 if(IsBigEndian) freebsdVersionConstant = Swapping.Swap(freebsdVersionConstant);
@@ -328,10 +378,118 @@ namespace libexeinfo
                     MinorVersion = (int)freeBsdVersion.minor
                 };
             }
-
+            else if(notes.TryGetValue(".note.ident", out ElfNote bsdiTag) && bsdiTag.name == "BSD/OS")
+            {
+                string bsdiVersion = StringHandlers.CToString(bsdiTag.contents);
+                if(bsdiVersion.Length == 3)
+                    RequiredOperatingSystem = new OperatingSystem
+                    {
+                        Name         = "BSD/OS",
+                        MajorVersion = bsdiVersion[0] - 0x30,
+                        MinorVersion = bsdiVersion[2] - 0x30
+                    };
+            }
+            else if(Header.ei_osabi != eiOsabi.ELFOSABI_NONE && Header.ei_osabi != eiOsabi.ELFOSABI_GNU &&
+                    Header.ei_osabi != eiOsabi.ELFOSABI_ARM  && Header.ei_osabi != eiOsabi.ELFOSABI_ARM_AEABI)
+                switch(Header.ei_osabi)
+                {
+                    case eiOsabi.ELFOSABI_HPUX:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "HP-UX"};
+                        break;
+                    case eiOsabi.ELFOSABI_NETBSD:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "NetBSD"};
+                        break;
+                    case eiOsabi.ELFOSABI_SOLARIS:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "Solaris"};
+                        break;
+                    case eiOsabi.ELFOSABI_AIX:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "AIX"};
+                        break;
+                    case eiOsabi.ELFOSABI_IRIX:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "IRIX"};
+                        break;
+                    case eiOsabi.ELFOSABI_FREEBSD:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "FreeBSD"};
+                        break;
+                    case eiOsabi.ELFOSABI_TRU64:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "Tru64 UNIX"};
+                        break;
+                    case eiOsabi.ELFOSABI_MODESTO:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "Novell Modesto"};
+                        break;
+                    case eiOsabi.ELFOSABI_OPENBSD:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "OpenBSD"};
+                        break;
+                    case eiOsabi.ELFOSABI_OPENVMS:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "OpenVMS"};
+                        break;
+                    case eiOsabi.ELFOSABI_NSK:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "Non-Stop Kernel"};
+                        break;
+                    case eiOsabi.ELFOSABI_AROS:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "AROS"};
+                        break;
+                    case eiOsabi.ELFOSABI_FENIXOS:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "FenixOS"};
+                        break;
+                    case eiOsabi.ELFOSABI_CLOUDABI:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "CloudABI"};
+                        break;
+                    case eiOsabi.ELFOSABI_OPENVOS:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "OpenVOS"};
+                        break;
+                    case eiOsabi.ELFOSABI_STANDALONE:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "None"};
+                        break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
             else if(!string.IsNullOrEmpty(interpreter))
-                RequiredOperatingSystem = new OperatingSystem {Name = interpreter};
+                switch(interpreter)
+                {
+                    case "/usr/lib/ldqnx.so.2":
+                        RequiredOperatingSystem = new OperatingSystem {Name = "QNX", MajorVersion = 6};
+                        break;
+                    case "/usr/dglib/libc.so.1":
+                        RequiredOperatingSystem = new OperatingSystem {Name = "DG/UX"};
+                        break;
+                    case "/shlib/ld-bsdi.so":
+                        RequiredOperatingSystem = new OperatingSystem {Name = "BSD/OS"};
+                        break;
+                    case "/usr/lib/libc.so.1" when skyos:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "SkyOS"};
+                        break;
+                    case "/usr/lib/ld.so.1" when solaris:
+                        RequiredOperatingSystem = new OperatingSystem {Name = "Solaris"};
+                        break;
+                    default:
+                        RequiredOperatingSystem = new OperatingSystem {Name = interpreter};
+                        break;
+                }
+            else if(beos) RequiredOperatingSystem   = new OperatingSystem {Name = "BeOS", MajorVersion = 4};
+            else if(haiku) RequiredOperatingSystem  = new OperatingSystem {Name = "Haiku"};
+            else if(lynxos) RequiredOperatingSystem = new OperatingSystem {Name = "LynxOS"};
+            else
+                for(int i = 0; i < sections.Length; i++)
+                {
+                    if(sectionNames[i] != ".rodata") continue;
 
+                    buffer              = new byte[sections[i].sh_size];
+                    BaseStream.Position = (long)sections[i].sh_offset;
+                    BaseStream.Read(buffer, 0, buffer.Length);
+                    string rodataAsString = Encoding.ASCII.GetString(buffer);
+
+                    if(Header.e_machine == eMachine.EM_PPC)
+                    {
+                        if(rodataAsString.Contains("newlib.library"))
+                            RequiredOperatingSystem = new OperatingSystem {Name = "AmigaOS", MajorVersion = 4};
+                        else if(rodataAsString.Contains("arosc.library"))
+                            RequiredOperatingSystem = new OperatingSystem {Name = "AROS"};
+                        else if(rodataAsString.Contains("intuition.library"))
+                            RequiredOperatingSystem = new OperatingSystem {Name = "MorphOS"};
+                    }
+                    else if(rodataAsString.Contains("arosc.library"))
+                        RequiredOperatingSystem = new OperatingSystem {Name = "AROS"};
+                }
 
             if(strings.Count > 0)
             {

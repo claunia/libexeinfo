@@ -446,6 +446,8 @@ namespace libexeinfo
             EM_AMDGPU = 224,
             /// <summary>RISC-V</summary>
             EM_RISCV = 243,
+            /// <summary>AT&amp;T Hobbit</summary>
+            EM_HOBBIT = 925,
             EM_ALPHA_OLD = 0x9026,
             /// <summary>Bogus old v850 magic number, used by old tools.</summary>
             EM_CYGNUS_V850 = 0x9080,
@@ -944,11 +946,12 @@ namespace libexeinfo
 
         enum GnuAbiSystem : uint
         {
-            Linux = 0,
-            Hurd = 1,
-            Solaris = 2,
+            Linux    = 0,
+            Hurd     = 1,
+            Solaris  = 2,
             kFreeBSD = 3,
-            kNetBSD = 4
+            kNetBSD  = 4,
+            Syllable = 5
         }
     }
 }
