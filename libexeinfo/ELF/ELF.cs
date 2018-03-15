@@ -138,14 +138,51 @@ namespace libexeinfo
                 }
             }
 
+            int len = 0;
+            int pos;
+
             for(int i = 0; i < programHeaders.Length; i++)
             {
-                if(programHeaders[i].p_type != phType.PT_INTERP) continue;
+                if(programHeaders[i].p_type != phType.PT_INTERP && programHeaders[i].p_type != phType.PT_NOTE) continue;
 
                 buffer              = new byte[programHeaders[i].p_filesz];
                 BaseStream.Position = (long)programHeaders[i].p_offset;
                 BaseStream.Read(buffer, 0, buffer.Length);
-                interpreter = StringHandlers.CToString(buffer);
+
+                switch(programHeaders[i].p_type)
+                {
+                    case phType.PT_INTERP:
+                        interpreter = StringHandlers.CToString(buffer);
+                        break;
+                    case phType.PT_NOTE when buffer.Length > 12:
+                        uint namesz   = BitConverter.ToUInt32(buffer, 0);
+                        uint descsz   = BitConverter.ToUInt32(buffer, 4);
+                        uint notetype = BitConverter.ToUInt32(buffer, 8);
+                        pos = 12;
+
+                        if(IsBigEndian)
+                        {
+                            namesz   = Swapping.Swap(namesz);
+                            descsz   = Swapping.Swap(descsz);
+                            notetype = Swapping.Swap(notetype);
+                        }
+
+                        ElfNote note = new ElfNote
+                        {
+                            name     = Encoding.ASCII.GetString(buffer, pos, (int)(namesz - 1)),
+                            type     = notetype,
+                            contents = new byte[descsz]
+                        };
+
+                        pos += (int)namesz;
+
+                        pos += pos % 4 != 0 ? 4 - pos % 4 : 0;
+
+                        Array.Copy(buffer, pos, note.contents, 0, descsz);
+
+                        RequiredOperatingSystem = GetOsByNote(note, interpreter, IsBigEndian);
+                        break;
+                }
             }
 
             Segment[] segments;
@@ -194,12 +231,16 @@ namespace libexeinfo
                     }
                 }
 
+                if(RequiredOperatingSystem.Name == null)
+                    RequiredOperatingSystem = GetOsByInterpreter(interpreter, false, false);
+
                 return;
             }
 
             BaseStream.Position = (long)Header.e_shoff;
             buffer              = new byte[Header.e_shentsize];
             sections            = new Elf64_Shdr[Header.e_shnum];
+
             for(int i = 0; i < sections.Length; i++)
             {
                 BaseStream.Read(buffer, 0, buffer.Length);
@@ -227,9 +268,6 @@ namespace libexeinfo
             BaseStream.Read(buffer, 0, buffer.Length);
             sectionNames = new string[sections.Length];
             segments     = new Segment[sections.Length];
-
-            int len = 0;
-            int pos;
 
             for(int i = 0; i < sections.Length; i++)
             {
@@ -357,126 +395,18 @@ namespace libexeinfo
                 }
             }
 
-            if(notes.TryGetValue(".note.ABI-tag", out ElfNote abiTag) && abiTag.name == "GNU")
-            {
-                GnuAbiTag gnuAbiTag = DecodeGnuAbiTag(abiTag, IsBigEndian);
-                if(gnuAbiTag != null)
-                    if(gnuAbiTag.system == GnuAbiSystem.Linux && interpreter == "/system/bin/linker")
-                        RequiredOperatingSystem = new OperatingSystem
-                        {
-                            Name         = "Android",
-                            MajorVersion = (int)gnuAbiTag.major,
-                            MinorVersion = (int)gnuAbiTag.minor
-                        };
-                    else
-                        RequiredOperatingSystem = new OperatingSystem
-                        {
-                            Name         = $"{gnuAbiTag.system}",
-                            MajorVersion = (int)gnuAbiTag.major,
-                            MinorVersion = (int)gnuAbiTag.minor
-                        };
-                else if(!string.IsNullOrEmpty(interpreter))
-                    RequiredOperatingSystem = new OperatingSystem {Name = interpreter};
-            }
-            else if(notes.TryGetValue(".note.netbsd.ident", out ElfNote netbsdIdent) && netbsdIdent.name == "NetBSD" ||
-                    notes.TryGetValue(".note.ABI-tag",      out netbsdIdent)         && netbsdIdent.name == "NetBSD")
-            {
-                uint netbsdVersionConstant            = BitConverter.ToUInt32(netbsdIdent.contents, 0);
-                if(IsBigEndian) netbsdVersionConstant = Swapping.Swap(netbsdVersionConstant);
-
-                if(netbsdVersionConstant > 100000000)
-                    RequiredOperatingSystem = new OperatingSystem
-                    {
-                        Name         = "NetBSD",
-                        MajorVersion = (int)(netbsdVersionConstant           / 100000000),
-                        MinorVersion = (int)(netbsdVersionConstant / 1000000 % 100)
-                    };
-                else
-                {
-                    int nbsdMajor = 0;
-                    int nbsdMinor = 0;
-
-                    switch(netbsdVersionConstant)
-                    {
-                        case 1993070:
-                            nbsdMajor = 0;
-                            nbsdMinor = 9;
-                            break;
-                        case 1994100:
-                            nbsdMajor = 1;
-                            nbsdMinor = 0;
-                            break;
-                        case 199511:
-                            nbsdMajor = 1;
-                            nbsdMinor = 1;
-                            break;
-                        case 199609:
-                            nbsdMajor = 1;
-                            nbsdMinor = 2;
-                            break;
-                        case 199714:
-                            nbsdMajor = 1;
-                            nbsdMinor = 3;
-                            break;
-                        case 199905:
-                            nbsdMajor = 1;
-                            nbsdMinor = 4;
-                            break;
-                    }
-
-                    RequiredOperatingSystem = new OperatingSystem
-                    {
-                        Name         = "NetBSD",
-                        MajorVersion = nbsdMajor,
-                        MinorVersion = nbsdMinor
-                    };
-                }
-            }
-            else if(notes.TryGetValue(".note.minix.ident", out ElfNote minixIdent) && minixIdent.name == "Minix" ||
-                    notes.TryGetValue(".note.ABI-tag",     out minixIdent)         && minixIdent.name == "Minix")
-            {
-                uint minixVersionConstant            = BitConverter.ToUInt32(minixIdent.contents, 0);
-                if(IsBigEndian) minixVersionConstant = Swapping.Swap(minixVersionConstant);
-
-                if(minixVersionConstant > 100000000)
-                    RequiredOperatingSystem = new OperatingSystem
-                    {
-                        Name         = "MINIX",
-                        MajorVersion = (int)(minixVersionConstant           / 100000000),
-                        MinorVersion = (int)(minixVersionConstant / 1000000 % 100)
-                    };
-                else RequiredOperatingSystem = new OperatingSystem {Name = "MINIX"};
-            }
-            else if(
-                notes.TryGetValue(".note.openbsd.ident", out ElfNote openbsdIdent) && openbsdIdent.name == "OpenBSD" ||
-                notes.TryGetValue(".note.ABI-tag",       out openbsdIdent)         && openbsdIdent.name == "OpenBSD")
-                RequiredOperatingSystem = new OperatingSystem {Name = "OpenBSD"};
-            else if(notes.TryGetValue(".note.tag",     out ElfNote freebsdTag) && freebsdTag.name == "FreeBSD" ||
-                    notes.TryGetValue(".note.ABI-tag", out freebsdTag)         && freebsdTag.name == "FreeBSD")
-            {
-                uint freebsdVersionConstant            = BitConverter.ToUInt32(freebsdTag.contents, 0);
-                if(IsBigEndian) freebsdVersionConstant = Swapping.Swap(freebsdVersionConstant);
-
-                FreeBSDTag freeBsdVersion = DecodeFreeBSDTag(freebsdVersionConstant);
-
-                RequiredOperatingSystem = new OperatingSystem
-                {
-                    Name         = "FreeBSD",
-                    MajorVersion = (int)freeBsdVersion.major,
-                    MinorVersion = (int)freeBsdVersion.minor
-                };
-            }
+            if(notes.TryGetValue(".note.ABI-tag", out ElfNote abiTag))
+                RequiredOperatingSystem = GetOsByNote(abiTag, interpreter, IsBigEndian);
+            else if(notes.TryGetValue(".note.netbsd.ident", out ElfNote netbsdIdent))
+                RequiredOperatingSystem = GetOsByNote(netbsdIdent, interpreter, IsBigEndian);
+            else if(notes.TryGetValue(".note.minix.ident", out ElfNote minixIdent))
+                RequiredOperatingSystem = GetOsByNote(minixIdent, interpreter, IsBigEndian);
+            else if(notes.TryGetValue(".note.openbsd.ident", out ElfNote openbsdIdent))
+                RequiredOperatingSystem = GetOsByNote(openbsdIdent, interpreter, IsBigEndian);
+            else if(notes.TryGetValue(".note.tag", out ElfNote freebsdTag))
+                RequiredOperatingSystem = GetOsByNote(freebsdTag, interpreter, IsBigEndian);
             else if(notes.TryGetValue(".note.ident", out ElfNote bsdiTag) && bsdiTag.name == "BSD/OS")
-            {
-                string bsdiVersion = StringHandlers.CToString(bsdiTag.contents);
-                if(bsdiVersion.Length == 3)
-                    RequiredOperatingSystem = new OperatingSystem
-                    {
-                        Name         = "BSD/OS",
-                        MajorVersion = bsdiVersion[0] - 0x30,
-                        MinorVersion = bsdiVersion[2] - 0x30
-                    };
-            }
+                RequiredOperatingSystem = GetOsByNote(bsdiTag, interpreter, IsBigEndian);
             else if(Header.ei_osabi != eiOsabi.ELFOSABI_NONE && Header.ei_osabi != eiOsabi.ELFOSABI_GNU &&
                     Header.ei_osabi != eiOsabi.ELFOSABI_ARM  && Header.ei_osabi != eiOsabi.ELFOSABI_ARM_AEABI)
                 switch(Header.ei_osabi)
@@ -568,6 +498,115 @@ namespace libexeinfo
             }
 
             Segments = segments;
+        }
+
+        static OperatingSystem GetOsByNote(ElfNote note, string interpreter, bool bigendian)
+        {
+            if(note.type != 1) return new OperatingSystem {Name = interpreter};
+
+            switch(note.name)
+            {
+                case "GNU":
+
+                    GnuAbiTag gnuAbiTag = DecodeGnuAbiTag(note, bigendian);
+                    if(gnuAbiTag != null)
+                        if(gnuAbiTag.system == GnuAbiSystem.Linux && interpreter == "/system/bin/linker")
+                            return new OperatingSystem
+                            {
+                                Name         = "Android",
+                                MajorVersion = (int)gnuAbiTag.major,
+                                MinorVersion = (int)gnuAbiTag.minor
+                            };
+                        else
+                            return new OperatingSystem
+                            {
+                                Name         = $"{gnuAbiTag.system}",
+                                MajorVersion = (int)gnuAbiTag.major,
+                                MinorVersion = (int)gnuAbiTag.minor
+                            };
+                    else return new OperatingSystem {Name = interpreter};
+                case "NetBSD":
+                    uint netbsdVersionConstant          = BitConverter.ToUInt32(note.contents, 0);
+                    if(bigendian) netbsdVersionConstant = Swapping.Swap(netbsdVersionConstant);
+
+                    if(netbsdVersionConstant > 100000000)
+                        return new OperatingSystem
+                        {
+                            Name         = "NetBSD",
+                            MajorVersion = (int)(netbsdVersionConstant           / 100000000),
+                            MinorVersion = (int)(netbsdVersionConstant / 1000000 % 100)
+                        };
+
+                    int nbsdMajor = 0;
+                    int nbsdMinor = 0;
+
+                    switch(netbsdVersionConstant)
+                    {
+                        case 1993070:
+                            nbsdMajor = 0;
+                            nbsdMinor = 9;
+                            break;
+                        case 1994100:
+                            nbsdMajor = 1;
+                            nbsdMinor = 0;
+                            break;
+                        case 199511:
+                            nbsdMajor = 1;
+                            nbsdMinor = 1;
+                            break;
+                        case 199609:
+                            nbsdMajor = 1;
+                            nbsdMinor = 2;
+                            break;
+                        case 199714:
+                            nbsdMajor = 1;
+                            nbsdMinor = 3;
+                            break;
+                        case 199905:
+                            nbsdMajor = 1;
+                            nbsdMinor = 4;
+                            break;
+                    }
+
+                    return new OperatingSystem {Name = "NetBSD", MajorVersion = nbsdMajor, MinorVersion = nbsdMinor};
+                case "Minix":
+                    uint minixVersionConstant          = BitConverter.ToUInt32(note.contents, 0);
+                    if(bigendian) minixVersionConstant = Swapping.Swap(minixVersionConstant);
+
+                    if(minixVersionConstant > 100000000)
+                        return new OperatingSystem
+                        {
+                            Name         = "MINIX",
+                            MajorVersion = (int)(minixVersionConstant           / 100000000),
+                            MinorVersion = (int)(minixVersionConstant / 1000000 % 100)
+                        };
+                    else return new OperatingSystem {Name = "MINIX"};
+                case "OpenBSD": return new OperatingSystem {Name = "OpenBSD"};
+                case "FreeBSD":
+                    uint freebsdVersionConstant          = BitConverter.ToUInt32(note.contents, 0);
+                    if(bigendian) freebsdVersionConstant = Swapping.Swap(freebsdVersionConstant);
+
+                    FreeBSDTag freeBsdVersion = DecodeFreeBSDTag(freebsdVersionConstant);
+
+                    return new OperatingSystem
+                    {
+                        Name         = "FreeBSD",
+                        MajorVersion = (int)freeBsdVersion.major,
+                        MinorVersion = (int)freeBsdVersion.minor
+                    };
+                case "BSD/OS":
+                    string bsdiVersion = StringHandlers.CToString(note.contents);
+                    if(bsdiVersion.Length == 3)
+                        return new OperatingSystem
+                        {
+                            Name         = "BSD/OS",
+                            MajorVersion = bsdiVersion[0] - 0x30,
+                            MinorVersion = bsdiVersion[2] - 0x30
+                        };
+
+                    goto default;
+                default: return new OperatingSystem {Name = interpreter};
+            }
         }
 
         static OperatingSystem GetOsByInterpreter(string interpreter, bool skyos, bool solaris)
