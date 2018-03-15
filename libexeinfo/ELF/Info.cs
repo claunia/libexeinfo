@@ -1,9 +1,35 @@
-﻿using System;
+﻿//
+// Info.cs
+//
+// Author:
+//       Natalia Portillo <claunia@claunia.com>
+//
+// Copyright (c) 2017-2018 Copyright © Claunia.com
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+using System;
 using System.Text;
 
 namespace libexeinfo
 {
-    public partial class ELF : IExecutable
+    public partial class ELF
     {
         public string Information
         {
@@ -13,47 +39,47 @@ namespace libexeinfo
 
                 string processorFlags;
 
-                if(Header.e_flags == 0) processorFlags = "None";
+                if(header.e_flags == 0) processorFlags = "None";
                 else
-                    switch(Header.e_machine)
+                    switch(header.e_machine)
                     {
                         case eMachine.EM_ARM:
                         case eMachine.EM_AARCH64:
                             processorFlags =
-                                $"{(eFlagsArm)(Header.e_flags & eFlagsArmMask)} ABI version {Header.e_flags >> 24}";
+                                $"{(eFlagsArm)(header.e_flags & eFlagsArmMask)} ABI version {header.e_flags >> 24}";
                             break;
                         case eMachine.EM_MIPS:
                         case eMachine.EM_MIPS_RS3_LE:
                         case eMachine.EM_MIPS_X:
-                            processorFlags = $"{(eFlagsMips)Header.e_flags}";
+                            processorFlags = $"{(eFlagsMips)header.e_flags}";
                             break;
                         case eMachine.EM_PARISC:
                             processorFlags =
-                                $"{(eFlagsArm)(Header.e_flags & eFlagsPariscMask)} architecture version {(eFlagsPaRiscArchitecture)(Header.e_flags & EF_PARISC_ARCH)}";
+                                $"{(eFlagsArm)(header.e_flags & eFlagsPariscMask)} architecture version {(eFlagsPaRiscArchitecture)(header.e_flags & EF_PARISC_ARCH)}";
                             break;
                         default:
-                            processorFlags = $"{Header.e_flags}";
+                            processorFlags = $"{header.e_flags}";
                             break;
                     }
 
                 sb.AppendLine("Executable and Linkable Format (ELF):");
-                sb.AppendFormat("\tObject class: {0}", eiClassToString(Header.ei_class)).AppendLine();
-                sb.AppendFormat("\tObject endian: {0}", eiDataToString(Header.ei_data)).AppendLine();
-                sb.AppendFormat("\tObject OS ABI: {0}", eiOsAbiToString(Header.ei_osabi)).AppendLine();
-                sb.AppendFormat("\tObject type: {0}", eTypeToString(Header.e_type)).AppendLine();
-                sb.AppendFormat("\tArchitecture: {0}", eMachineToString(Header.e_machine)).AppendLine();
-                sb.AppendFormat("\tObject file version: {0}", Header.e_version).AppendLine();
+                sb.AppendFormat("\tObject class: {0}", eiClassToString(header.ei_class)).AppendLine();
+                sb.AppendFormat("\tObject endian: {0}", eiDataToString(header.ei_data)).AppendLine();
+                sb.AppendFormat("\tObject OS ABI: {0}", eiOsAbiToString(header.ei_osabi)).AppendLine();
+                sb.AppendFormat("\tObject type: {0}", eTypeToString(header.e_type)).AppendLine();
+                sb.AppendFormat("\tArchitecture: {0}", eMachineToString(header.e_machine)).AppendLine();
+                sb.AppendFormat("\tObject file version: {0}", header.e_version).AppendLine();
                 sb.AppendFormat("\tEntry point virtual address: {0}",
-                                Header.ei_class == eiClass.ELFCLASS64
-                                    ? $"0x{Header.e_entry:X16}"
-                                    : $"0x{Header.e_entry:X8}").AppendLine();
-                sb.AppendFormat("\tProgram header starts at {0}, contains {1} entries of {2} bytes", Header.e_phoff,
-                                Header.e_phnum, Header.e_phentsize).AppendLine();
-                sb.AppendFormat("\tSection header starts at {0}, contains {1} entries of {2} bytes", Header.e_shoff,
-                                Header.e_shnum, Header.e_shentsize).AppendLine();
+                                header.ei_class == eiClass.ELFCLASS64
+                                    ? $"0x{header.e_entry:X16}"
+                                    : $"0x{header.e_entry:X8}").AppendLine();
+                sb.AppendFormat("\tProgram header starts at {0}, contains {1} entries of {2} bytes", header.e_phoff,
+                                header.e_phnum, header.e_phentsize).AppendLine();
+                sb.AppendFormat("\tSection header starts at {0}, contains {1} entries of {2} bytes", header.e_shoff,
+                                header.e_shnum, header.e_shentsize).AppendLine();
                 sb.AppendFormat("\tProcessor specific flags: {0}", processorFlags).AppendLine();
-                sb.AppendFormat("\tHeader is {0} bytes long", Header.e_ehsize).AppendLine();
-                sb.AppendFormat("\tString table is at index {0} of section header", Header.e_shstrndx).AppendLine();
+                sb.AppendFormat("\tHeader is {0} bytes long", header.e_ehsize).AppendLine();
+                sb.AppendFormat("\tString table is at index {0} of section header", header.e_shstrndx).AppendLine();
 
                 if(!string.IsNullOrEmpty(interpreter)) sb.AppendFormat("\tInterpreter: {0}", interpreter).AppendLine();
 
@@ -66,7 +92,7 @@ namespace libexeinfo
                     sb.AppendFormat("\t\tType: {0}", sections[i].sh_type).AppendLine();
                     sb.AppendFormat("\t\tFlags: {0}", sections[i].sh_flags).AppendLine();
                     sb.AppendFormat("\t\tVirtual address: {0}",
-                                    Header.ei_class == eiClass.ELFCLASS64
+                                    header.ei_class == eiClass.ELFCLASS64
                                         ? $"0x{sections[i].sh_addr:X16}"
                                         : $"0x{sections[i].sh_addr:X8}").AppendLine();
                     sb.AppendFormat("\t\tSection starts at {0} and is {1} bytes long", sections[i].sh_offset,

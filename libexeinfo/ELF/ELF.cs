@@ -1,4 +1,30 @@
-﻿using System;
+﻿//
+// ELF.cs
+//
+// Author:
+//       Natalia Portillo <claunia@claunia.com>
+//
+// Copyright (c) 2017-2018 Copyright © Claunia.com
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +36,7 @@ namespace libexeinfo
     public partial class ELF : IExecutable
     {
         Architecture[]              architectures;
-        Elf64_Ehdr                  Header;
+        Elf64_Ehdr                  header;
         string                      interpreter;
         Dictionary<string, ElfNote> notes;
         Elf64_Phdr[]                programHeaders;
@@ -24,11 +50,6 @@ namespace libexeinfo
         public ELF(string path)
         {
             BaseStream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-            string pathDir          = Path.GetDirectoryName(path);
-            string filename         = Path.GetFileNameWithoutExtension(path);
-            string testPath         = Path.Combine(pathDir, filename);
-            string resourceFilePath = null;
 
             Initialize();
         }
@@ -75,56 +96,56 @@ namespace libexeinfo
 
             BaseStream.Position = 0;
             BaseStream.Read(buffer, 0, buffer.Length);
-            Header     = BigEndianMarshal.ByteArrayToStructureLittleEndian<Elf64_Ehdr>(buffer);
-            Recognized = Header.ei_mag.SequenceEqual(ELFMAG);
+            header     = BigEndianMarshal.ByteArrayToStructureLittleEndian<Elf64_Ehdr>(buffer);
+            Recognized = header.ei_mag.SequenceEqual(ELFMAG);
 
             if(!Recognized) return;
 
             Type          = "Executable and Linkable Format (ELF)";
-            IsBigEndian   = Header.ei_data == eiData.ELFDATA2MSB;
+            IsBigEndian   = header.ei_data == eiData.ELFDATA2MSB;
             architectures = new Architecture[1];
 
-            switch(Header.ei_class)
+            switch(header.ei_class)
             {
                 case eiClass.ELFCLASS32:
-                    Header = UpBits(buffer, Header.ei_data == eiData.ELFDATA2MSB);
+                    header = UpBits(buffer, header.ei_data == eiData.ELFDATA2MSB);
                     break;
                 case eiClass.ELFCLASS64:
-                    if(Header.ei_data == eiData.ELFDATA2MSB)
+                    if(header.ei_data == eiData.ELFDATA2MSB)
                     {
-                        Header           = BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Ehdr>(buffer);
-                        Header.e_type    = (eType)Swapping.Swap((ushort)Header.e_type);
-                        Header.e_machine = (eMachine)Swapping.Swap((ushort)Header.e_machine);
-                        Header.e_version = (eVersion)Swapping.Swap((uint)Header.e_version);
+                        header           = BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Ehdr>(buffer);
+                        header.e_type    = (eType)Swapping.Swap((ushort)header.e_type);
+                        header.e_machine = (eMachine)Swapping.Swap((ushort)header.e_machine);
+                        header.e_version = (eVersion)Swapping.Swap((uint)header.e_version);
                     }
-                    else Header = BigEndianMarshal.ByteArrayToStructureLittleEndian<Elf64_Ehdr>(buffer);
+                    else header = BigEndianMarshal.ByteArrayToStructureLittleEndian<Elf64_Ehdr>(buffer);
 
                     break;
                 default: return;
             }
 
-            architectures[0] = GetArchitecture(Header.e_machine);
+            architectures[0] = GetArchitecture(header.e_machine);
 
-            if(Header.ei_data != eiData.ELFDATA2LSB && Header.ei_data != eiData.ELFDATA2MSB ||
-               Header.ei_version != eiVersion.EV_CURRENT) return;
+            if(header.ei_data != eiData.ELFDATA2LSB && header.ei_data != eiData.ELFDATA2MSB ||
+               header.ei_version != eiVersion.EV_CURRENT) return;
 
             List<string> strings = new List<string>();
 
-            if(Header.e_phnum == 0 && Header.e_shnum == 0) return;
+            if(header.e_phnum == 0 && header.e_shnum == 0) return;
 
-            buffer              = new byte[Header.e_phentsize];
-            BaseStream.Position = (long)Header.e_phoff;
-            programHeaders      = new Elf64_Phdr[Header.e_phnum];
+            buffer              = new byte[header.e_phentsize];
+            BaseStream.Position = (long)header.e_phoff;
+            programHeaders      = new Elf64_Phdr[header.e_phnum];
             for(int i = 0; i < programHeaders.Length; i++)
             {
                 BaseStream.Read(buffer, 0, buffer.Length);
-                switch(Header.ei_class)
+                switch(header.ei_class)
                 {
                     case eiClass.ELFCLASS32:
-                        programHeaders[i] = UpBitsProgramHeader(buffer, Header.ei_data == eiData.ELFDATA2MSB);
+                        programHeaders[i] = UpBitsProgramHeader(buffer, header.ei_data == eiData.ELFDATA2MSB);
                         break;
                     case eiClass.ELFCLASS64:
-                        if(Header.ei_data == eiData.ELFDATA2MSB)
+                        if(header.ei_data == eiData.ELFDATA2MSB)
                         {
                             programHeaders[i] =
                                 BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Phdr>(buffer);
@@ -138,7 +159,7 @@ namespace libexeinfo
                 }
             }
 
-            int len = 0;
+            int len;
             int pos;
 
             for(int i = 0; i < programHeaders.Length; i++)
@@ -194,7 +215,7 @@ namespace libexeinfo
 
             Segment[] segments;
 
-            if(Header.e_shnum == 0)
+            if(header.e_shnum == 0)
             {
                 segments = new Segment[programHeaders.Length];
                 for(int i = 0; i < programHeaders.Length; i++)
@@ -240,24 +261,24 @@ namespace libexeinfo
 
                 if(RequiredOperatingSystem.Name == null)
                     RequiredOperatingSystem =
-                        GetOsByInterpreter(interpreter, false, false, false, false, false, Header.e_machine);
+                        GetOsByInterpreter(interpreter, false, false, false, false, false, header.e_machine);
 
                 return;
             }
 
-            BaseStream.Position = (long)Header.e_shoff;
-            buffer              = new byte[Header.e_shentsize];
-            sections            = new Elf64_Shdr[Header.e_shnum];
+            BaseStream.Position = (long)header.e_shoff;
+            buffer              = new byte[header.e_shentsize];
+            sections            = new Elf64_Shdr[header.e_shnum];
 
             // Read section 0, aka "the NULL section"
             BaseStream.Read(buffer, 0, buffer.Length);
-            switch(Header.ei_class)
+            switch(header.ei_class)
             {
                 case eiClass.ELFCLASS32:
-                    sections[0] = UpBitsSection(buffer, Header.ei_data == eiData.ELFDATA2MSB);
+                    sections[0] = UpBitsSection(buffer, header.ei_data == eiData.ELFDATA2MSB);
                     break;
                 case eiClass.ELFCLASS64:
-                    if(Header.ei_data == eiData.ELFDATA2MSB)
+                    if(header.ei_data == eiData.ELFDATA2MSB)
                     {
                         sections[0]          = BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Shdr>(buffer);
                         sections[0].sh_flags = (shFlags64)Swapping.Swap((ulong)sections[0].sh_flags);
@@ -272,15 +293,15 @@ namespace libexeinfo
             // Not a null section, in some ELFs, header contains incorrect pointer, but section header "should" be at end of file so check there
             if(sections[0].sh_type != shType.SHT_NULL)
             {
-                BaseStream.Position = BaseStream.Length - Header.e_shentsize * Header.e_shnum;
+                BaseStream.Position = BaseStream.Length - header.e_shentsize * header.e_shnum;
                 BaseStream.Read(buffer, 0, buffer.Length);
-                switch(Header.ei_class)
+                switch(header.ei_class)
                 {
                     case eiClass.ELFCLASS32:
-                        sections[0] = UpBitsSection(buffer, Header.ei_data == eiData.ELFDATA2MSB);
+                        sections[0] = UpBitsSection(buffer, header.ei_data == eiData.ELFDATA2MSB);
                         break;
                     case eiClass.ELFCLASS64:
-                        if(Header.ei_data == eiData.ELFDATA2MSB)
+                        if(header.ei_data == eiData.ELFDATA2MSB)
                         {
                             sections[0]          = BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Shdr>(buffer);
                             sections[0].sh_flags = (shFlags64)Swapping.Swap((ulong)sections[0].sh_flags);
@@ -296,21 +317,21 @@ namespace libexeinfo
                 if(sections[0].sh_type != shType.SHT_NULL) return;
 
                 // Rewind
-                BaseStream.Position = BaseStream.Length - Header.e_shentsize * Header.e_shnum;
+                BaseStream.Position = BaseStream.Length - header.e_shentsize * header.e_shnum;
             }
             // Rewind
-            else BaseStream.Position = (long)Header.e_shoff;
+            else BaseStream.Position = (long)header.e_shoff;
 
             for(int i = 0; i < sections.Length; i++)
             {
                 BaseStream.Read(buffer, 0, buffer.Length);
-                switch(Header.ei_class)
+                switch(header.ei_class)
                 {
                     case eiClass.ELFCLASS32:
-                        sections[i] = UpBitsSection(buffer, Header.ei_data == eiData.ELFDATA2MSB);
+                        sections[i] = UpBitsSection(buffer, header.ei_data == eiData.ELFDATA2MSB);
                         break;
                     case eiClass.ELFCLASS64:
-                        if(Header.ei_data == eiData.ELFDATA2MSB)
+                        if(header.ei_data == eiData.ELFDATA2MSB)
                         {
                             sections[i]          = BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Shdr>(buffer);
                             sections[i].sh_flags = (shFlags64)Swapping.Swap((ulong)sections[i].sh_flags);
@@ -323,8 +344,8 @@ namespace libexeinfo
                 }
             }
 
-            BaseStream.Position = (long)sections[Header.e_shstrndx].sh_offset;
-            buffer              = new byte[sections[Header.e_shstrndx].sh_size];
+            BaseStream.Position = (long)sections[header.e_shstrndx].sh_offset;
+            buffer              = new byte[sections[header.e_shstrndx].sh_size];
             BaseStream.Read(buffer, 0, buffer.Length);
             sectionNames = new string[sections.Length];
             segments     = new Segment[sections.Length];
@@ -381,7 +402,7 @@ namespace libexeinfo
             bool amigaos4 = false;
             bool aros     = false;
             bool morphos  = false;
-            bool nonstop  = (uint)Header.e_type == 100;
+            bool nonstop  = (uint)header.e_type == 100;
 
             // Sections that contain an array of null-terminated strings by definition
             for(int i = 0; i < sections.Length; i++)
@@ -510,7 +531,7 @@ namespace libexeinfo
                 BaseStream.Read(buffer, 0, buffer.Length);
                 string rodataAsString = Encoding.ASCII.GetString(buffer);
 
-                if(Header.e_machine == eMachine.EM_PPC)
+                if(header.e_machine == eMachine.EM_PPC)
                 {
                     if(rodataAsString.Contains("SUNW_OST_OSLIB")) solaris         = true;
                     else if(rodataAsString.Contains("newlib.library")) amigaos4   = true;
@@ -532,9 +553,9 @@ namespace libexeinfo
                 RequiredOperatingSystem = GetOsByNote(freebsdTag, interpreter, IsBigEndian);
             else if(notes.TryGetValue(".note.ident", out ElfNote bsdiTag) && bsdiTag.name == "BSD/OS")
                 RequiredOperatingSystem = GetOsByNote(bsdiTag, interpreter, IsBigEndian);
-            else if(Header.ei_osabi != eiOsabi.ELFOSABI_NONE && Header.ei_osabi != eiOsabi.ELFOSABI_GNU &&
-                    Header.ei_osabi != eiOsabi.ELFOSABI_ARM  && Header.ei_osabi != eiOsabi.ELFOSABI_ARM_AEABI)
-                switch(Header.ei_osabi)
+            else if(header.ei_osabi != eiOsabi.ELFOSABI_NONE && header.ei_osabi != eiOsabi.ELFOSABI_GNU &&
+                    header.ei_osabi != eiOsabi.ELFOSABI_ARM  && header.ei_osabi != eiOsabi.ELFOSABI_ARM_AEABI)
+                switch(header.ei_osabi)
                 {
                     case eiOsabi.ELFOSABI_HPUX:
                         RequiredOperatingSystem = new OperatingSystem {Name = "HP-UX"};
@@ -587,7 +608,7 @@ namespace libexeinfo
                 }
             else if(!string.IsNullOrEmpty(interpreter))
                 RequiredOperatingSystem =
-                    GetOsByInterpreter(interpreter, skyos, solaris, dellsysv, unixware, os2, Header.e_machine);
+                    GetOsByInterpreter(interpreter, skyos, solaris, dellsysv, unixware, os2, header.e_machine);
             else if(beos) RequiredOperatingSystem     = new OperatingSystem {Name = "BeOS", MajorVersion = 4};
             else if(haiku) RequiredOperatingSystem    = new OperatingSystem {Name = "Haiku"};
             else if(lynxos) RequiredOperatingSystem   = new OperatingSystem {Name = "LynxOS"};
