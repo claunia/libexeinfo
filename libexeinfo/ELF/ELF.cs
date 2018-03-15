@@ -240,6 +240,58 @@ namespace libexeinfo
             BaseStream.Position = (long)Header.e_shoff;
             buffer              = new byte[Header.e_shentsize];
             sections            = new Elf64_Shdr[Header.e_shnum];
+            
+            // Read section 0, aka "the NULL section"
+            BaseStream.Read(buffer, 0, buffer.Length);
+            switch(Header.ei_class)
+            {
+                case eiClass.ELFCLASS32:
+                    sections[0] = UpBitsSection(buffer, Header.ei_data == eiData.ELFDATA2MSB);
+                    break;
+                case eiClass.ELFCLASS64:
+                    if(Header.ei_data == eiData.ELFDATA2MSB)
+                    {
+                        sections[0]          = BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Shdr>(buffer);
+                        sections[0].sh_flags = (shFlags64)Swapping.Swap((ulong)sections[0].sh_flags);
+                        sections[0].sh_type  = (shType)Swapping.Swap((uint)sections[0].sh_type);
+                    }
+                    else sections[0] = BigEndianMarshal.ByteArrayToStructureLittleEndian<Elf64_Shdr>(buffer);
+
+                    break;
+                default: return;
+            }
+
+            // Not a null section, in some ELFs, header contains incorrect pointer, but section header "should" be at end of file so check there
+            if(sections[0].sh_type != shType.SHT_NULL)
+            {
+                BaseStream.Position = BaseStream.Length - Header.e_shentsize * Header.e_shnum;
+                BaseStream.Read(buffer, 0, buffer.Length);
+                switch(Header.ei_class)
+                {
+                    case eiClass.ELFCLASS32:
+                        sections[0] = UpBitsSection(buffer, Header.ei_data == eiData.ELFDATA2MSB);
+                        break;
+                    case eiClass.ELFCLASS64:
+                        if(Header.ei_data == eiData.ELFDATA2MSB)
+                        {
+                            sections[0]          = BigEndianMarshal.ByteArrayToStructureBigEndian<Elf64_Shdr>(buffer);
+                            sections[0].sh_flags = (shFlags64)Swapping.Swap((ulong)sections[0].sh_flags);
+                            sections[0].sh_type  = (shType)Swapping.Swap((uint)sections[0].sh_type);
+                        }
+                        else sections[0] = BigEndianMarshal.ByteArrayToStructureLittleEndian<Elf64_Shdr>(buffer);
+
+                        break;
+                    default: return;
+                }
+
+                // Still not null section, stop gracefully
+                if(sections[0].sh_type != shType.SHT_NULL) return;
+
+                // Rewind
+                BaseStream.Position = BaseStream.Length - Header.e_shentsize * Header.e_shnum;
+            }
+            // Rewind
+            else BaseStream.Position = (long)Header.e_shoff;
 
             for(int i = 0; i < sections.Length; i++)
             {
