@@ -761,6 +761,8 @@ namespace libexeinfo
                     when machine == eMachine.EM_68K: return new OperatingSystem {Name = "Amiga UNIX"};
                 case "/usr/lib32/libc.so.1"
                     when machine == eMachine.EM_MIPS: return new OperatingSystem {Name = "IRIX", MajorVersion = 6};
+                case "/system/runtime_loader":
+                    return new OperatingSystem {Name = "Haiku"};
                 default: return new OperatingSystem {Name = interpreter};
             }
         }
