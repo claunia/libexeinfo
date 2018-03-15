@@ -155,32 +155,39 @@ namespace libexeinfo
                         interpreter = StringHandlers.CToString(buffer);
                         break;
                     case phType.PT_NOTE when buffer.Length > 12:
-                        uint namesz   = BitConverter.ToUInt32(buffer, 0);
-                        uint descsz   = BitConverter.ToUInt32(buffer, 4);
-                        uint notetype = BitConverter.ToUInt32(buffer, 8);
-                        pos = 12;
-
-                        if(IsBigEndian)
+                        pos = 0;
+                        while(pos < buffer.Length)
                         {
-                            namesz   = Swapping.Swap(namesz);
-                            descsz   = Swapping.Swap(descsz);
-                            notetype = Swapping.Swap(notetype);
+                            uint namesz   = BitConverter.ToUInt32(buffer, pos + 0);
+                            uint descsz   = BitConverter.ToUInt32(buffer, pos + 4);
+                            uint notetype = BitConverter.ToUInt32(buffer, pos + 8);
+                            pos += 12;
+
+                            if(IsBigEndian)
+                            {
+                                namesz   = Swapping.Swap(namesz);
+                                descsz   = Swapping.Swap(descsz);
+                                notetype = Swapping.Swap(notetype);
+                            }
+
+                            ElfNote note = new ElfNote
+                            {
+                                name     = Encoding.ASCII.GetString(buffer, pos, (int)(namesz - 1)),
+                                type     = notetype,
+                                contents = new byte[descsz]
+                            };
+
+                            pos += (int)namesz;
+
+                            pos += pos % 4 != 0 ? 4 - pos % 4 : 0;
+
+                            Array.Copy(buffer, pos, note.contents, 0, descsz);
+                            pos += (int)descsz;
+                            pos += pos % 4 != 0 ? 4 - pos % 4 : 0;
+
+                            RequiredOperatingSystem = GetOsByNote(note, interpreter, IsBigEndian);
                         }
 
-                        ElfNote note = new ElfNote
-                        {
-                            name     = Encoding.ASCII.GetString(buffer, pos, (int)(namesz - 1)),
-                            type     = notetype,
-                            contents = new byte[descsz]
-                        };
-
-                        pos += (int)namesz;
-
-                        pos += pos % 4 != 0 ? 4 - pos % 4 : 0;
-
-                        Array.Copy(buffer, pos, note.contents, 0, descsz);
-
-                        RequiredOperatingSystem = GetOsByNote(note, interpreter, IsBigEndian);
                         break;
                 }
             }
@@ -418,32 +425,40 @@ namespace libexeinfo
                 }
                 else if(sectionNames[i].StartsWith(".note") && buffer.Length > 12)
                 {
-                    uint namesz   = BitConverter.ToUInt32(buffer, 0);
-                    uint descsz   = BitConverter.ToUInt32(buffer, 4);
-                    uint notetype = BitConverter.ToUInt32(buffer, 8);
-                    pos = 12;
-
-                    if(IsBigEndian)
+                    pos = 0;
+                    while(pos < buffer.Length)
                     {
-                        namesz   = Swapping.Swap(namesz);
-                        descsz   = Swapping.Swap(descsz);
-                        notetype = Swapping.Swap(notetype);
+                        uint namesz   = BitConverter.ToUInt32(buffer, pos);
+                        uint descsz   = BitConverter.ToUInt32(buffer, pos + 4);
+                        uint notetype = BitConverter.ToUInt32(buffer, pos + 8);
+                        pos += 12;
+
+                        if(IsBigEndian)
+                        {
+                            namesz   = Swapping.Swap(namesz);
+                            descsz   = Swapping.Swap(descsz);
+                            notetype = Swapping.Swap(notetype);
+                        }
+
+                        ElfNote note = new ElfNote
+                        {
+                            name     = Encoding.ASCII.GetString(buffer, pos, (int)(namesz - 1)),
+                            type     = notetype,
+                            contents = new byte[descsz]
+                        };
+
+                        pos += (int)namesz;
+
+                        pos += pos % 4 != 0 ? 4 - pos % 4 : 0;
+
+                        Array.Copy(buffer, pos, note.contents, 0, descsz);
+                        pos += (int)descsz;
+                        pos += pos % 4 != 0 ? 4 - pos % 4 : 0;
+
+                        string notename = note.type != 1 ? $"{sectionNames[i]}.{note.type}" : sectionNames[i];
+                        if(!notes.ContainsKey(notename))
+                            notes.Add(notename, note);
                     }
-
-                    ElfNote note = new ElfNote
-                    {
-                        name     = Encoding.ASCII.GetString(buffer, pos, (int)(namesz - 1)),
-                        type     = notetype,
-                        contents = new byte[descsz]
-                    };
-
-                    pos += (int)namesz;
-
-                    pos += pos % 4 != 0 ? 4 - pos % 4 : 0;
-
-                    Array.Copy(buffer, pos, note.contents, 0, descsz);
-
-                    notes.Add(sectionNames[i], note);
                 }
             }
 
