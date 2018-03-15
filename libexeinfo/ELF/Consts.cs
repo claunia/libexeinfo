@@ -183,8 +183,6 @@ namespace libexeinfo
             ".taglist",
             // This section, which appears in object files only (not executable or shared objects), contains one entry for each entry in the .tags section. Each entry has STB_LOCAL binding and is of type STT_NOTYPE. The st_shndx and st_value fields of the entries specify the index of the section and the section offset to which the tag applies, respectively.
             ".tagsym",
-            // This section on some operating systems (e.g. BeOS) contains application resources
-            ".rsrc"
         };
     }
 }
