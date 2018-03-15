@@ -239,7 +239,8 @@ namespace libexeinfo
                 }
 
                 if(RequiredOperatingSystem.Name == null)
-                    RequiredOperatingSystem = GetOsByInterpreter(interpreter, false, false);
+                    RequiredOperatingSystem =
+                        GetOsByInterpreter(interpreter, false, false, false, false, false, Header.e_machine);
 
                 return;
             }
@@ -369,11 +370,18 @@ namespace libexeinfo
             }
 
             notes = new Dictionary<string, ElfNote>();
-            bool beos    = false;
-            bool haiku   = false;
-            bool solaris = false;
-            bool lynxos  = false;
-            bool skyos   = false;
+            bool beos     = false;
+            bool haiku    = false;
+            bool solaris  = false;
+            bool lynxos   = false;
+            bool skyos    = false;
+            bool dellsysv = false;
+            bool unixware = false;
+            bool os2      = false;
+            bool amigaos4 = false;
+            bool aros     = false;
+            bool morphos  = false;
+            bool nonstop  = (uint)Header.e_type == 100;
 
             // Sections that contain an array of null-terminated strings by definition
             for(int i = 0; i < sections.Length; i++)
@@ -406,13 +414,24 @@ namespace libexeinfo
                                         interpreter = str;
                                         break;
                                     case ".comment":
-                                        if(str.Contains("beos")) beos     = true;
-                                        if(str.Contains("haiku")) haiku   = true;
-                                        if(str.Contains("(Lynx)")) lynxos = true;
+                                        if(str.Contains("beos")) beos                           = true;
+                                        if(str.Contains("haiku")) haiku                         = true;
+                                        if(str.Contains("(Lynx)")) lynxos                       = true;
+                                        if(str.StartsWith("Dell UNIX System V")) dellsysv       = true;
+                                        if(str.Contains("uw7") || str.Contains("uw1")) unixware = true;
                                         break;
                                     case ".dynstr":
-                                        if(str.StartsWith("SUNW")) solaris = true;
-                                        if(str == "libsky.so") skyos       = true;
+                                        if(str.Contains("SUNW")) solaris = true;
+                                        switch(str)
+                                        {
+                                            case "libsky.so":
+                                                skyos = true;
+                                                break;
+                                            case "DOSCALLS":
+                                                os2 = true;
+                                                break;
+                                        }
+
                                         break;
                                 }
                             }
@@ -482,6 +501,25 @@ namespace libexeinfo
                 }
             }
 
+            for(int i = 0; i < sections.Length; i++)
+            {
+                if(sectionNames[i] != ".rodata") continue;
+
+                buffer              = new byte[sections[i].sh_size];
+                BaseStream.Position = (long)sections[i].sh_offset;
+                BaseStream.Read(buffer, 0, buffer.Length);
+                string rodataAsString = Encoding.ASCII.GetString(buffer);
+
+                if(Header.e_machine == eMachine.EM_PPC)
+                {
+                    if(rodataAsString.Contains("SUNW_OST_OSLIB")) solaris         = true;
+                    else if(rodataAsString.Contains("newlib.library")) amigaos4   = true;
+                    else if(rodataAsString.Contains("arosc.library")) aros        = true;
+                    else if(rodataAsString.Contains("intuition.library")) morphos = true;
+                }
+                else if(rodataAsString.Contains("arosc.library")) aros = true;
+            }
+
             if(notes.TryGetValue(".note.ABI-tag", out ElfNote abiTag))
                 RequiredOperatingSystem = GetOsByNote(abiTag, interpreter, IsBigEndian);
             else if(notes.TryGetValue(".note.netbsd.ident", out ElfNote netbsdIdent))
@@ -546,35 +584,17 @@ namespace libexeinfo
                     case eiOsabi.ELFOSABI_STANDALONE:
                         RequiredOperatingSystem = new OperatingSystem {Name = "None"};
                         break;
-                    default: throw new ArgumentOutOfRangeException();
                 }
             else if(!string.IsNullOrEmpty(interpreter))
-                RequiredOperatingSystem             = GetOsByInterpreter(interpreter, skyos, solaris);
-            else if(beos) RequiredOperatingSystem   = new OperatingSystem {Name = "BeOS", MajorVersion = 4};
-            else if(haiku) RequiredOperatingSystem  = new OperatingSystem {Name = "Haiku"};
-            else if(lynxos) RequiredOperatingSystem = new OperatingSystem {Name = "LynxOS"};
-            else
-                for(int i = 0; i < sections.Length; i++)
-                {
-                    if(sectionNames[i] != ".rodata") continue;
-
-                    buffer              = new byte[sections[i].sh_size];
-                    BaseStream.Position = (long)sections[i].sh_offset;
-                    BaseStream.Read(buffer, 0, buffer.Length);
-                    string rodataAsString = Encoding.ASCII.GetString(buffer);
-
-                    if(Header.e_machine == eMachine.EM_PPC)
-                    {
-                        if(rodataAsString.Contains("newlib.library"))
-                            RequiredOperatingSystem = new OperatingSystem {Name = "AmigaOS", MajorVersion = 4};
-                        else if(rodataAsString.Contains("arosc.library"))
-                            RequiredOperatingSystem = new OperatingSystem {Name = "AROS"};
-                        else if(rodataAsString.Contains("intuition.library"))
-                            RequiredOperatingSystem = new OperatingSystem {Name = "MorphOS"};
-                    }
-                    else if(rodataAsString.Contains("arosc.library"))
-                        RequiredOperatingSystem = new OperatingSystem {Name = "AROS"};
-                }
+                RequiredOperatingSystem =
+                    GetOsByInterpreter(interpreter, skyos, solaris, dellsysv, unixware, os2, Header.e_machine);
+            else if(beos) RequiredOperatingSystem     = new OperatingSystem {Name = "BeOS", MajorVersion = 4};
+            else if(haiku) RequiredOperatingSystem    = new OperatingSystem {Name = "Haiku"};
+            else if(lynxos) RequiredOperatingSystem   = new OperatingSystem {Name = "LynxOS"};
+            else if(amigaos4) RequiredOperatingSystem = new OperatingSystem {Name = "AmigaOS", MajorVersion = 4};
+            else if(aros) RequiredOperatingSystem     = new OperatingSystem {Name = "AROS"};
+            else if(morphos) RequiredOperatingSystem  = new OperatingSystem {Name = "MorphOS"};
+            else if(nonstop) RequiredOperatingSystem  = new OperatingSystem {Name = "Non-Stop Kernel"};
 
             if(strings.Count > 0)
             {
@@ -696,30 +716,30 @@ namespace libexeinfo
             }
         }
 
-        static OperatingSystem GetOsByInterpreter(string interpreter, bool skyos, bool solaris)
+        static OperatingSystem GetOsByInterpreter(string interpreter, bool skyos, bool     solaris, bool dellsysv,
+                                                  bool   unixware,    bool os2,   eMachine machine)
         {
             switch(interpreter)
             {
-                case "/usr/lib/ldqnx.so.2":
-                    return new OperatingSystem {Name = "QNX", MajorVersion = 6};
+                case "/usr/lib/ldqnx.so.2": return new OperatingSystem {Name = "QNX", MajorVersion = 6};
 
-                    break;
-                case "/usr/dglib/libc.so.1":
-                    return new OperatingSystem {Name = "DG/UX"};
+                case "/usr/dglib/libc.so.1": return new OperatingSystem {Name = "DG/UX"};
 
-                    break;
-                case "/shlib/ld-bsdi.so":
-                    return new OperatingSystem {Name = "BSD/OS"};
+                case "/shlib/ld-bsdi.so": return new OperatingSystem {Name = "BSD/OS"};
 
-                    break;
-                case "/usr/lib/libc.so.1" when skyos:
-                    return new OperatingSystem {Name = "SkyOS"};
+                case "/usr/lib/libc.so.1" when skyos: return new OperatingSystem {Name = "SkyOS"};
 
-                    break;
                 case "/usr/lib/ld.so.1" when solaris:
-                    return new OperatingSystem {Name = "Solaris"};
+                case "/usr/lib/amd64/ld.so.1" when solaris: return new OperatingSystem {Name = "Solaris"};
 
-                    break;
+                case "/usr/lib/libc.so.1" when unixware: return new OperatingSystem {Name = "UnixWare"};
+                case "/usr/lib/libc.so.1" when dellsysv: return new OperatingSystem {Name = "Dell UNIX System V"};
+                case "/usr/lib/libc.so.1" when os2:      return new OperatingSystem {Name = "OS/2"};
+                // Other M68K UNIX don't use interpreter or use COFF
+                case "/usr/lib/libc.so.1"
+                    when machine == eMachine.EM_68K: return new OperatingSystem {Name = "Amiga UNIX"};
+                case "/usr/lib32/libc.so.1"
+                    when machine == eMachine.EM_MIPS: return new OperatingSystem {Name = "IRIX", MajorVersion = 6};
                 default: return new OperatingSystem {Name = interpreter};
             }
         }
