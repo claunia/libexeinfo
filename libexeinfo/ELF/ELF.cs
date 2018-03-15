@@ -247,7 +247,7 @@ namespace libexeinfo
             BaseStream.Position = (long)Header.e_shoff;
             buffer              = new byte[Header.e_shentsize];
             sections            = new Elf64_Shdr[Header.e_shnum];
-            
+
             // Read section 0, aka "the NULL section"
             BaseStream.Read(buffer, 0, buffer.Length);
             switch(Header.ei_class)
@@ -382,8 +382,10 @@ namespace libexeinfo
                 buffer              = new byte[sections[i].sh_size];
                 BaseStream.Read(buffer, 0, buffer.Length);
 
-                if(sectionNames[i] == ".interp" || sectionNames[i] == ".dynstr" || sectionNames[i] == ".comment" ||
-                   sectionNames[i] == ".strtab" || sectionNames[i] == ".stab.indexstr")
+                if(sectionNames[i] == ".interp"  || sectionNames[i] == ".dynstr" ||
+                   sectionNames[i] == ".comment" ||
+                   sectionNames[i] == ".strtab"  || sectionNames[i] == ".stab.indexstr" ||
+                   sectionNames[i] == ".debug_str")
                 {
                     strStart = 0;
                     len      = 0;
@@ -426,12 +428,31 @@ namespace libexeinfo
                 else if(sectionNames[i].StartsWith(".note") && buffer.Length > 12)
                 {
                     pos = 0;
+                    string noteAsString = Encoding.ASCII.GetString(buffer);
+
+                    // Only IA-64 OpenVMS ELF uses 64-bit fields inside the note!
+                    bool openVms = noteAsString.Contains("IPF/VMS");
+
                     while(pos < buffer.Length)
                     {
-                        uint namesz   = BitConverter.ToUInt32(buffer, pos);
-                        uint descsz   = BitConverter.ToUInt32(buffer, pos + 4);
-                        uint notetype = BitConverter.ToUInt32(buffer, pos + 8);
-                        pos += 12;
+                        uint namesz;
+                        uint descsz;
+                        uint notetype;
+
+                        if(openVms)
+                        {
+                            namesz   =  (uint)BitConverter.ToUInt64(buffer, pos);
+                            descsz   =  (uint)BitConverter.ToUInt64(buffer, pos + 8);
+                            notetype =  (uint)BitConverter.ToUInt64(buffer, pos + 16);
+                            pos      += 24;
+                        }
+                        else
+                        {
+                            namesz   =  BitConverter.ToUInt32(buffer, pos);
+                            descsz   =  BitConverter.ToUInt32(buffer, pos + 4);
+                            notetype =  BitConverter.ToUInt32(buffer, pos + 8);
+                            pos      += 12;
+                        }
 
                         if(IsBigEndian)
                         {
@@ -449,15 +470,14 @@ namespace libexeinfo
 
                         pos += (int)namesz;
 
-                        pos += pos % 4 != 0 ? 4 - pos % 4 : 0;
+                        pos += pos % (openVms ? 8 : 4) != 0 ? (openVms ? 8 : 4) - pos % (openVms ? 8 : 4) : 0;
 
                         Array.Copy(buffer, pos, note.contents, 0, descsz);
                         pos += (int)descsz;
-                        pos += pos % 4 != 0 ? 4 - pos % 4 : 0;
+                        pos += pos % (openVms ? 8 : 4) != 0 ? (openVms ? 8 : 4) - pos % (openVms ? 8 : 4) : 0;
 
                         string notename = note.type != 1 ? $"{sectionNames[i]}.{note.type}" : sectionNames[i];
-                        if(!notes.ContainsKey(notename))
-                            notes.Add(notename, note);
+                        if(!notes.ContainsKey(notename)) notes.Add(notename, note);
                     }
                 }
             }
