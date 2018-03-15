@@ -9,7 +9,7 @@ namespace libexeinfo
 {
     public partial class ELF : IExecutable
     {
-        List<Architecture>          architectures;
+        Architecture[]              architectures;
         Elf64_Ehdr                  Header;
         string                      interpreter;
         Dictionary<string, ElfNote> notes;
@@ -82,7 +82,7 @@ namespace libexeinfo
 
             Type          = "Executable and Linkable Format (ELF)";
             IsBigEndian   = Header.ei_data == eiData.ELFDATA2MSB;
-            architectures = new List<Architecture>();
+            architectures = new Architecture[1];
 
             switch(Header.ei_class)
             {
@@ -102,6 +102,8 @@ namespace libexeinfo
                     break;
                 default: return;
             }
+
+            architectures[0] = GetArchitecture(Header.e_machine);
 
             if(Header.ei_data != eiData.ELFDATA2LSB && Header.ei_data != eiData.ELFDATA2MSB ||
                Header.ei_version != eiVersion.EV_CURRENT) return;
@@ -692,6 +694,126 @@ namespace libexeinfo
             Marshal.FreeHGlobal(hdrPtr);
 
             return elfHdr.ei_mag.SequenceEqual(ELFMAG);
+        }
+
+        static Architecture GetArchitecture(eMachine machine)
+        {
+            switch(machine)
+            {
+                case eMachine.EM_386:     return Architecture.I386;
+                case eMachine.EM_68HC05:  return Architecture.M68HC05;
+                case eMachine.EM_68HC08:  return Architecture.M68HC08;
+                case eMachine.EM_68HC11:  return Architecture.M68HC11;
+                case eMachine.EM_68HC12:  return Architecture.M68HC12;
+                case eMachine.EM_68HC16:  return Architecture.M68HC16;
+                case eMachine.EM_68K:     return Architecture.M68K;
+                case eMachine.EM_78KOR:   return Architecture.R78KOR;
+                case eMachine.EM_8051:    return Architecture.I8051;
+                case eMachine.EM_860:     return Architecture.I860;
+                case eMachine.EM_88K:     return Architecture.M88K;
+                case eMachine.EM_960:     return Architecture.I960;
+                case eMachine.EM_AARCH64: return Architecture.Aarch64;
+                case eMachine.EM_ALPHA_OLD:
+                case eMachine.EM_ALPHA: return Architecture.Alpha;
+                case eMachine.EM_ALTERA_NIOS2: return Architecture.NIOS2;
+                case eMachine.EM_AMDGPU:       return Architecture.AmdGpu;
+                case eMachine.EM_ARCA:         return Architecture.Arca;
+                case eMachine.EM_ARC_COMPACT2: return Architecture.ARCompact2;
+                case eMachine.EM_ARC_COMPACT:  return Architecture.ARCompact;
+                case eMachine.EM_ARC:          return Architecture.Argonaut;
+                case eMachine.EM_ARM:          return Architecture.Arm;
+                case eMachine.EM_AVR32:        return Architecture.Avr32;
+                case eMachine.EM_AVR:          return Architecture.Avr;
+                case eMachine.EM_BA1:          return Architecture.Ba1;
+                case eMachine.EM_BA2:          return Architecture.Ba2;
+                case eMachine.EM_BLACKFIN:     return Architecture.Blackfin;
+                case eMachine.EM_C166:         return Architecture.C16;
+                case eMachine.EM_CDP:          return Architecture.CDP;
+                case eMachine.EM_CE:           return Architecture.CommunicationEngine;
+                case eMachine.EM_CLOUDSHIELD:  return Architecture.CloudShield;
+                case eMachine.EM_COGE:         return Architecture.Coge;
+                case eMachine.EM_COLDFIRE:     return Architecture.Coldfire;
+                case eMachine.EM_COOL:         return Architecture.CoolEngine;
+                case eMachine.EM_COREA_1ST:    return Architecture.CoreA;
+                case eMachine.EM_COREA_2ND:    return Architecture.CoreA2;
+                case eMachine.EM_CR16:         return Architecture.CompactRisc16;
+                case eMachine.EM_CRAYNV2:      return Architecture.CrayNv2;
+                case eMachine.EM_CRIS:         return Architecture.Cris;
+                case eMachine.EM_CR:           return Architecture.CompactRisc;
+                case eMachine.EM_CRX:          return Architecture.CompactRiscX;
+                case eMachine.EM_CSR_KALIMBA:  return Architecture.Kalimba;
+                case eMachine.EM_CUDA:         return Architecture.Cuda;
+                case eMachine.EM_CYGNUS_M32R:  return Architecture.M32R;
+                case eMachine.EM_CYGNUS_V850:  return Architecture.V850;
+                case eMachine.EM_CYPRESS_M8C:  return Architecture.M8C;
+                case eMachine.EM_D10V:         return Architecture.D10V;
+                case eMachine.EM_D30V:         return Architecture.D30V;
+                case eMachine.EM_DXP:          return Architecture.DeepExecutionProcessor;
+                case eMachine.EM_FR20:         return Architecture.FR20;
+                case eMachine.EM_FR30:         return Architecture.FR30;
+                case eMachine.EM_FRV:          return Architecture.FRV;
+                case eMachine.EM_FT32:         return Architecture.FT32;
+                case eMachine.EM_FX66:         return Architecture.FX66;
+                case eMachine.EM_H8_300H:
+                case eMachine.EM_H8_300:
+                case eMachine.EM_H8_500:
+                case eMachine.EM_H8S: return Architecture.H8;
+                case eMachine.EM_HOBBIT:        return Architecture.Hobbit;
+                case eMachine.EM_HUANY:         return Architecture.Huany;
+                case eMachine.EM_IA_64:         return Architecture.IA64;
+                case eMachine.EM_IP2K:          return Architecture.IP2K;
+                case eMachine.EM_JAVELIN:       return Architecture.Javelin;
+                case eMachine.EM_LATTICEMICO32: return Architecture.Lattice;
+                case eMachine.EM_M16C:          return Architecture.M16C;
+                case eMachine.EM_M32C:          return Architecture.M32C;
+                case eMachine.EM_M32:           return Architecture.We32000;
+                case eMachine.EM_M32R:          return Architecture.M32R;
+                case eMachine.EM_MCST_ELBRUS:   return Architecture.Elbrus;
+                case eMachine.EM_MICROBLAZE:    return Architecture.MicroBlaze;
+                case eMachine.EM_MIPS:          return Architecture.Mips;
+                case eMachine.EM_MIPS_RS3_LE:   return Architecture.Mips3;
+                case eMachine.EM_MIPS_X:        return Architecture.Mips;
+                case eMachine.EM_NS32K:         return Architecture.We32000;
+                case eMachine.EM_OPEN8:         return Architecture.Open8;
+                case eMachine.EM_OPENRISC:      return Architecture.OpenRisc;
+                case eMachine.EM_PARISC:        return Architecture.PaRisc;
+                case eMachine.EM_PDP10:         return Architecture.Pdp10;
+                case eMachine.EM_PDP11:         return Architecture.Pdp11;
+                case eMachine.EM_PJ:            return Architecture.PicoJava;
+                case eMachine.EM_PPC64:         return Architecture.PowerPc64;
+                case eMachine.EM_PPC:           return Architecture.PowerPc;
+                case eMachine.EM_PRISM:         return Architecture.Prism;
+                case eMachine.EM_R32C:          return Architecture.R32C;
+                case eMachine.EM_RISCV:         return Architecture.RiscV;
+                case eMachine.EM_S370:          return Architecture.S370;
+                case eMachine.EM_S390_OLD:
+                case eMachine.EM_S390: return Architecture.S390;
+                case eMachine.EM_SHARC: return Architecture.Sharc;
+                case eMachine.EM_SH:    return Architecture.Sh2;
+                case eMachine.EM_SPARC32PLUS:
+                case eMachine.EM_SPARC: return Architecture.Sparc;
+                case eMachine.EM_SPARCV9:  return Architecture.Sparc64;
+                case eMachine.EM_SPU:      return Architecture.Spu;
+                case eMachine.EM_STARCORE: return Architecture.StarCore;
+                case eMachine.EM_STM8:     return Architecture.STM8;
+                case eMachine.EM_TILE64:   return Architecture.Tile64;
+                case eMachine.EM_TILEGX:   return Architecture.TileGx;
+                case eMachine.EM_TILEPRO:  return Architecture.TilePro;
+                case eMachine.EM_TINYJ:    return Architecture.TinyJ;
+                case eMachine.EM_TRICORE:  return Architecture.TriCore;
+                case eMachine.EM_TRIMEDIA: return Architecture.TriMedia;
+                case eMachine.EM_V800:     return Architecture.V800;
+                case eMachine.EM_V850:     return Architecture.V850;
+                case eMachine.EM_VAX:      return Architecture.Vax;
+                case eMachine.EM_VIDEOCORE3:
+                case eMachine.EM_VIDEOCORE5:
+                case eMachine.EM_VIDEOCORE: return Architecture.VideoCore;
+                case eMachine.EM_X86_64: return Architecture.Amd64;
+                case eMachine.EM_XCORE:  return Architecture.Xcore;
+                case eMachine.EM_XTENSA: return Architecture.Xtensa;
+                case eMachine.EM_Z80:    return Architecture.Z80;
+                default:                 return Architecture.Unknown;
+            }
         }
     }
 }
